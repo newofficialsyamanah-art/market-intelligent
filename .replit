@@ -1,0 +1,4 @@
+run = "gunicorn --bind 0.0.0.0:$PORT run:app"
+
+[deployment]
+run = ["gunicorn", "--bind", "0.0.0.0:$PORT", "run:app"]
