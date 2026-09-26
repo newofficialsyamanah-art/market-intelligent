@@ -6,13 +6,16 @@ load_dotenv()
 class Config:
     SECRET_KEY = os.getenv("FLASK_SECRET_KEY", "dev-secret-key")
 
+    DATABASE_URL = os.getenv("DATABASE_URL", "")
+    if DATABASE_URL and "sslmode=" not in DATABASE_URL:
+        DATABASE_URL += "&sslmode=require" if "?" in DATABASE_URL else "?sslmode=require"
     DB_HOST = os.getenv("DB_HOST", "localhost")
     DB_PORT = os.getenv("DB_PORT", "3306")
     DB_NAME = os.getenv("DB_NAME", "market_intelligence")
     DB_USER = os.getenv("DB_USER", "root")
     DB_PASSWORD = os.getenv("DB_PASSWORD", "")
 
-    SQLALCHEMY_DATABASE_URI = (
+    SQLALCHEMY_DATABASE_URI = DATABASE_URL or (
         f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}?charset=utf8mb4"
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
@@ -35,8 +38,9 @@ class TestConfig(Config):
     """Konfigurasi terisolasi khusus untuk Unit Testing & Benchmarking."""
     TESTING = True
     WTF_CSRF_ENABLED = False
+    TEST_DATABASE_URL = os.getenv("TEST_DATABASE_URL", "")
     DB_NAME = os.getenv("TEST_DB_NAME", "market_intelligence_test")
-    SQLALCHEMY_DATABASE_URI = (
+    SQLALCHEMY_DATABASE_URI = TEST_DATABASE_URL or (
         f"mysql+pymysql://{Config.DB_USER}:{Config.DB_PASSWORD}@{Config.DB_HOST}:{Config.DB_PORT}/{DB_NAME}?charset=utf8mb4"
     )
 
