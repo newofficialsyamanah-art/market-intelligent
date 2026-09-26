@@ -1,0 +1,216 @@
+﻿Diagnose log at 2026-09-26T01:33:23Z
+
+AppPath: C:\Program Files\Git\mingw64\bin\git-credential-manager.exe
+InstallDir: C:\Program Files\Git\mingw64\bin\
+Version: 2.9.1+6760f0ef069c994aa2bb1d703fb374986ee82a3e
+
+------------
+Diagnostic: Environment
+Skipped: False
+Success: True
+Exception: None
+Log:
+OSType: Windows
+OSVersion: 10.0 (build 19045)
+Reading environment variables... OK
+ Variables:
+LOCALAPPDATA=C:\Users\SYAMANAH\AppData\Local
+PYTHONSTARTUP=c:\Users\SYAMANAH\AppData\Roaming\Code\User\workspaceStorage\e2740ffff06c63307c6a4161c5373f78\ms-python.python\pythonrc.py
+MSYSTEM=MINGW64
+ProgramW6432=C:\Program Files
+EXEPATH=C:\Program Files\Git\bin
+PROCESSOR_IDENTIFIER=Intel64 Family 6 Model 142 Stepping 10, GenuineIntel
+PKG_CONFIG_SYSTEM_LIBRARY_PATH=C:/Program Files/Git/mingw64/lib
+APPDATA=C:\Users\SYAMANAH\AppData\Roaming
+TMP=C:\Users\SYAMANAH\AppData\Local\Temp
+PROCESSOR_ARCHITECTURE=AMD64
+INFOPATH=C:\Program Files\Git\mingw64\local\info;C:\Program Files\Git\mingw64\share\info;C:\Program Files\Git\usr\local\info;C:\Program Files\Git\usr\share\info;C:\Program Files\Git\usr\info;C:\Program Files\Git\share\info
+PATHEXT=.COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC
+ProgramData=C:\ProgramData
+VSCODE_GIT_ASKPASS_MAIN=c:\Users\SYAMANAH\AppData\Roaming\Code\User\globalStorage\vscode.git\askpass\70789581cae28aa7\askpass-main.js
+USERPROFILE=C:\Users\SYAMANAH
+PWD=D:/market_intelligence
+VSCODE_GIT_IPC_HANDLE=\\.\pipe\vscode-git-220457c669-sock
+CONFIG_SITE=C:/Program Files/Git/etc/config.site
+PROCESSOR_REVISION=8e0a
+TEMP=C:\Users\SYAMANAH\AppData\Local\Temp
+FPS_BROWSER_APP_PROFILE_STRING=Internet Explorer
+FPS_BROWSER_USER_PROFILE_STRING=Default
+GIT_ASKPASS=c:\Users\SYAMANAH\AppData\Roaming\Code\User\globalStorage\vscode.git\askpass\70789581cae28aa7\askpass.sh
+TERM=xterm-256color
+PROGRAMFILES=C:\Program Files
+USERNAME=SYAMANAH
+VSCODE_DEBUGPY_ADAPTER_ENDPOINTS=c:\Users\SYAMANAH\.vscode\extensions\ms-python.debugpy-2026.6.0-win32-x64\.noConfigDebugAdapterEndpoints\endpoint-b4def948cfff8c3d.txt
+CHROME_CRASHPAD_PIPE_NAME=\\.\pipe\crashpad_9608_WFVIJICXQPLOMPZN
+GIT_EXEC_PATH=C:/Program Files/Git/mingw64/libexec/git-core
+PLINK_PROTOCOL=ssh
+COMMONPROGRAMFILES=C:\Program Files\Common Files
+_=C:/Program Files/Git/mingw64/bin/git
+PATH=C:/Program Files/Git/mingw64/libexec/git-core;D:\market_intelligence\venv\Scripts;C:\Users\SYAMANAH\bin;C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\local\bin;C:\Program Files\Git\usr\bin;C:\Program Files\Git\usr\bin;C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\bin;C:\Users\SYAMANAH\bin;C:\Users\SYAMANAH\AppData\Roaming\Code\User\globalStorage\github.copilot-chat\debugCommand;C:\Users\SYAMANAH\AppData\Roaming\Code\User\globalStorage\github.copilot-chat\copilotCli;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0;C:\Windows\System32\OpenSSH;C:\Program Files\Intel\WiFi\bin;C:\Program Files\Common Files\Intel\WirelessCommon;C:\Program Files\Git\cmd;C:\Users\SYAMANAH\AppData\Local\agy\bin;C:\Users\SYAMANAH\AppData\Local\Programs\Python\Launcher;C:\Users\SYAMANAH\AppData\Local\Microsoft\WindowsApps;C:\Users\SYAMANAH\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\SYAMANAH\AppData\Local\Programs\Python\Python314;C:\Users\SYAMANAH\AppData\Local\Programs\Python\Python313;C:\Users\SYAMANAH\AppData\Local\Programs\cursor\resources\app\bin;C:\Users\SYAMANAH\.vscode\extensions\ms-python.debugpy-2026.6.0-win32-x64\bundled\scripts\noConfigScripts;C:\Program Files\Git\usr\bin\vendor_perl;C:\Program Files\Git\usr\bin\core_perl
+OneDrive=C:\Users\SYAMANAH\OneDrive
+MSYSTEM_PREFIX=C:/Program Files/Git/mingw64
+MSYSTEM_CARCH=x86_64
+CommonProgramFiles(x86)=C:\Program Files (x86)\Common Files
+ZES_ENABLE_SYSMAN=1
+VSCODE_PYTHON_AUTOACTIVATE_GUARD=1
+PKG_CONFIG_SYSTEM_INCLUDE_PATH=C:/Program Files/Git/mingw64/include
+PROCESSOR_LEVEL=6
+PYTHON_BASIC_REPL=1
+MINGW_CHOST=x86_64-w64-mingw32
+HOSTNAME=DESKTOP-2VHH6K2
+WINDIR=C:\Windows
+HOMEPATH=\Users\SYAMANAH
+DISPLAY=needs-to-be-defined
+MANPATH=C:\Program Files\Git\mingw64\local\man;C:\Program Files\Git\mingw64\share\man;C:\Program Files\Git\usr\local\man;C:\Program Files\Git\usr\share\man;C:\Program Files\Git\usr\man;C:\Program Files\Git\share\man
+PYDEVD_DISABLE_FILE_VALIDATION=1
+USERDOMAIN=DESKTOP-2VHH6K2
+ORIGINAL_TMP=C:/Users/SYAMANAH/AppData/Local/Temp
+ALLUSERSPROFILE=C:\ProgramData
+COPILOT_DEBUG_NONCE=d1e8e0633bb172510fa3ee1dcc02da80
+SYSTEMROOT=C:\Windows
+NUMBER_OF_PROCESSORS=8
+SHELL=C:\Program Files\Git\usr\bin\bash.exe
+PKG_CONFIG_PATH=C:\Program Files\Git\mingw64\lib\pkgconfig;C:\Program Files\Git\mingw64\share\pkgconfig
+SHLVL=1
+SESSIONNAME=Console
+DriverData=C:\Windows\System32\Drivers\DriverData
+HOMEDRIVE=C:
+GIT_TRACE2_PARENT_SID=378fc9f2-f2c8-4203-be59-bf7c8629c7d0
+ACLOCAL_PATH=C:\Program Files\Git\mingw64\share\aclocal;C:\Program Files\Git\usr\share\aclocal
+ORIGINAL_PATH=C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\bin;C:\Users\SYAMANAH\bin;C:\Users\SYAMANAH\AppData\Roaming\Code\User\globalStorage\github.copilot-chat\debugCommand;C:\Users\SYAMANAH\AppData\Roaming\Code\User\globalStorage\github.copilot-chat\copilotCli;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0;C:\Windows\System32\OpenSSH;C:\Program Files\Intel\WiFi\bin;C:\Program Files\Common Files\Intel\WirelessCommon;C:\Program Files\Git\cmd;C:\Users\SYAMANAH\AppData\Local\agy\bin;C:\Users\SYAMANAH\AppData\Local\Programs\Python\Launcher;C:\Users\SYAMANAH\AppData\Local\Microsoft\WindowsApps;C:\Users\SYAMANAH\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\SYAMANAH\AppData\Local\Programs\Python\Python314;C:\Users\SYAMANAH\AppData\Local\Programs\Python\Python313;C:\Users\SYAMANAH\AppData\Local\Programs\cursor\resources\app\bin;C:\Users\SYAMANAH\.vscode\extensions\ms-python.debugpy-2026.6.0-win32-x64\bundled\scripts\noConfigScripts
+OS=Windows_NT
+ORIGINAL_TEMP=C:/Users/SYAMANAH/AppData/Local/Temp
+VIRTUAL_ENV=D:/market_intelligence/venv
+LANG=en_US.UTF-8
+PSModulePath=C:\Program Files\WindowsPowerShell\Modules;C:\Windows\system32\WindowsPowerShell\v1.0\Modules
+MSYSTEM_CHOST=x86_64-w64-mingw32
+MINGW_PREFIX=C:/Program Files/Git/mingw64
+HOME=C:\Users\SYAMANAH
+LOGONSERVER=\\DESKTOP-2VHH6K2
+ProgramFiles(x86)=C:\Program Files (x86)
+SYSTEMDRIVE=C:
+PROMPT=$P$G
+TMPDIR=C:\Users\SYAMANAH\AppData\Local\Temp
+VIRTUAL_ENV_PROMPT=venv
+MINGW_PACKAGE_PREFIX=mingw-w64-x86_64
+PS1=\[]633;A\](venv) \[]633;A\]\[\033]0;$TITLEPREFIX:$PWD\007\]\n\[\033[32m\]\u@\h \[\033[35m\]$MSYSTEM \[\033[33m\]\w\[\033[36m\]`__git_ps1`\[\033[0m\]\n$ \[]633;B\]\[]633;B\]
+COMPUTERNAME=DESKTOP-2VHH6K2
+SSH_ASKPASS=C:/Program Files/Git/mingw64/bin/git-askpass.exe
+COMSPEC=C:\Windows\system32\cmd.exe
+CommonProgramW6432=C:\Program Files\Common Files
+VSCODE_GIT_ASKPASS_NODE=C:\Users\SYAMANAH\AppData\Local\Programs\Microsoft VS Code\Code.exe
+BUNDLED_DEBUGPY_PATH=c:\Users\SYAMANAH\.vscode\extensions\ms-python.debugpy-2026.6.0-win32-x64\bundled\libs\debugpy
+TERM_PROGRAM_VERSION=1.138.0
+USERDOMAIN_ROAMINGPROFILE=DESKTOP-2VHH6K2
+COLORTERM=truecolor
+PUBLIC=C:\Users\Public
+TERM_PROGRAM=vscode
+VSCODE_GIT_ASKPASS_EXTRA_ARGS=
+
+
+------------
+Diagnostic: File system
+Skipped: False
+Success: True
+Exception: None
+Log:
+Temporary directory is 'C:\Users\SYAMANAH\AppData\Local\Temp\'...
+Checking basic file I/O...
+Writing to temporary file 'C:\Users\SYAMANAH\AppData\Local\Temp\69774fbba7f597773fb64133'... OK
+Reading from temporary file 'C:\Users\SYAMANAH\AppData\Local\Temp\69774fbba7f597773fb64133'... OK
+Deleting temporary file 'C:\Users\SYAMANAH\AppData\Local\Temp\69774fbba7f597773fb64133'... OK
+Testing IFileSystem instance...
+UserHomePath: C:\Users\SYAMANAH
+UserDataDirectoryPath: C:\Users\SYAMANAH\.gcm
+GetCurrentDirectory(): D:\market_intelligence
+
+------------
+Diagnostic: Networking
+Skipped: False
+Success: True
+Exception: None
+Log:
+Checking networking and HTTP stack...
+Creating HTTP client... OK
+IsNetworkAvailable: True
+Sending HEAD request to http://example.com... OK
+Sending HEAD request to https://example.com... OK
+Acquiring free TCP port... OK
+Testing local HTTP loopback connections...
+Creating new HTTP listener for http://localhost:50121/... OK
+Waiting for loopback connection... OK
+Writing response... OK
+Waiting for response data... OK
+Loopback connection data OK
+
+------------
+Diagnostic: Git
+Skipped: False
+Success: True
+Exception: None
+Log:
+Getting Git version... OK
+Git version is '2.55.0.windows.5'
+Locating current repository...Git repository at 'D:/market_intelligence/.git'
+ OK
+Listing all Git configuration... OK
+Git configuration:
+file:C:/Program Files/Git/etc/gitconfig	diff.astextplain.textconv=astextplain
+file:C:/Program Files/Git/etc/gitconfig	filter.lfs.clean=git-lfs clean -- %f
+file:C:/Program Files/Git/etc/gitconfig	filter.lfs.smudge=git-lfs smudge -- %f
+file:C:/Program Files/Git/etc/gitconfig	filter.lfs.process=git-lfs filter-process
+file:C:/Program Files/Git/etc/gitconfig	filter.lfs.required=true
+file:C:/Program Files/Git/etc/gitconfig	http.sslbackend=schannel
+file:C:/Program Files/Git/etc/gitconfig	core.autocrlf=true
+file:C:/Program Files/Git/etc/gitconfig	core.fscache=true
+file:C:/Program Files/Git/etc/gitconfig	core.symlinks=false
+file:C:/Program Files/Git/etc/gitconfig	pull.rebase=false
+file:C:/Program Files/Git/etc/gitconfig	credential.helper=manager
+file:C:/Program Files/Git/etc/gitconfig	credential.https://dev.azure.com.usehttppath=true
+file:C:/Program Files/Git/etc/gitconfig	init.defaultbranch=master
+file:C:/Users/SYAMANAH/.gitconfig	user.email=newofficialsyamanah@gmail.com
+file:C:/Users/SYAMANAH/.gitconfig	credential.helper=manager
+file:.git/config	core.repositoryformatversion=0
+file:.git/config	core.filemode=false
+file:.git/config	core.bare=false
+file:.git/config	core.logallrefupdates=true
+file:.git/config	core.symlinks=false
+file:.git/config	core.ignorecase=true
+file:.git/config	remote.origin.url=https://github.com/newofficialsyamanah-art/market-intelligent.git
+file:.git/config	remote.origin.fetch=+refs/heads/*:refs/remotes/origin/*
+
+
+------------
+Diagnostic: Credential storage
+Skipped: False
+Success: True
+Exception: None
+Log:
+ICredentialStore instance is of type: CredentialStore
+Writing test credential... OK
+Reading test credential... OK
+Deleting test credential... OK
+
+------------
+Diagnostic: Microsoft authentication (AAD/MSA)
+Skipped: False
+Success: True
+Exception: None
+Log:
+Broker is not enabled.
+Gathering MSAL token cache data... OK
+CacheDirectory: C:\Users\SYAMANAH\AppData\Local\.IdentityService
+CacheFileName: msal.cache
+CacheFilePath: C:\Users\SYAMANAH\AppData\Local\.IdentityService\msal.cache
+Creating cache helper... OK
+Verifying MSAL token cache persistence... OK
+
+------------
+Diagnostic: GitHub API
+Skipped: False
+Success: True
+Exception: None
+Log:
+Using 'https://github.com/' as API target.
+Querying '/meta' endpoint... OK
+

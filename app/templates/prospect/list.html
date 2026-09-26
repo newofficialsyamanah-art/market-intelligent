@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Prospek{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h3>Prospect Management</h3>
+  {% if current_user.role in ['admin', 'business_analyst'] %}
+  <div>
+    <a href="{{ url_for('prospect.create') }}" class="btn btn-primary btn-sm">+ Tambah Prospek</a>
+    <form method="post" action="{{ url_for('prospect.segment_all') }}" class="d-inline">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="btn btn-outline-dark btn-sm">Segmentasi + Skor Otomatis (AI, batch 30)</button>
+    </form>
+  </div>
+  {% endif %}
+</div>
+
+<form method="get" class="row g-2 mb-3">
+  <div class="col-md-3"><input name="q" value="{{ filters.q }}" class="form-control form-control-sm" placeholder="Cari nama / email"></div>
+  <div class="col-md-2">
+    <select name="industry" class="form-select form-select-sm">
+      <option value="">Semua Industri</option>
+      {% for i in industries %}<option value="{{ i }}" {% if filters.industry==i %}selected{% endif %}>{{ i }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="col-md-2">
+    <select name="region" class="form-select form-select-sm">
+      <option value="">Semua Wilayah</option>
+      {% for r in regions %}<option value="{{ r }}" {% if filters.region==r %}selected{% endif %}>{{ r }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="col-md-2">
+    <select name="segment" class="form-select form-select-sm">
+      <option value="">Semua Segmen</option>
+      {% for s in segments %}<option value="{{ s }}" {% if filters.segment==s %}selected{% endif %}>{{ s }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="col-md-2">
+    <select name="status" class="form-select form-select-sm">
+      <option value="">Semua Status</option>
+      {% for s in ["new","qualified","contacted","converted","rejected"] %}
+        <option value="{{ s }}" {% if filters.status==s %}selected{% endif %}>{{ s }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-md-1"><button class="btn btn-secondary btn-sm w-100">Filter</button></div>
+</form>
+
+<div class="table-responsive">
+<table class="table table-sm bg-white">
+  <thead><tr><th>Perusahaan</th><th>Industri</th><th>Wilayah</th><th>Segmen</th><th>Skor</th><th>Status</th><th></th></tr></thead>
+  <tbody>
+  {% for p in prospects %}
+    <tr>
+      <td><a href="{{ url_for('prospect.detail', pid=p.id) }}">{{ p.company_name }}</a></td>
+      <td>{{ p.industry or '-' }}</td>
+      <td>{{ p.region or '-' }}</td>
+      <td>{{ p.segment or '-' }}</td>
+      <td><span class="badge bg-primary badge-score">{{ p.score }}</span></td>
+      <td>{{ p.status }}</td>
+      <td>{% if current_user.role in ['admin', 'business_analyst'] %}<a class="btn btn-sm btn-outline-secondary" href="{{ url_for('prospect.edit', pid=p.id) }}">Edit</a>{% endif %}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

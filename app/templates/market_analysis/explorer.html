@@ -1,0 +1,248 @@
+{% extends "base.html" %}
+{% block title %}Company Intelligence Explorer - BA Workspace{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+  <div>
+    <h3 class="mb-0"><i class="bi bi-compass text-primary me-2"></i>Company Intelligence Explorer</h3>
+    <p class="text-muted small mb-0">Eksplorasi dan drill-down data profil Master Organization (Single Source of Truth).</p>
+  </div>
+  <div>
+    <a href="{{ url_for('market_analysis.index') }}" class="btn btn-outline-secondary btn-sm">
+      <i class="bi bi-arrow-left me-1"></i> Kembali ke Analytics
+    </a>
+  </div>
+</div>
+
+<!-- Navigation Tabs -->
+<ul class="nav nav-pills mb-4 border-bottom pb-2">
+  <li class="nav-item">
+    <a class="nav-link" href="{{ url_for('market_analysis.index') }}">
+      <i class="bi bi-graph-up me-1"></i> Market & Sektor Analytics
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link active" href="{{ url_for('market_analysis.explorer') }}">
+      <i class="bi bi-funnel me-1"></i> Company Intelligence Explorer
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="{{ url_for('market_analysis.history') }}">
+      <i class="bi bi-clock-history me-1"></i> Riwayat AI Recommendation
+    </a>
+  </li>
+</ul>
+
+<!-- Filter Card -->
+<div class="card border-0 shadow-sm p-3 mb-4">
+  <form method="get" action="{{ url_for('market_analysis.explorer') }}" class="row g-2 align-items-end">
+    <div class="col-md-3 col-sm-6">
+      <label class="form-label small fw-semibold">Pencarian Nama / Domain / Kota</label>
+      <div class="input-group input-group-sm">
+        <span class="input-group-text"><i class="bi bi-search"></i></span>
+        <input type="text" name="q" class="form-control" placeholder="Cari perusahaan..." value="{{ filters.q }}">
+      </div>
+    </div>
+
+    <div class="col-md-2 col-sm-6">
+      <label class="form-label small fw-semibold">Sektor Industri</label>
+      <select name="industry" class="form-select form-select-sm">
+        <option value="">Semua Industri</option>
+        {% for ind in all_industries %}
+        <option value="{{ ind }}" {% if filters.industry == ind %}selected{% endif %}>{{ ind }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="col-md-2 col-sm-6">
+      <label class="form-label small fw-semibold">Provinsi</label>
+      <select name="province" class="form-select form-select-sm">
+        <option value="">Semua Wilayah</option>
+        {% for prov in all_provinces %}
+        <option value="{{ prov }}" {% if filters.province == prov %}selected{% endif %}>{{ prov }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="col-md-2 col-sm-6">
+      <label class="form-label small fw-semibold">Priority Tier</label>
+      <select name="priority_tier" class="form-select form-select-sm">
+        <option value="">Semua Tier</option>
+        <option value="A - HOT" {% if filters.priority_tier in ['A - HOT', 'A'] %}selected{% endif %}>Tier A - HOT</option>
+        <option value="B - WARM" {% if filters.priority_tier in ['B - WARM', 'B'] %}selected{% endif %}>Tier B - WARM</option>
+        <option value="C - POTENTIAL" {% if filters.priority_tier in ['C - POTENTIAL', 'C'] %}selected{% endif %}>Tier C - POTENTIAL</option>
+        <option value="D - LOW" {% if filters.priority_tier in ['D - LOW', 'D'] %}selected{% endif %}>Tier D - LOW</option>
+      </select>
+    </div>
+
+    <div class="col-md-1 col-sm-4">
+      <label class="form-label small fw-semibold">Min Score</label>
+      <input type="number" name="min_score" class="form-control form-control-sm" placeholder="0-100" min="0" max="100" value="{{ filters.min_score }}">
+    </div>
+
+    <div class="col-md-2 col-sm-8 d-flex gap-2">
+      <div class="form-check form-check-inline align-self-center mb-0">
+        <input class="form-check-input" type="checkbox" name="has_contact" value="1" id="hasContactCheck" {% if filters.has_contact == '1' %}checked{% endif %}>
+        <label class="form-check-label small" for="hasContactCheck">Ada Kontak</label>
+      </div>
+      <button type="submit" class="btn btn-primary btn-sm px-3 flex-grow-1">Filter</button>
+      <a href="{{ url_for('market_analysis.explorer') }}" class="btn btn-light btn-sm border" title="Reset"><i class="bi bi-arrow-counterclockwise"></i></a>
+    </div>
+
+    <!-- Filter Khusus Kelengkapan Data & Review Candidate (Phase 4.5 BA Workspace) -->
+    <div class="col-12 pt-2 border-top mt-2">
+      <div class="d-flex flex-wrap align-items-center gap-3">
+        <span class="small fw-semibold text-muted"><i class="bi bi-funnel-fill me-1"></i>Enrichment Gaps:</span>
+        <div class="form-check form-check-inline mb-0">
+          <input class="form-check-input" type="checkbox" name="missing_website" value="1" id="missWebCheck" {% if filters.missing_website == '1' %}checked{% endif %}>
+          <label class="form-check-label small" for="missWebCheck"><i class="bi bi-globe text-danger me-1"></i>Tanpa Website</label>
+        </div>
+        <div class="form-check form-check-inline mb-0">
+          <input class="form-check-input" type="checkbox" name="missing_social" value="1" id="missSocCheck" {% if filters.missing_social == '1' %}checked{% endif %}>
+          <label class="form-check-label small" for="missSocCheck"><i class="bi bi-share text-danger me-1"></i>Tanpa Social</label>
+        </div>
+        <div class="form-check form-check-inline mb-0">
+          <input class="form-check-input" type="checkbox" name="missing_phone" value="1" id="missPhCheck" {% if filters.missing_phone == '1' %}checked{% endif %}>
+          <label class="form-check-label small" for="missPhCheck"><i class="bi bi-telephone text-danger me-1"></i>Tanpa Telepon</label>
+        </div>
+        <div class="form-check form-check-inline mb-0">
+          <input class="form-check-input" type="checkbox" name="missing_email" value="1" id="missEmCheck" {% if filters.missing_email == '1' %}checked{% endif %}>
+          <label class="form-check-label small" for="missEmCheck"><i class="bi bi-envelope text-danger me-1"></i>Tanpa Email</label>
+        </div>
+        <div class="form-check form-check-inline mb-0">
+          <input class="form-check-input" type="checkbox" name="missing_address" value="1" id="missAddrCheck" {% if filters.missing_address == '1' %}checked{% endif %}>
+          <label class="form-check-label small" for="missAddrCheck"><i class="bi bi-geo-alt text-danger me-1"></i>Tanpa Alamat</label>
+        </div>
+        <div class="form-check form-check-inline mb-0">
+          <input class="form-check-input" type="checkbox" name="missing_employee_size" value="1" id="missEmpCheck" {% if filters.missing_employee_size == '1' %}checked{% endif %}>
+          <label class="form-check-label small" for="missEmpCheck"><i class="bi bi-people text-danger me-1"></i>Tanpa Karyawan</label>
+        </div>
+        <div class="ms-auto">
+          <select name="review_status" class="form-select form-select-sm py-0" style="font-size: 0.8rem;">
+            <option value="">Semua Status Review</option>
+            <option value="pending" {% if filters.review_status == 'pending' %}selected{% endif %}>Menunggu Review BA (Pending)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
+
+<!-- Results Card -->
+<div class="card border-0 shadow-sm">
+  <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+    <span class="fw-semibold text-secondary">
+      Ditemukan <strong class="text-dark">{{ total_count }}</strong> entitas Master Organization
+    </span>
+    <span class="small text-muted">Halaman {{ current_page }} dari {{ total_pages }}</span>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Nama Entitas Master</th>
+          <th>Industri</th>
+          <th>Lokasi</th>
+          <th>Kanal Kontak</th>
+          <th>Peluang & Tier</th>
+          <th>Product Fit</th>
+          <th class="text-center">Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for org in items %}
+        <tr>
+          <td>
+            <a href="{{ url_for('market_analysis.org_detail', org_id=org.id) }}" class="fw-bold text-decoration-none text-dark d-block">
+              {{ org.name }}
+            </a>
+            <div class="d-flex gap-2 small text-muted">
+              {% if org.domain %}
+              <span class="badge bg-light text-primary border"><i class="bi bi-globe me-1"></i>{{ org.domain }}</span>
+              {% endif %}
+              {% if org.organization_type %}
+              <span>{{ org.organization_type }}</span>
+              {% endif %}
+            </div>
+          </td>
+          <td>
+            <span class="badge bg-secondary-subtle text-secondary-emphasis">{{ org.industry or 'OTHER' }}</span>
+          </td>
+          <td>
+            <div class="small fw-semibold">{{ org.city or '-' }}</div>
+            <div class="small text-muted">{{ org.province or '-' }}</div>
+          </td>
+          <td>
+            <div class="d-flex gap-1">
+              {% if org.phone %}
+              <span class="badge bg-success-subtle text-success" title="Telepon: {{ org.phone }}"><i class="bi bi-telephone-fill"></i></span>
+              {% endif %}
+              {% if org.email %}
+              <span class="badge bg-info-subtle text-info" title="Email: {{ org.email }}"><i class="bi bi-envelope-fill"></i></span>
+              {% endif %}
+              {% if org.website or org.domain %}
+              <span class="badge bg-primary-subtle text-primary" title="Website/Domain: {{ org.website or org.domain }}"><i class="bi bi-globe"></i></span>
+              {% endif %}
+              {% if not org.phone and not org.email and not org.domain and not org.website %}
+              <span class="text-muted small">-</span>
+              {% endif %}
+            </div>
+          </td>
+          <td>
+            <div class="d-flex align-items-center gap-2">
+              <span class="badge {% if org.opportunity_score >= 80 %}bg-danger{% elif org.opportunity_score >= 65 %}bg-warning text-dark{% elif org.opportunity_score >= 50 %}bg-primary{% else %}bg-secondary{% endif %}">
+                Score: {{ org.opportunity_score or 0 }}
+              </span>
+              {% if org.priority_tier %}
+              <span class="small fw-semibold text-secondary">{{ org.priority_tier }}</span>
+              {% endif %}
+            </div>
+          </td>
+          <td>
+            <small class="text-muted text-truncate d-inline-block" style="max-width: 180px;" title="{{ org.product_fit }}">
+              {{ org.product_fit or '-' }}
+            </small>
+          </td>
+          <td class="text-center">
+            <a href="{{ url_for('market_analysis.org_detail', org_id=org.id) }}" class="btn btn-outline-primary btn-sm py-1 px-2" title="Lihat Profil Lengkap">
+              <i class="bi bi-eye"></i> Detail
+            </a>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="7" class="text-center py-5 text-muted">
+            <i class="bi bi-building-exclamation fs-1 d-block mb-2"></i>
+            Tidak ada entitas master yang sesuai dengan kriteria filter Anda.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  {% if total_pages > 1 %}
+  <div class="card-footer bg-white border-top py-3 d-flex justify-content-between align-items-center">
+    <div class="small text-muted">Halaman {{ current_page }} dari {{ total_pages }}</div>
+    <nav>
+      <ul class="pagination pagination-sm mb-0">
+        <li class="page-item {% if current_page <= 1 %}disabled{% endif %}">
+          <a class="page-link" href="{{ url_for('market_analysis.explorer', page=current_page - 1, **filters) }}">Sebelumnya</a>
+        </li>
+        {% set start_page = [1, current_page - 2]|max %}
+        {% set end_page = [total_pages, current_page + 2]|min %}
+        {% for p in range(start_page, end_page + 1) %}
+        <li class="page-item {% if p == current_page %}active{% endif %}">
+          <a class="page-link" href="{{ url_for('market_analysis.explorer', page=p, **filters) }}">{{ p }}</a>
+        </li>
+        {% endfor %}
+        <li class="page-item {% if current_page >= total_pages %}disabled{% endif %}">
+          <a class="page-link" href="{{ url_for('market_analysis.explorer', page=current_page + 1, **filters) }}">Berikutnya</a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,586 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - Indonesia Market & Organization Intelligence{% endblock %}
+{% block content %}
+
+<!-- Header & Role Identity -->
+<div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+  <div>
+    <h3 class="mb-1 fw-bold text-dark">
+      Indonesia Market & Organization Intelligence
+    </h3>
+    <div class="text-muted small">
+      Selamat datang kembali, <strong>{{ current_user.name }}</strong> &bull; 
+      Role: 
+      {% if role == 'admin' %}
+        <span class="badge bg-danger">Administrator</span>
+      {% elif role == 'business_analyst' %}
+        <span class="badge bg-info text-dark">Business Analyst</span>
+      {% elif role == 'marketing' %}
+        <span class="badge bg-success">Marketing & Sales</span>
+      {% elif role == 'management' %}
+        <span class="badge bg-primary">Management / Executive</span>
+      {% else %}
+        <span class="badge bg-secondary">{{ role }}</span>
+      {% endif %}
+    </div>
+  </div>
+  <div class="text-end">
+    <span class="badge bg-light text-dark border p-2 font-monospace">
+      <i class="bi bi-clock me-1"></i> {{ current_user.role | upper }} DASHBOARD
+    </span>
+  </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- 1. ROLE DASHBOARD: ADMINISTRATOR -->
+<!-- ========================================================================= -->
+{% if role == 'admin' %}
+<div class="row g-3 mb-4">
+  <div class="col-md-3">
+    <div class="card p-3 border-0 shadow-sm h-100" style="border-left: 4px solid #4361ee !important;">
+      <div class="d-flex justify-content-between align-items-center">
+        <span class="text-muted small text-uppercase fw-bold">Scheduler Status</span>
+        <span class="badge {{ 'bg-success' if role_data.scheduler_running else 'bg-danger' }}">
+          {{ 'RUNNING' if role_data.scheduler_running else 'STOPPED' }}
+        </span>
+      </div>
+      <h3 class="mt-2 mb-0 fw-bold">{{ role_data.active_jobs }}</h3>
+      <div class="small text-muted mt-1">{{ role_data.failed_jobs }} failed jobs</div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card p-3 border-0 shadow-sm h-100" style="border-left: 4px solid #2ec4b6 !important;">
+      <div class="d-flex justify-content-between align-items-center">
+        <span class="text-muted small text-uppercase fw-bold">Master Universe</span>
+        <i class="bi bi-building text-primary fs-5"></i>
+      </div>
+      <h3 class="mt-2 mb-0 fw-bold">{{ role_data.total_orgs }}</h3>
+      <div class="small text-muted mt-1">{{ stats.total_prospects }} prospects tercatat</div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card p-3 border-0 shadow-sm h-100" style="border-left: 4px solid #ff9f1c !important;">
+      <div class="d-flex justify-content-between align-items-center">
+        <span class="text-muted small text-uppercase fw-bold">Review Duplikasi</span>
+        <i class="bi bi-people-fill text-warning fs-5"></i>
+      </div>
+      <h3 class="mt-2 mb-0 fw-bold">{{ role_data.pending_duplicates }}</h3>
+      <div class="small text-muted mt-1">
+        <a href="{{ url_for('market_analysis.explorer', review_status='has_candidate') }}" class="text-decoration-none">Review Ambigu &raquo;</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card p-3 border-0 shadow-sm h-100" style="border-left: 4px solid #e71d36 !important;">
+      <div class="d-flex justify-content-between align-items-center">
+        <span class="text-muted small text-uppercase fw-bold">Akses & Pengguna</span>
+        <i class="bi bi-shield-check text-danger fs-5"></i>
+      </div>
+      <h3 class="mt-2 mb-0 fw-bold">{{ role_data.total_users }}</h3>
+      <div class="small text-muted mt-1">
+        <a href="{{ url_for('admin.users') }}" class="text-decoration-none">Kelola Akun &raquo;</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4 mb-4">
+  <div class="col-md-7">
+    <div class="card shadow-sm border-0 h-100">
+      <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+        <h6 class="mb-0 fw-bold"><i class="bi bi-clock-history me-1 text-primary"></i> Status Scheduled Cron Jobs</h6>
+        <a href="{{ url_for('admin.cron_jobs') }}" class="btn btn-sm btn-outline-primary">Buka Cron Jobs</a>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-sm table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr><th>Job Name</th><th>Jadwal</th><th>Status</th><th>Durasi</th><th>Aksi</th></tr>
+          </thead>
+          <tbody>
+          {% for j in role_data.cron_jobs %}
+            <tr>
+              <td>
+                <div class="fw-semibold">{{ j.name }}</div>
+                <small class="text-muted font-monospace">{{ j.task_type }}</small>
+              </td>
+              <td><code>{{ j.schedule_cron }}</code></td>
+              <td>
+                {% if j.last_status == 'success' %}
+                  <span class="badge bg-success">Success</span>
+                {% elif j.last_status and 'error' in j.last_status %}
+                  <span class="badge bg-danger">Error</span>
+                {% else %}
+                  <span class="badge bg-secondary">Idle</span>
+                {% endif %}
+              </td>
+              <td>{{ j.duration_seconds ~ 's' if j.duration_seconds is not none else '-' }}</td>
+              <td>
+                <form method="post" action="{{ url_for('admin.run_cron_job', jid=j.id) }}" class="d-inline">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button class="btn btn-sm btn-outline-primary py-0 px-2" title="Jalankan manual"><i class="bi bi-play-fill"></i> Run</button>
+                </form>
+              </td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-5">
+    <div class="card shadow-sm border-0 h-100">
+      <div class="card-header bg-white py-3">
+        <h6 class="mb-0 fw-bold"><i class="bi bi-journal-text me-1 text-info"></i> Log Aktivitas Sistem Terbaru</h6>
+      </div>
+      <div class="card-body p-0">
+        <ul class="list-group list-group-flush small">
+          {% for log in role_data.recent_logs %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <div>
+              <span class="fw-bold">{{ log.action }}</span>
+              <div class="text-muted text-truncate" style="max-width:250px;">{{ log.detail }}</div>
+            </div>
+            <span class="text-muted font-monospace" style="font-size:0.75rem;">{{ log.created_at.strftime('%H:%M') if log.created_at else '-' }}</span>
+          </li>
+          {% else %}
+          <li class="list-group-item text-center text-muted py-3">Belum ada log tercatat.</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- 2. ROLE DASHBOARD: BUSINESS ANALYST -->
+<!-- ========================================================================= -->
+{% elif role == 'business_analyst' %}
+<div class="row g-3 mb-4">
+  <div class="col-md-3">
+    <div class="card p-3 border-0 shadow-sm h-100" style="border-left: 4px solid #4361ee !important;">
+      <div class="text-muted small text-uppercase fw-bold">Master Organizations (SSoT)</div>
+      <h3 class="mt-2 mb-0 fw-bold text-primary">{{ role_data.total_orgs }}</h3>
+      <div class="small text-muted mt-1">Entitas teridentifikasi bersih</div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card p-3 border-0 shadow-sm h-100" style="border-left: 4px solid #3a0ca3 !important;">
+      <div class="text-muted small text-uppercase fw-bold">Prospects Ingested</div>
+      <h3 class="mt-2 mb-0 fw-bold">{{ role_data.total_prospects }}</h3>
+      <div class="small text-muted mt-1">Layer compatibility & discovery</div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card p-3 border-0 shadow-sm h-100" style="border-left: 4px solid #06d6a0 !important;">
+      <div class="text-muted small text-uppercase fw-bold">Social Media Enriched</div>
+      <h3 class="mt-2 mb-0 fw-bold text-success">{{ role_data.social_count }}</h3>
+      <div class="small text-muted mt-1">IG, TikTok, FB, LinkedIn</div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card p-3 border-0 shadow-sm h-100" style="border-left: 4px solid #f77f00 !important;">
+      <div class="text-muted small text-uppercase fw-bold">Pending Review Duplikasi</div>
+      <h3 class="mt-2 mb-0 fw-bold text-warning">{{ role_data.pending_duplicates }}</h3>
+      <div class="small text-muted mt-1">
+        <a href="{{ url_for('market_analysis.explorer', review_status='has_candidate') }}" class="text-decoration-none">Identity Resolution &raquo;</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4 mb-4">
+  <div class="col-md-5">
+    <div class="card shadow-sm border-0 h-100">
+      <div class="card-header bg-white py-3">
+        <h6 class="mb-0 fw-bold"><i class="bi bi-pie-chart me-1 text-primary"></i> Cakupan Taksonomi Indonesia Universe</h6>
+      </div>
+      <div class="card-body">
+        <div class="mb-3">
+          <div class="d-flex justify-content-between mb-1">
+            <span class="small fw-semibold"><i class="bi bi-mortarboard me-1 text-primary"></i> Institusi Pendidikan (PAUD - PT)</span>
+            <span class="small fw-bold">{{ role_data.edu_count }}</span>
+          </div>
+          <div class="progress" style="height: 8px;">
+            <div class="progress-bar bg-primary" style="width: {{ (role_data.edu_count / role_data.total_orgs * 100) if role_data.total_orgs else 0 }}%;"></div>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <div class="d-flex justify-content-between mb-1">
+            <span class="small fw-semibold"><i class="bi bi-people me-1 text-success"></i> Komunitas & Olahraga</span>
+            <span class="small fw-bold">{{ role_data.comm_count }}</span>
+          </div>
+          <div class="progress" style="height: 8px;">
+            <div class="progress-bar bg-success" style="width: {{ (role_data.comm_count / role_data.total_orgs * 100) if role_data.total_orgs else 0 }}%;"></div>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <div class="d-flex justify-content-between mb-1">
+            <span class="small fw-semibold"><i class="bi bi-building me-1 text-info"></i> Korporasi & Bisnis</span>
+            <span class="small fw-bold">{{ role_data.corp_count }}</span>
+          </div>
+          <div class="progress" style="height: 8px;">
+            <div class="progress-bar bg-info" style="width: {{ (role_data.corp_count / role_data.total_orgs * 100) if role_data.total_orgs else 0 }}%;"></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="d-flex justify-content-between mb-1">
+            <span class="small fw-semibold"><i class="bi bi-tags me-1 text-secondary"></i> Kategori Lainnya</span>
+            <span class="small fw-bold">{{ role_data.other_count }}</span>
+          </div>
+          <div class="progress" style="height: 8px;">
+            <div class="progress-bar bg-secondary" style="width: {{ (role_data.other_count / role_data.total_orgs * 100) if role_data.total_orgs else 0 }}%;"></div>
+          </div>
+        </div>
+
+        <hr>
+        <div class="d-flex justify-content-between mt-3">
+          <a href="{{ url_for('admin.discovery') }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-search me-1"></i> Discovery Hub</a>
+          <a href="{{ url_for('market_analysis.index') }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-graph-up me-1"></i> Market Analytics</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-7">
+    <div class="card shadow-sm border-0 h-100">
+      <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+        <h6 class="mb-0 fw-bold"><i class="bi bi-building-check me-1 text-success"></i> Master Organization Terbaru</h6>
+        <a href="{{ url_for('market_analysis.explorer') }}" class="btn btn-sm btn-outline-primary">Company Explorer</a>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-sm table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr><th>Organisasi</th><th>Tipe / Subtipe</th><th>Lokasi</th><th>Score</th></tr>
+          </thead>
+          <tbody>
+          {% for o in role_data.recent_orgs %}
+            <tr>
+              <td>
+                <div class="fw-semibold">
+                  <a href="{{ url_for('market_analysis.org_detail', org_id=o.id) }}" class="text-decoration-none">{{ o.name }}</a>
+                </div>
+                <small class="text-muted">{{ o.sport or o.industry or '-' }}</small>
+              </td>
+              <td><span class="badge bg-light text-dark border">{{ o.organization_type }}</span></td>
+              <td class="small">{{ o.city or o.province or '-' }}</td>
+              <td><span class="badge bg-primary">{{ o.opportunity_score or o.relevance_score or 0 }}</span></td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- 3. ROLE DASHBOARD: MARKETING & SALES -->
+<!-- ========================================================================= -->
+{% elif role == 'marketing' %}
+<div class="row g-3 mb-4">
+  <div class="col-md-3">
+    <div class="card p-3 border-0 shadow-sm h-100" style="border-left: 4px solid #2a9d8f !important;">
+      <div class="text-muted small text-uppercase fw-bold">High Product Fit (Jersey)</div>
+      <h3 class="mt-2 mb-0 fw-bold text-success">{{ role_data.high_fit }}</h3>
+      <div class="small text-muted mt-1">Target paling potensial</div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card p-3 border-0 shadow-sm h-100" style="border-left: 4px solid #e76f51 !important;">
+      <div class="text-muted small text-uppercase fw-bold">Klub & Komunitas Olahraga</div>
+      <h3 class="mt-2 mb-0 fw-bold text-danger">{{ role_data.sports_targets }}</h3>
+      <div class="small text-muted mt-1">Futsal, bola, basket, running</div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card p-3 border-0 shadow-sm h-100" style="border-left: 4px solid #457b9d !important;">
+      <div class="text-muted small text-uppercase fw-bold">Active Campaigns</div>
+      <h3 class="mt-2 mb-0 fw-bold text-primary">{{ role_data.active_campaigns }}</h3>
+      <div class="small text-muted mt-1">
+        <a href="{{ url_for('marketing.campaigns_index') }}" class="text-decoration-none">Kelola Campaign &raquo;</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card p-3 border-0 shadow-sm h-100" style="border-left: 4px solid #f4a261 !important;">
+      <div class="text-muted small text-uppercase fw-bold">Total Target Terdaftar</div>
+      <h3 class="mt-2 mb-0 fw-bold text-warning">{{ role_data.campaign_targets_count }}</h3>
+      <div class="small text-muted mt-1">Akun di campaign aktif</div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4 mb-4">
+  <!-- Top Priority Opportunities -->
+  <div class="col-md-7">
+    <div class="card shadow-sm border-0 h-100">
+      <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+        <h6 class="mb-0 fw-bold"><i class="bi bi-stars me-1 text-warning"></i> Top Opportunities: Jersey & Custom Teamwear</h6>
+        <a href="{{ url_for('marketing.targets') }}" class="btn btn-sm btn-primary">Buka Target Explorer</a>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-sm table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr><th>Nama Akun</th><th>Kategori</th><th>Lokasi</th><th>AI Fit</th><th>Score</th></tr>
+          </thead>
+          <tbody>
+          {% for o in role_data.top_accounts %}
+            <tr>
+              <td>
+                <div class="fw-semibold">
+                  <a href="{{ url_for('market_analysis.org_detail', org_id=o.id) }}" class="text-decoration-none">{{ o.name }}</a>
+                </div>
+                {% if o.sport %}
+                  <span class="badge bg-info-subtle text-info small">{{ o.sport }}</span>
+                {% endif %}
+              </td>
+              <td><span class="badge bg-light text-dark border">{{ o.organization_type }}</span></td>
+              <td class="small">{{ o.city or o.province or '-' }}</td>
+              <td>
+                {% set ai_data = o.get_ai_scoring() %}
+                {% if ai_data.get('product_fit_label') == 'High' or o.product_fit in ['high', 'High', 'HIGH'] %}
+                  <span class="badge bg-success">High Fit</span>
+                {% elif ai_data.get('product_fit_label') == 'Medium' or o.product_fit in ['medium', 'Medium'] %}
+                  <span class="badge bg-warning text-dark">Medium</span>
+                {% else %}
+                  <span class="badge bg-secondary">Low</span>
+                {% endif %}
+              </td>
+              <td><span class="badge bg-primary">{{ o.opportunity_score }}</span></td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Active Campaigns & Upcoming Events -->
+  <div class="col-md-5">
+    <div class="card shadow-sm border-0 mb-3">
+      <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+        <h6 class="mb-0 fw-bold"><i class="bi bi-megaphone me-1 text-primary"></i> Active Campaigns</h6>
+        <a href="{{ url_for('marketing.create_campaign') }}" class="btn btn-sm btn-outline-primary">+ Campaign Baru</a>
+      </div>
+      <div class="card-body p-0">
+        <ul class="list-group list-group-flush small">
+        {% for c in role_data.recent_campaigns %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <div>
+              <a href="{{ url_for('marketing.campaign_detail', cid=c.id) }}" class="fw-bold text-decoration-none">{{ c.name }}</a>
+              <div class="text-muted">{{ c.target_segment or c.product or 'Jersey Campaign' }}</div>
+            </div>
+            <span class="badge bg-primary-subtle text-primary">{{ c.targets | length }} targets</span>
+          </li>
+        {% else %}
+          <li class="list-group-item text-center text-muted py-3">Belum ada campaign. Buat sekarang!</li>
+        {% endfor %}
+        </ul>
+      </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+      <div class="card-header bg-white py-3">
+        <h6 class="mb-0 fw-bold"><i class="bi bi-calendar-event me-1 text-danger"></i> Event & Turnamen Mendatang</h6>
+      </div>
+      <div class="card-body p-0">
+        <ul class="list-group list-group-flush small">
+        {% for ev in role_data.upcoming_events %}
+          <li class="list-group-item">
+            <div class="fw-semibold">{{ ev.name }}</div>
+            <div class="text-muted d-flex justify-content-between">
+              <span><i class="bi bi-geo-alt"></i> {{ ev.city or ev.province or 'Indonesia' }}</span>
+              <span class="badge bg-light text-dark border">{{ ev.event_type or 'Sport Event' }}</span>
+            </div>
+          </li>
+        {% else %}
+          <li class="list-group-item text-center text-muted py-3">Belum ada event terdaftar.</li>
+        {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- 4. ROLE DASHBOARD: MANAGEMENT & EXECUTIVE -->
+<!-- ========================================================================= -->
+{% elif role == 'management' %}
+<div class="row g-3 mb-4">
+  <div class="col-md-3">
+    <div class="card p-3 border-0 shadow-sm h-100" style="border-left: 4px solid #1d3557 !important;">
+      <div class="text-muted small text-uppercase fw-bold">Total Addressable Market (TAM)</div>
+      <h3 class="mt-2 mb-0 fw-bold text-dark">{{ role_data.tam_universe }}</h3>
+      <div class="small text-muted mt-1">Organisasi Indonesia terpetakan</div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card p-3 border-0 shadow-sm h-100" style="border-left: 4px solid #457b9d !important;">
+      <div class="text-muted small text-uppercase fw-bold">High Priority Accounts</div>
+      <h3 class="mt-2 mb-0 fw-bold text-primary">{{ role_data.high_priority_market }}</h3>
+      <div class="small text-muted mt-1">Kecocokan produk Jersey tinggi</div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card p-3 border-0 shadow-sm h-100" style="border-left: 4px solid #2a9d8f !important;">
+      <div class="text-muted small text-uppercase fw-bold">Active Campaigns</div>
+      <h3 class="mt-2 mb-0 fw-bold text-success">{{ role_data.active_campaigns }} / {{ role_data.total_campaigns }}</h3>
+      <div class="small text-muted mt-1">Inisiatif marketing berjalan</div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card p-3 border-0 shadow-sm h-100" style="border-left: 4px solid #e76f51 !important;">
+      <div class="text-muted small text-uppercase fw-bold">Event & Activity Signals</div>
+      <h3 class="mt-2 mb-0 fw-bold text-danger">{{ role_data.total_events }}</h3>
+      <div class="small text-muted mt-1">Sinyal turnamen, liga, expo</div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4 mb-4">
+  <div class="col-md-6">
+    <div class="card shadow-sm border-0 h-100">
+      <div class="card-header bg-white py-3">
+        <h6 class="mb-0 fw-bold"><i class="bi bi-pie-chart-fill me-1 text-primary"></i> Komposisi Pasar Indonesia</h6>
+      </div>
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3 p-2 bg-light rounded">
+          <div>
+            <div class="fw-bold"><i class="bi bi-mortarboard text-primary me-1"></i> Institusi Pendidikan</div>
+            <small class="text-muted">PAUD, SD, SMP, SMA, SMK, Perguruan Tinggi</small>
+          </div>
+          <h5 class="mb-0 fw-bold">{{ role_data.edu_coverage }}</h5>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mb-3 p-2 bg-light rounded">
+          <div>
+            <div class="fw-bold"><i class="bi bi-people text-success me-1"></i> Komunitas & Organisasi Mahasiswa</div>
+            <small class="text-muted">Klub futsal, bola, basket, BEM, UKM</small>
+          </div>
+          <h5 class="mb-0 fw-bold">{{ role_data.comm_coverage }}</h5>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center p-2 bg-light rounded">
+          <div>
+            <div class="fw-bold"><i class="bi bi-building text-info me-1"></i> Korporasi, Asosiasi & Instansi</div>
+            <small class="text-muted">Perusahaan, ormas, yayasan, instansi</small>
+          </div>
+          <h5 class="mb-0 fw-bold">{{ role_data.corp_coverage }}</h5>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card shadow-sm border-0 h-100">
+      <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+        <h6 class="mb-0 fw-bold"><i class="bi bi-kanban me-1 text-success"></i> Kemajuan Campaign Marketing</h6>
+        <a href="{{ url_for('reporting.index') }}" class="btn btn-sm btn-outline-primary">Laporan Eksekutif</a>
+      </div>
+      <div class="card-body p-0">
+        <ul class="list-group list-group-flush small">
+        {% for c in role_data.recent_campaigns %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <div>
+              <div class="fw-bold">{{ c.name }}</div>
+              <div class="text-muted">{{ c.product or 'Jersey / Apparel' }} &bull; Segment: {{ c.target_segment or 'Umum' }}</div>
+            </div>
+            <div class="text-end">
+              <span class="badge {{ 'bg-success' if c.status == 'active' else 'bg-secondary' }}">{{ c.status | upper }}</span>
+              <div class="small text-muted">{{ c.targets | length }} akun target</div>
+            </div>
+          </li>
+        {% else %}
+          <li class="list-group-item text-center text-muted py-3">Belum ada campaign tercatat.</li>
+        {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% else %}
+<!-- Fallback generic view -->
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="stat-card" style="background:#4361ee;">
+      <div class="small">Total Prospek</div>
+      <h2>{{ stats.total_prospects }}</h2>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="stat-card" style="background:#f77f00;">
+      <div class="small">Data Mentah Belum Diproses</div>
+      <h2>{{ stats.new_raw_data }}</h2>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="stat-card" style="background:#2a9d8f;">
+      <div class="small">Total Campaign</div>
+      <h2>{{ stats.campaigns }}</h2>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- ========================================================================= -->
+<!-- 5. PRESERVED SYSTEM QUICK NAVIGATION (Zero Regression) -->
+<!-- ========================================================================= -->
+<h5 class="fw-bold mb-3 mt-4 text-dark"><i class="bi bi-grid-3x3-gap me-1"></i> Modul & Akses Cepat Sistem</h5>
+<div class="row g-3">
+  <!-- 1. Company Intelligence -->
+  {% if current_user.role in ['admin', 'business_analyst', 'marketing', 'management'] %}
+  <div class="col-md-3"><a class="btn btn-outline-primary w-100 py-2 text-start" href="{{ url_for('market_analysis.explorer') }}"><i class="bi bi-buildings me-2"></i> Company Intelligence</a></div>
+  {% endif %}
+
+  <!-- 2. Event Intelligence -->
+  {% if current_user.role in ['admin', 'business_analyst', 'marketing', 'management'] %}
+  <div class="col-md-3"><a class="btn btn-outline-primary w-100 py-2 text-start" href="{{ url_for('events.index') }}"><i class="bi bi-calendar-event me-2"></i> Event Intelligence</a></div>
+  {% endif %}
+
+  <!-- 3. Marketing Intelligence & Campaigns -->
+  {% if current_user.role in ['admin', 'marketing', 'business_analyst', 'management'] %}
+  <div class="col-md-3"><a class="btn btn-outline-primary w-100 py-2 text-start" href="{{ url_for('marketing.targets') }}"><i class="bi bi-bullseye me-2"></i> Marketing Explorer</a></div>
+  <div class="col-md-3"><a class="btn btn-outline-primary w-100 py-2 text-start" href="{{ url_for('marketing.campaigns_index') }}"><i class="bi bi-megaphone me-2"></i> Campaign Management</a></div>
+  {% endif %}
+
+  <!-- 4. Market Analytics (BA) -->
+  {% if current_user.role in ['admin', 'business_analyst', 'management'] %}
+  <div class="col-md-3"><a class="btn btn-outline-primary w-100 py-2 text-start" href="{{ url_for('market_analysis.index') }}"><i class="bi bi-bar-chart me-2"></i> Market Analytics (BA)</a></div>
+  {% endif %}
+
+  <!-- 5. Data Collection & Processing (BA / Admin) -->
+  {% if current_user.role in ['admin', 'business_analyst'] %}
+  <div class="col-md-3"><a class="btn btn-outline-primary w-100 py-2 text-start" href="{{ url_for('data_collection.index') }}"><i class="bi bi-cloud-upload me-2"></i> Data Collection</a></div>
+  <div class="col-md-3"><a class="btn btn-outline-primary w-100 py-2 text-start" href="{{ url_for('data_processing.index') }}"><i class="bi bi-cpu me-2"></i> Processing & AI</a></div>
+  <div class="col-md-3"><a class="btn btn-outline-primary w-100 py-2 text-start" href="{{ url_for('admin.discovery') }}"><i class="bi bi-search me-2"></i> Discovery Hub</a></div>
+  {% endif %}
+
+  <!-- 6. Reporting (Management / Admin) -->
+  {% if current_user.role in ['admin', 'management'] %}
+  <div class="col-md-3"><a class="btn btn-outline-primary w-100 py-2 text-start" href="{{ url_for('reporting.index') }}"><i class="bi bi-file-earmark-text me-2"></i> Reporting</a></div>
+  {% endif %}
+
+  <!-- 7. System Management (Admin Only) -->
+  {% if current_user.role == 'admin' %}
+  <div class="col-md-3"><a class="btn btn-outline-primary w-100 py-2 text-start" href="{{ url_for('admin.index') }}"><i class="bi bi-gear me-2"></i> System Management</a></div>
+  <div class="col-md-3"><a class="btn btn-outline-primary w-100 py-2 text-start" href="{{ url_for('admin.cron_jobs') }}"><i class="bi bi-clock-history me-2"></i> Kelola Cron Jobs</a></div>
+  {% endif %}
+</div>
+{% endblock %}

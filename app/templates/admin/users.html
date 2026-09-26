@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Kelola Pengguna{% endblock %}
+{% block content %}
+<h3>Kelola Pengguna dan Hak Akses</h3>
+<div class="card p-3 my-3">
+  <form method="post" action="{{ url_for('admin.create_user') }}" class="row g-2">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="col-md-3"><input name="name" class="form-control form-control-sm" placeholder="Nama" required></div>
+    <div class="col-md-3"><input type="email" name="email" class="form-control form-control-sm" placeholder="Email" required></div>
+    <div class="col-md-2"><input type="password" name="password" class="form-control form-control-sm" placeholder="Password" required></div>
+    <div class="col-md-3">
+      <select name="role" class="form-select form-select-sm">
+        <option value="admin">Admin/IT</option>
+        <option value="business_analyst">Business Analyst</option>
+        <option value="marketing">Marketing</option>
+        <option value="management">Management</option>
+      </select>
+    </div>
+    <div class="col-md-1"><button class="btn btn-primary btn-sm w-100">+</button></div>
+  </form>
+</div>
+<table class="table table-sm bg-white">
+  <thead><tr><th>Nama</th><th>Email</th><th>Role</th><th>Aktif</th><th></th></tr></thead>
+  <tbody>
+  {% for u in users %}
+    <tr>
+      <td>{{ u.name }}</td>
+      <td>{{ u.email }}</td>
+      <td>
+        <form method="post" action="{{ url_for('admin.change_role', uid=u.id) }}" class="d-flex gap-1">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <select name="role" class="form-select form-select-sm" onchange="this.form.submit()">
+            {% for r in ["admin","business_analyst","marketing","management"] %}
+              <option value="{{ r }}" {% if u.role==r %}selected{% endif %}>{{ r }}</option>
+            {% endfor %}
+          </select>
+        </form>
+      </td>
+      <td>{{ 'Ya' if u.is_active else 'Tidak' }}</td>
+      <td>
+        <form method="post" action="{{ url_for('admin.toggle_user', uid=u.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn btn-sm btn-outline-secondary">Toggle Aktif</button>
+        </form>
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,86 @@
+body { background-color: #f5f7fa; }
+.app-navbar {
+	min-height: 72px;
+	background: #17202b;
+	border-bottom: 1px solid rgba(255,255,255,0.08);
+	box-shadow: 0 4px 18px rgba(23,32,43,0.16);
+}
+.app-brand {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.65rem;
+	margin-right: 2rem;
+	color: #fff;
+	letter-spacing: 0.04em;
+}
+.app-brand:hover { color: #fff; }
+.app-brand > span:last-child { display: flex; flex-direction: column; line-height: 1.05; }
+.app-brand strong { font-size: 0.95rem; letter-spacing: 0.14em; }
+.app-brand small { margin-top: 0.28rem; color: #a9b6c5; font-size: 0.62rem; letter-spacing: 0.05em; }
+.brand-mark {
+	display: inline-grid;
+	width: 36px;
+	height: 36px;
+	place-items: center;
+	border-radius: 10px;
+	color: #17202b;
+	background: #f2c14e;
+	font-size: 1.05rem;
+}
+.app-nav-links { gap: 0.25rem; }
+.app-nav-links .nav-link {
+	padding: 0.62rem 0.78rem !important;
+	border-radius: 8px;
+	color: #b9c4d0;
+	font-size: 0.86rem;
+	transition: color 160ms ease, background-color 160ms ease;
+}
+.app-nav-links .nav-link:hover,
+.app-nav-links .nav-link:focus {
+	color: #fff;
+	background: rgba(255,255,255,0.09);
+}
+.account-area { display: flex; align-items: center; gap: 0.7rem; margin-left: 1rem; }
+.account-chip {
+	display: flex;
+	align-items: center;
+	gap: 0.55rem;
+	padding: 0.35rem 0.7rem 0.35rem 0.4rem;
+	border: 1px solid rgba(255,255,255,0.1);
+	border-radius: 999px;
+	background: rgba(255,255,255,0.06);
+}
+.account-icon {
+	display: grid;
+	width: 30px;
+	height: 30px;
+	place-items: center;
+	border-radius: 50%;
+	color: #17202b;
+	background: #d8e7f3;
+}
+.account-copy { display: flex; flex-direction: column; line-height: 1.1; }
+.account-copy strong { color: #fff; font-size: 0.78rem; font-weight: 600; }
+.account-copy small { margin-top: 0.2rem; color: #a9b6c5; font-size: 0.65rem; text-transform: capitalize; }
+.logout-link {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.35rem;
+	padding: 0.55rem 0.7rem;
+	border-radius: 8px;
+	color: #b9c4d0;
+	font-size: 0.82rem;
+	text-decoration: none;
+}
+.logout-link:hover { color: #fff; background: rgba(255,255,255,0.09); }
+.card { border: none; box-shadow: 0 1px 3px rgba(0,0,0,0.08); border-radius: 10px; }
+.stat-card { border-radius: 12px; color: #fff; padding: 1.25rem; }
+.stat-card h2 { margin: 0; font-weight: 700; }
+.badge-score { font-size: 0.9rem; }
+.table thead { background-color: #eef1f6; }
+@media (max-width: 991.98px) {
+	.app-brand { margin-right: 0; }
+	.app-nav-links { gap: 0; padding-top: 0.75rem; }
+	.account-area { align-items: flex-start; flex-direction: column; gap: 0.45rem; margin: 0.8rem 0 0.4rem; padding-top: 0.75rem; border-top: 1px solid rgba(255,255,255,0.1); }
+	.logout-link { padding-left: 0.45rem; }
+}

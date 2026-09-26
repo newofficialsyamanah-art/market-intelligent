@@ -1,0 +1,651 @@
+{
+  "pilot_ids": [
+    1165,
+    1166,
+    1167,
+    1168,
+    1169,
+    1170,
+    1171,
+    1172,
+    1173,
+    1174,
+    1175,
+    1176,
+    1177,
+    1178,
+    1179,
+    1180,
+    1181,
+    1182,
+    1183,
+    1184,
+    1185,
+    1186,
+    1187,
+    1188,
+    1189,
+    1190,
+    1191,
+    1192,
+    1193,
+    1194,
+    1195,
+    1196,
+    1198,
+    1199,
+    1200,
+    1201,
+    1202,
+    1203,
+    1204,
+    1205,
+    1206,
+    1207,
+    1208,
+    1209,
+    1210,
+    1211,
+    1212,
+    1213,
+    1214,
+    1215
+  ],
+  "baseline_metrics": {
+    "counts": {
+      "website": 0,
+      "domain": 0,
+      "phone": 0,
+      "email": 0,
+      "address": 0,
+      "city": 0,
+      "province": 0,
+      "employee_size": 0,
+      "instagram": 0,
+      "facebook": 0,
+      "linkedin": 0
+    },
+    "percentages": {
+      "website": 0.0,
+      "domain": 0.0,
+      "phone": 0.0,
+      "email": 0.0,
+      "address": 0.0,
+      "city": 0.0,
+      "province": 0.0,
+      "employee_size": 0.0,
+      "instagram": 0.0,
+      "facebook": 0.0,
+      "linkedin": 0.0
+    },
+    "total": 50
+  },
+  "live_result": {
+    "organizations_processed": 50,
+    "auto_accepted": 23,
+    "review_candidates": 0,
+    "no_data": 27,
+    "rejected": 0,
+    "website_found": 23,
+    "domain_found": 23,
+    "social_found": 16,
+    "phone_found": 9,
+    "email_found": 7,
+    "address_found": 0,
+    "employee_size_found": 0,
+    "errors": 0,
+    "retries": 0,
+    "cache_hits": 0,
+    "last_processed_id": 1215,
+    "elapsed_seconds": 45.68,
+    "details": [
+      {
+        "org_id": 1165,
+        "name": "3M INDONESIA, PT",
+        "decision": "NO_DATA",
+        "fields_updated": [],
+        "review_reasons": []
+      },
+      {
+        "org_id": 1166,
+        "name": "A & P INDUSTRY INDONESIA",
+        "decision": "NO_DATA",
+        "fields_updated": [],
+        "review_reasons": []
+      },
+      {
+        "org_id": 1167,
+        "name": "A JU ASIATEX, PT",
+        "decision": "NO_DATA",
+        "fields_updated": [],
+        "review_reasons": []
+      },
+      {
+        "org_id": 1168,
+        "name": "A VAN KAICK INDONESIA PT AVK",
+        "decision": "NO_DATA",
+        "fields_updated": [],
+        "review_reasons": []
+      },
+      {
+        "org_id": 1169,
+        "name": "A.W.FABER-CASTELL INDONESIA, PT",
+        "decision": "NO_DATA",
+        "fields_updated": [],
+        "review_reasons": []
+      },
+      {
+        "org_id": 1170,
+        "name": "AAMIN ADRIAN MEDICAL INDO",
+        "decision": "NO_DATA",
+        "fields_updated": [],
+        "review_reasons": []
+      },
+      {
+        "org_id": 1171,
+        "name": "AAN SURYANA",
+        "decision": "NO_DATA",
+        "fields_updated": [],
+        "review_reasons": []
+      },
+      {
+        "org_id": 1172,
+        "name": "AAS PASBER / SUPER PASBER",
+        "decision": "NO_DATA",
+        "fields_updated": [],
+        "review_reasons": []
+      },
+      {
+        "org_id": 1173,
+        "name": "ABADI DAN JAYA GARMINDO.PT",
+        "decision": "NO_DATA",
+        "fields_updated": [],
+        "review_reasons": []
+      },
+      {
+        "org_id": 1174,
+        "name": "ABADI MAJU INDAH JAYA, PT",
+        "decision": "NO_DATA",
+        "fields_updated": [],
+        "review_reasons": []
+      },
+      {
+        "org_id": 1175,
+        "name": "ABADI PLASTIK",
+        "decision": "AUTO_ACCEPT",
+        "fields_updated": [
+          "website",
+          "domain",
+          "phone",
+          "email"
+        ],
+        "review_reasons": []
+      },
+      {
+        "org_id": 1176,
+        "name": "ABASTA TECHNOLOGY APLICATIONS",
+        "decision": "AUTO_ACCEPT",
+        "fields_updated": [
+          "website",
+          "domain"
+        ],
+        "review_reasons": []
+      },
+      {
+        "org_id": 1177,
+        "name": "ABBOTT INDONESIA, PT",
+        "decision": "AUTO_ACCEPT",
+        "fields_updated": [
+          "website",
+          "domain",
+          "social_instagram",
+          "social_facebook",
+          "social_linkedin",
+          "description"
+        ],
+        "review_reasons": []
+      },
+      {
+        "org_id": 1178,
+        "name": "ABBTI PETANI SEJAHTERA NUSANTARA",
+        "decision": "NO_DATA",
+        "fields_updated": [],
+        "review_reasons": []
+      },
+      {
+        "org_id": 1179,
+        "name": "ABDI HYDROULIC",
+        "decision": "AUTO_ACCEPT",
+        "fields_updated": [
+          "website",
+          "domain",
+          "phone",
+          "email",
+          "social_instagram",
+          "social_facebook",
+          "social_linkedin",
+          "description"
+        ],
+        "review_reasons": []
+      },
+      {
+        "org_id": 1180,
+        "name": "ABE KOGYO INDONESIA, PT",
+        "decision": "NO_DATA",
+        "fields_updated": [],
+        "review_reasons": []
+      },
+      {
+        "org_id": 1181,
+        "name": "ABEBERSA PRATAMA, PT",
+        "decision": "NO_DATA",
+        "fields_updated": [],
+        "review_reasons": []
+      },
+      {
+        "org_id": 1182,
+        "name": "ABHYAKTA DHARMA YASA PERSERODA",
+        "decision": "NO_DATA",
+        "fields_updated": [],
+        "review_reasons": []
+      },
+      {
+        "org_id": 1183,
+        "name": "ABIMANYU SEKAR NUSANTARA, PT",
+        "decision": "AUTO_ACCEPT",
+        "fields_updated": [
+          "website",
+          "domain"
+        ],
+        "review_reasons": []
+      },
+      {
+        "org_id": 1184,
+        "name": "ABUYAMAS TIRTA SEJAHTERA, PT",
+        "decision": "NO_DATA",
+        "fields_updated": [],
+        "review_reasons": []
+      },
+      {
+        "org_id": 1185,
+        "name": "ABY PERKASA MANDIRI",
+        "decision": "NO_DATA",
+        "fields_updated": [],
+        "review_reasons": []
+      },
+      {
+        "org_id": 1186,
+        "name": "ABYAKTA MITRA ABADI",
+        "decision": "NO_DATA",
+        "fields_updated": [],
+        "review_reasons": []
+      },
+      {
+        "org_id": 1187,
+        "name": "ACE MOLD TECH, PT",
+        "decision": "AUTO_ACCEPT",
+        "fields_updated": [
+          "website",
+          "domain",
+          "phone",
+          "email",
+          "description"
+        ],
+        "review_reasons": []
+      },
+      {
+        "org_id": 1188,
+        "name": "ACE OLDFIELDS, PT",
+        "decision": "AUTO_ACCEPT",
+        "fields_updated": [
+          "website",
+          "domain",
+          "description"
+        ],
+        "review_reasons": []
+      },
+      {
+        "org_id": 1189,
+        "name": "ACEK TENDA BANDUNG, CV",
+        "decision": "AUTO_ACCEPT",
+        "fields_updated": [
+          "website",
+          "domain",
+          "description"
+        ],
+        "review_reasons": []
+      },
+      {
+        "org_id": 1190,
+        "name": "ACHINTYA KAYLA ABADI, PT",
+        "decision": "AUTO_ACCEPT",
+        "fields_updated": [
+          "website",
+          "domain"
+        ],
+        "review_reasons": []
+      },
+      {
+        "org_id": 1191,
+        "name": "ACHTECH TEKNIK MANDIRI",
+        "decision": "NO_DATA",
+        "fields_updated": [],
+        "review_reasons": []
+      },
+      {
+        "org_id": 1192,
+        "name": "ACI HM ENOCH",
+        "decision": "NO_DATA",
+        "fields_updated": [],
+        "review_reasons": []
+      },
+      {
+        "org_id": 1193,
+        "name": "ACT METAL INDONESIA, PT",
+        "decision": "NO_DATA",
+        "fields_updated": [],
+        "review_reasons": []
+      },
+      {
+        "org_id": 1194,
+        "name": "ACTA DIURNA",
+        "decision": "AUTO_ACCEPT",
+        "fields_updated": [
+          "website",
+          "domain"
+        ],
+        "review_reasons": []
+      },
+      {
+        "org_id": 1195,
+        "name": "ACUAN KAPAS UTAMA, PT",
+        "decision": "AUTO_ACCEPT",
+        "fields_updated": [
+          "website",
+          "domain",
+          "social_instagram",
+          "description"
+        ],
+        "review_reasons": []
+      },
+      {
+        "org_id": 1196,
+        "name": "ADA BARU METAL PERKASA, PT",
+        "decision": "NO_DATA",
+        "fields_updated": [],
+        "review_reasons": []
+      },
+      {
+        "org_id": 1198,
+        "name": "ADAMTEX",
+        "decision": "NO_DATA",
+        "fields_updated": [],
+        "review_reasons": []
+      },
+      {
+        "org_id": 1199,
+        "name": "ADARA SEJAHTERA LESTARI",
+        "decision": "AUTO_ACCEPT",
+        "fields_updated": [
+          "website",
+          "domain",
+          "phone",
+          "email",
+          "description"
+        ],
+        "review_reasons": []
+      },
+      {
+        "org_id": 1200,
+        "name": "ADD VANTAGE TEKNOLOGI",
+        "decision": "NO_DATA",
+        "fields_updated": [],
+        "review_reasons": []
+      },
+      {
+        "org_id": 1201,
+        "name": "ADE ABUBAKAR",
+        "decision": "NO_DATA",
+        "fields_updated": [],
+        "review_reasons": []
+      },
+      {
+        "org_id": 1202,
+        "name": "ADEHA METALINDO, PT",
+        "decision": "NO_DATA",
+        "fields_updated": [],
+        "review_reasons": []
+      },
+      {
+        "org_id": 1203,
+        "name": "ADELPHA PERSADA KOSMETINDO, PT",
+        "decision": "NO_DATA",
+        "fields_updated": [],
+        "review_reasons": []
+      },
+      {
+        "org_id": 1204,
+        "name": "ADEV NATURAL INDONESIA, PT",
+        "decision": "AUTO_ACCEPT",
+        "fields_updated": [
+          "website",
+          "domain",
+          "phone",
+          "email",
+          "social_instagram",
+          "social_facebook",
+          "social_linkedin",
+          "description"
+        ],
+        "review_reasons": []
+      },
+      {
+        "org_id": 1205,
+        "name": "ADHARCO JAYA SELARAS, PT",
+        "decision": "NO_DATA",
+        "fields_updated": [],
+        "review_reasons": []
+      },
+      {
+        "org_id": 1206,
+        "name": "ADHI CHANDRA JAYA, PT",
+        "decision": "AUTO_ACCEPT",
+        "fields_updated": [
+          "website",
+          "domain",
+          "phone",
+          "social_linkedin",
+          "description"
+        ],
+        "review_reasons": []
+      },
+      {
+        "org_id": 1207,
+        "name": "ADHI KARYA PERKASA, CV",
+        "decision": "AUTO_ACCEPT",
+        "fields_updated": [
+          "website",
+          "domain",
+          "social_instagram",
+          "social_facebook",
+          "description"
+        ],
+        "review_reasons": []
+      },
+      {
+        "org_id": 1208,
+        "name": "ADHI MITRA DINAMIKA, PT",
+        "decision": "AUTO_ACCEPT",
+        "fields_updated": [
+          "website",
+          "domain",
+          "description"
+        ],
+        "review_reasons": []
+      },
+      {
+        "org_id": 1209,
+        "name": "ADHI PERSADA BETON, PT",
+        "decision": "AUTO_ACCEPT",
+        "fields_updated": [
+          "website",
+          "domain",
+          "description"
+        ],
+        "review_reasons": []
+      },
+      {
+        "org_id": 1210,
+        "name": "ADHI PETROGAS SARANA, PT",
+        "decision": "AUTO_ACCEPT",
+        "fields_updated": [
+          "website",
+          "domain",
+          "description"
+        ],
+        "review_reasons": []
+      },
+      {
+        "org_id": 1211,
+        "name": "ADHI TEKNO MANDIRI",
+        "decision": "AUTO_ACCEPT",
+        "fields_updated": [
+          "website",
+          "domain",
+          "phone",
+          "social_instagram"
+        ],
+        "review_reasons": []
+      },
+      {
+        "org_id": 1212,
+        "name": "ADHIKARYA PERKASA, PT",
+        "decision": "AUTO_ACCEPT",
+        "fields_updated": [
+          "website",
+          "domain",
+          "social_instagram",
+          "social_facebook",
+          "description"
+        ],
+        "review_reasons": []
+      },
+      {
+        "org_id": 1213,
+        "name": "ADHIMIX PCI INDONESIA, PT",
+        "decision": "AUTO_ACCEPT",
+        "fields_updated": [
+          "website",
+          "domain",
+          "phone",
+          "email"
+        ],
+        "review_reasons": []
+      },
+      {
+        "org_id": 1214,
+        "name": "ADHIMIX PRECAST INDONESIA, PT",
+        "decision": "AUTO_ACCEPT",
+        "fields_updated": [
+          "website",
+          "domain",
+          "phone",
+          "email"
+        ],
+        "review_reasons": []
+      },
+      {
+        "org_id": 1215,
+        "name": "ADHIMIX RMC INDONESIA",
+        "decision": "AUTO_ACCEPT",
+        "fields_updated": [
+          "website",
+          "domain",
+          "email"
+        ],
+        "review_reasons": []
+      }
+    ]
+  },
+  "post_metrics": {
+    "counts": {
+      "website": 23,
+      "domain": 23,
+      "phone": 9,
+      "email": 7,
+      "address": 0,
+      "city": 0,
+      "province": 0,
+      "employee_size": 0,
+      "instagram": 7,
+      "facebook": 5,
+      "linkedin": 4
+    },
+    "percentages": {
+      "website": 46.0,
+      "domain": 46.0,
+      "phone": 18.0,
+      "email": 14.0,
+      "address": 0.0,
+      "city": 0.0,
+      "province": 0.0,
+      "employee_size": 0.0,
+      "instagram": 14.0,
+      "facebook": 10.0,
+      "linkedin": 8.0
+    },
+    "total": 50
+  },
+  "deltas": {
+    "website": {
+      "delta_count": 23,
+      "delta_pct": 46.0
+    },
+    "domain": {
+      "delta_count": 23,
+      "delta_pct": 46.0
+    },
+    "phone": {
+      "delta_count": 9,
+      "delta_pct": 18.0
+    },
+    "email": {
+      "delta_count": 7,
+      "delta_pct": 14.0
+    },
+    "address": {
+      "delta_count": 0,
+      "delta_pct": 0.0
+    },
+    "city": {
+      "delta_count": 0,
+      "delta_pct": 0.0
+    },
+    "province": {
+      "delta_count": 0,
+      "delta_pct": 0.0
+    },
+    "employee_size": {
+      "delta_count": 0,
+      "delta_pct": 0.0
+    },
+    "instagram": {
+      "delta_count": 7,
+      "delta_pct": 14.0
+    },
+    "facebook": {
+      "delta_count": 5,
+      "delta_pct": 10.0
+    },
+    "linkedin": {
+      "delta_count": 4,
+      "delta_pct": 8.0
+    }
+  },
+  "invariants": {
+    "organizations": 8474,
+    "prospects": 17152,
+    "duplicate_candidates": 408,
+    "new_review_candidates": 0
+  }
+}

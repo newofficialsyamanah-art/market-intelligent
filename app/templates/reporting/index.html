@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Reporting{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h3>Reporting</h3>
+  <form method="post" action="{{ url_for('reporting.generate_report') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button class="btn btn-primary btn-sm">Buat Laporan Market Intelligence (AI)</button>
+  </form>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-3"><div class="stat-card" style="background:#4361ee;"><div class="small">Total Prospek</div><h2>{{ total_prospects }}</h2></div></div>
+  <div class="col-md-3"><div class="stat-card" style="background:#2a9d8f;"><div class="small">Total Campaign</div><h2>{{ total_campaigns }}</h2></div></div>
+  <div class="col-md-3"><div class="stat-card" style="background:#f77f00;"><div class="small">Data Mentah</div><h2>{{ total_raw }}</h2></div></div>
+  <div class="col-md-3"><div class="stat-card" style="background:#e63946;"><div class="small">Rata-rata Skor</div><h2>{{ avg_score }}</h2></div></div>
+</div>
+
+<div class="card p-3 mb-4">
+  <h6>Melihat Dashboard — Distribusi Industri</h6>
+  <canvas id="industryChart"></canvas>
+</div>
+
+<h5>Laporan Tersimpan</h5>
+<div class="table-responsive">
+<table class="table table-sm bg-white">
+  <thead><tr><th>Judul</th><th>Tipe</th><th>Waktu</th><th></th></tr></thead>
+  <tbody>
+  {% for r in reports %}
+    <tr>
+      <td>{{ r.title }}</td>
+      <td>{{ r.report_type }}</td>
+      <td>{{ r.created_at }}</td>
+      <td>
+        <a class="btn btn-sm btn-outline-primary" href="{{ url_for('reporting.view_report', rid=r.id) }}">Lihat</a>
+        <a class="btn btn-sm btn-outline-success" href="{{ url_for('reporting.export_report', rid=r.id) }}">Export</a>
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}
+{% block scripts %}
+<script type="application/json" id="reporting-chart-data">
+{{ {
+  "labels": industry_dist.keys()|list,
+  "data": industry_dist.values()|list
+}|tojson }}
+</script>
+<script>
+const reportingChartData = JSON.parse(document.getElementById('reporting-chart-data').textContent);
+
+new Chart(document.getElementById('industryChart'), {
+  type: 'bar',
+  data: { labels: reportingChartData.labels, datasets: [{ label: 'Jumlah', data: reportingChartData.data, backgroundColor: '#4361ee' }] },
+  options: { plugins: { legend: { display: false } } }
+});
+</script>
+{% endblock %}

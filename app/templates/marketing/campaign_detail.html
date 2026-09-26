@@ -1,0 +1,242 @@
+{% extends "base.html" %}
+
+{% block title %}Campaign: {{ campaign.name }} - Market Intelligence{% endblock %}
+
+{% block content %}
+<div class="row align-items-center mb-4">
+  <div class="col-md-7">
+    <div class="d-flex align-items-center gap-2 mb-1">
+      <a href="{{ url_for('marketing.campaigns_index') }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-left"></i></a>
+      <h2 class="mb-0 fw-bold text-dark">{{ campaign.name }}</h2>
+      <span class="badge {% if campaign.status == 'active' %}bg-success{% elif campaign.status == 'ready' %}bg-info{% else %}bg-secondary{% endif %}">
+        {{ campaign.status|upper }}
+      </span>
+    </div>
+    <p class="text-secondary mb-0">
+      Produk: <strong>{{ campaign.product or 'Jersey / Custom Teamwear' }}</strong>
+      {% if campaign.start_date %} | Periode: {{ campaign.start_date.strftime('%d %b %Y') }} s/d {{ campaign.end_date.strftime('%d %b %Y') if campaign.end_date else 'Selesai' }}{% endif %}
+      {% if campaign.channel %} | Channel: {{ campaign.channel }}{% endif %}
+    </p>
+  </div>
+  <div class="col-md-5 text-md-end mt-3 mt-md-0 d-flex gap-2 justify-content-md-end">
+    <a href="{{ url_for('marketing.export_campaign', cid=campaign.id) }}" class="btn btn-outline-success">
+      <i class="bi bi-file-earmark-spreadsheet me-1"></i> Export Target (CSV)
+    </a>
+    <a href="{{ url_for('marketing.edit_campaign', cid=campaign.id) }}" class="btn btn-outline-primary">
+      <i class="bi bi-pencil me-1"></i> Edit Campaign
+    </a>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTargetModal">
+      <i class="bi bi-plus-circle me-1"></i> Tambah Target
+    </button>
+  </div>
+</div>
+
+<!-- Intelligence KPI Cards -->
+<div class="row g-3 mb-4">
+  <div class="col-md-3">
+    <div class="card border-0 shadow-sm p-3 border-start border-4 border-primary">
+      <div class="text-muted small">Total Target Master Orgs</div>
+      <h3 class="fw-bold mb-0 text-dark">{{ total_targets }}</h3>
+      <div class="small text-muted mt-1">Akun Master Terhubung</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card border-0 shadow-sm p-3 border-start border-4 border-danger">
+      <div class="text-muted small">High Product Fit (Score >= 80)</div>
+      <h3 class="fw-bold mb-0 text-danger">{{ high_fit_count }}</h3>
+      <div class="small text-muted mt-1">Peluang Konversi Tinggi</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card border-0 shadow-sm p-3 border-start border-4 border-success">
+      <div class="text-muted small">Kontak Langsung Tersedia</div>
+      <h3 class="fw-bold mb-0 text-success">{{ contactable_count }}</h3>
+      <div class="small text-muted mt-1">Email / Telepon Terverifikasi</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card border-0 shadow-sm p-3 border-start border-4 border-info">
+      <div class="text-muted small">Keterkaitan Event & Olahraga</div>
+      <h3 class="fw-bold mb-0 text-info">{{ event_linked_count }} Event / {{ sport_linked_count }} Sport</h3>
+      <div class="small text-muted mt-1">Partisipasi Aktif</div>
+    </div>
+  </div>
+</div>
+
+<!-- Deskripsi Campaign -->
+{% if campaign.description or campaign.notes %}
+<div class="card border-0 shadow-sm mb-4 p-3 bg-light">
+  <div class="row">
+    {% if campaign.description %}
+    <div class="col-md-7">
+      <div class="fw-bold text-dark mb-1"><i class="bi bi-info-circle me-1 text-primary"></i> Deskripsi & Tujuan Campaign:</div>
+      <p class="text-secondary mb-0 small">{{ campaign.description }}</p>
+    </div>
+    {% endif %}
+    {% if campaign.notes %}
+    <div class="col-md-5">
+      <div class="fw-bold text-dark mb-1"><i class="bi bi-sticky me-1 text-warning"></i> Catatan Internal:</div>
+      <p class="text-secondary mb-0 small">{{ campaign.notes }}</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+
+<!-- Targets List Table -->
+<div class="card border-0 shadow-sm rounded-3">
+  <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+    <h5 class="mb-0 fw-bold text-dark">
+      <i class="bi bi-crosshair me-2 text-primary"></i>Target Master Organizations Terhubung ({{ targets|length }})
+    </h5>
+    <div class="d-flex gap-2">
+      <a href="{{ url_for('marketing.targets') }}" class="btn btn-sm btn-outline-secondary">
+        <i class="bi bi-search me-1"></i> Buka Target Explorer
+      </a>
+    </div>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Nama Organisasi & Domain</th>
+          <th>Tipe & Subtipe</th>
+          <th>AI Product Fit (Jersey)</th>
+          <th>Kontak & Media Sosial</th>
+          <th>Aktivitas Event & Sinyal</th>
+          <th>Status Target</th>
+          <th class="text-end">Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if targets %}
+          {% for t in targets %}
+          {% set org = t.organization %}
+          {% if org %}
+          <tr>
+            <td>
+              <a href="{{ url_for('market_analysis.org_detail', org_id=org.id) }}" class="fw-bold text-dark text-decoration-none fs-6">
+                {{ org.name }}
+              </a>
+              {% if org.domain and org.domain != 'nan' %}
+                <div class="text-muted small"><i class="bi bi-globe2 me-1"></i>{{ org.domain }}</div>
+              {% endif %}
+              <div class="text-muted small"><i class="bi bi-geo-alt me-1"></i>{{ org.city or '' }} {{ org.province or '' }}</div>
+            </td>
+            <td>
+              <span class="badge bg-light text-dark border">{{ org.organization_type or 'Perusahaan' }}</span>
+              {% if org.organization_subtype %}
+                <div class="small text-secondary mt-1">{{ org.organization_subtype }}</div>
+              {% endif %}
+              {% if org.sport %}
+                <span class="badge bg-info-subtle text-info border border-info-subtle mt-1"><i class="bi bi-trophy me-1"></i>{{ org.sport }}</span>
+              {% endif %}
+            </td>
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                {% if (t.opportunity_score_snapshot or org.opportunity_score or 0) >= 80 %}
+                  <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1">Tier A (Score: {{ t.opportunity_score_snapshot or org.opportunity_score }})</span>
+                {% elif (t.opportunity_score_snapshot or org.opportunity_score or 0) >= 65 %}
+                  <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-1">Tier B (Score: {{ t.opportunity_score_snapshot or org.opportunity_score }})</span>
+                {% else %}
+                  <span class="badge bg-info-subtle text-info border border-info-subtle px-2 py-1">Tier C (Score: {{ t.opportunity_score_snapshot or org.opportunity_score }})</span>
+                {% endif %}
+              </div>
+              <div class="small fw-semibold text-dark mt-1">{{ t.product_fit_snapshot or org.product_fit or 'Jersey Custom' }}</div>
+              {% if org.ai_reasoning %}
+                <div class="text-muted small mt-1" style="max-width: 250px;" title="{{ org.ai_reasoning }}">
+                  <i class="bi bi-robot text-primary me-1"></i>{{ org.ai_reasoning[:80] }}...
+                </div>
+              {% endif %}
+            </td>
+            <td>
+              <div class="d-flex gap-2">
+                {% if org.email and org.email != 'nan' %}
+                  <a href="mailto:{{ org.email }}" class="text-info fs-6" title="{{ org.email }}"><i class="bi bi-envelope-fill"></i></a>
+                {% else %}
+                  <span class="text-muted opacity-25 fs-6"><i class="bi bi-envelope"></i></span>
+                {% endif %}
+                {% if org.phone and org.phone != 'nan' %}
+                  <a href="tel:{{ org.phone }}" class="text-success fs-6" title="{{ org.phone }}"><i class="bi bi-telephone-fill"></i></a>
+                {% else %}
+                  <span class="text-muted opacity-25 fs-6"><i class="bi bi-telephone"></i></span>
+                {% endif %}
+                {% if org.website and org.website != 'nan' %}
+                  <a href="{{ org.website }}" target="_blank" rel="noopener" class="text-primary fs-6" title="{{ org.website }}"><i class="bi bi-globe"></i></a>
+                {% else %}
+                  <span class="text-muted opacity-25 fs-6"><i class="bi bi-globe"></i></span>
+                {% endif %}
+              </div>
+            </td>
+            <td>
+              {% if org.participations %}
+                <span class="badge bg-info-subtle text-info border border-info-subtle">
+                  <i class="bi bi-calendar-event me-1"></i>{{ org.participations|length }} Event Terhubung
+                </span>
+              {% else %}
+                <span class="text-muted small">Belum ada event</span>
+              {% endif %}
+            </td>
+            <td>
+              <form method="post" action="{{ url_for('marketing.campaign_update_target_status', cid=campaign.id, org_id=org.id) }}" class="d-inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
+                  <option value="targeted" {% if t.status == 'targeted' %}selected{% endif %}>Targeted</option>
+                  <option value="contacted" {% if t.status == 'contacted' %}selected{% endif %}>Contacted</option>
+                  <option value="responded" {% if t.status == 'responded' %}selected{% endif %}>Responded</option>
+                  <option value="converted" {% if t.status == 'converted' %}selected{% endif %}>Converted</option>
+                  <option value="unresponsive" {% if t.status == 'unresponsive' %}selected{% endif %}>Unresponsive</option>
+                </select>
+              </form>
+            </td>
+            <td class="text-end">
+              <form method="post" action="{{ url_for('marketing.campaign_remove_target', cid=campaign.id, org_id=org.id) }}" class="d-inline" onsubmit="return confirm('Hapus organisasi ini dari campaign?');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-sm btn-outline-danger" title="Hapus dari Campaign">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </form>
+            </td>
+          </tr>
+          {% endif %}
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="7" class="text-center py-5 text-muted">
+              <i class="bi bi-crosshair fs-1 d-block mb-2"></i>
+              Belum ada Master Organization yang ditambahkan ke campaign ini.<br>
+              Gunakan tombol <strong>Tambah Target</strong> atau pilih organisasi dari <strong>Target Explorer</strong>.
+            </td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal Tambah Target -->
+<div class="modal fade" id="addTargetModal" tabindex="-1" aria-labelledby="addTargetModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="{{ url_for('marketing.campaign_add_targets', cid=campaign.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold" id="addTargetModalLabel"><i class="bi bi-plus-circle me-1 text-primary"></i> Tambah Target ke Campaign</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p class="text-muted small">Masukkan satu atau lebih ID Master Organization (pisahkan dengan koma), atau pilih langsung dari halaman Target Explorer.</p>
+          <div class="mb-3">
+            <label class="form-label fw-bold">ID Organisasi Master</label>
+            <input type="text" name="org_ids" class="form-control" placeholder="Contoh: 101, 102, 105" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="submit" class="btn btn-primary">Tambahkan Target</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

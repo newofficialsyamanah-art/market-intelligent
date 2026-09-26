@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}{{ report.title }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between">
+  <h3>{{ report.title }}</h3>
+  <a class="btn btn-outline-success btn-sm" href="{{ url_for('reporting.export_report', rid=report.id) }}">Export CSV</a>
+</div>
+<p class="text-muted">{{ report.created_at }}</p>
+<div class="card p-3 mb-3">
+  <h6>Ringkasan Eksekutif (AI)</h6>
+  <p>{{ content.ai_summary }}</p>
+</div>
+<div class="card p-3">
+  <h6>Data Pendukung</h6>
+  <pre class="small bg-light p-2">{{ content.data | tojson(indent=2) }}</pre>
+</div>
+{% endblock %}

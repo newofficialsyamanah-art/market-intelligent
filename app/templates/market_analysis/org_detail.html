@@ -1,0 +1,410 @@
+{% extends "base.html" %}
+{% block title %}{{ org.name }} - Company Intelligence Detail{% endblock %}
+{% block content %}
+<div class="mb-3">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb small">
+      <li class="breadcrumb-item"><a href="{{ url_for('market_analysis.index') }}">Market Analysis</a></li>
+      <li class="breadcrumb-item"><a href="{{ url_for('market_analysis.explorer') }}">Company Explorer</a></li>
+      <li class="breadcrumb-item active" aria-current="page">{{ org.name }}</li>
+    </ol>
+  </nav>
+</div>
+
+<!-- Header Card -->
+<div class="card border-0 shadow-sm p-4 mb-4">
+  <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+    <div>
+      <div class="d-flex align-items-center gap-2 mb-1">
+        <span class="badge bg-primary"><i class="bi bi-shield-check me-1"></i> Master Organization #{{ org.id }}</span>
+        <span class="badge bg-secondary-subtle text-secondary-emphasis">{{ org.organization_type or 'Perusahaan' }}</span>
+        <span class="badge {% if org.verification_status == 'verified' %}bg-success{% else %}bg-light text-muted border{% endif %}">
+          {{ org.verification_status|title }}
+        </span>
+      </div>
+      <h2 class="fw-bold mb-1">{{ org.name }}</h2>
+      <div class="d-flex flex-wrap gap-3 text-muted small">
+        {% if org.normalized_name %}
+        <span><i class="bi bi-fingerprint"></i> Normalisasi: <code>{{ org.normalized_name }}</code></span>
+        {% endif %}
+        {% if org.domain %}
+        <span><i class="bi bi-globe text-primary"></i> <a href="http://{{ org.domain }}" target="_blank" rel="noopener" class="text-decoration-none">{{ org.domain }}</a></span>
+        {% endif %}
+        <span><i class="bi bi-calendar-event"></i> Terakhir Diperbarui: {{ org.data_freshness.strftime('%d %b %Y, %H:%M') if org.data_freshness else '-' }}</span>
+      </div>
+    </div>
+
+    <!-- Opportunity Score Callout -->
+    <div class="text-end bg-light p-3 rounded border text-center" style="min-width: 140px;">
+      <span class="text-muted small text-uppercase fw-semibold d-block">Opportunity Score</span>
+      <div class="display-6 fw-bold {% if org.opportunity_score >= 80 %}text-danger{% elif org.opportunity_score >= 65 %}text-warning{% elif org.opportunity_score >= 50 %}text-primary{% else %}text-secondary{% endif %}">
+        {{ org.opportunity_score or 0 }}
+      </div>
+      <span class="badge {% if org.opportunity_score >= 80 %}bg-danger{% elif org.opportunity_score >= 65 %}bg-warning text-dark{% elif org.opportunity_score >= 50 %}bg-primary{% else %}bg-secondary{% endif %}">
+        {{ org.priority_tier or 'Unranked' }}
+      </span>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4 mb-4">
+  <!-- Left Column: Master Profile & Contacts -->
+  <div class="col-lg-7">
+    <div class="card border-0 shadow-sm p-4 h-100">
+      <h5 class="fw-bold mb-3 pb-2 border-bottom"><i class="bi bi-info-circle text-primary me-2"></i>Informasi Entitas & Kontak</h5>
+
+      <dl class="row mb-0">
+        <dt class="col-sm-4 text-muted">Sektor Industri</dt>
+        <dd class="col-sm-8 fw-semibold">
+          <span class="badge bg-secondary-subtle text-secondary-emphasis fs-6">{{ org.industry or 'OTHER' }}</span>
+        </dd>
+
+        <dt class="col-sm-4 text-muted">Wilayah & Kota</dt>
+        <dd class="col-sm-8">
+          <strong>{{ org.city or '-' }}</strong>, {{ org.province or '-' }}
+        </dd>
+
+        <dt class="col-sm-4 text-muted">Alamat Lengkap</dt>
+        <dd class="col-sm-8">{{ org.address or '-' }}</dd>
+
+        <dt class="col-sm-4 text-muted">Telepon Kantor</dt>
+        <dd class="col-sm-8">
+          {% if org.phone %}
+          <a href="tel:{{ org.phone }}" class="text-decoration-none fw-semibold"><i class="bi bi-telephone me-1 text-success"></i>{{ org.phone }}</a>
+          {% else %}
+          <span class="text-muted">-</span>
+          {% endif %}
+        </dd>
+
+        <dt class="col-sm-4 text-muted">Corporate Email</dt>
+        <dd class="col-sm-8">
+          {% if org.email %}
+          <a href="mailto:{{ org.email }}" class="text-decoration-none fw-semibold"><i class="bi bi-envelope me-1 text-info"></i>{{ org.email }}</a>
+          {% else %}
+          <span class="text-muted">-</span>
+          {% endif %}
+        </dd>
+
+        <dt class="col-sm-4 text-muted">Website Resmi</dt>
+        <dd class="col-sm-8">
+          {% if org.website %}
+          <a href="{{ org.website if org.website.startswith('http') else 'http://' + org.website }}" target="_blank" rel="noopener" class="text-decoration-none">
+            <i class="bi bi-box-arrow-up-right me-1 text-primary"></i>{{ org.website }}
+          </a>
+          {% else %}
+          <span class="text-muted">-</span>
+          {% endif %}
+        </dd>
+
+        <dt class="col-sm-4 text-muted">Instagram</dt>
+        <dd class="col-sm-8">
+          {% if social and social.instagram %}
+          <a href="{{ social.instagram if social.instagram.startswith('http') else 'https://instagram.com/' + social.instagram.lstrip('@') }}" target="_blank" rel="noopener" class="text-decoration-none fw-semibold text-danger">
+            <i class="bi bi-instagram me-1"></i>{{ social.instagram }}
+          </a>
+          {% else %}
+          <span class="text-muted">-</span>
+          {% endif %}
+        </dd>
+
+        <dt class="col-sm-4 text-muted">Facebook</dt>
+        <dd class="col-sm-8">
+          {% if social and social.facebook %}
+          <a href="{{ social.facebook if social.facebook.startswith('http') else 'https://facebook.com/' + social.facebook }}" target="_blank" rel="noopener" class="text-decoration-none fw-semibold text-primary">
+            <i class="bi bi-facebook me-1"></i>{{ social.facebook }}
+          </a>
+          {% else %}
+          <span class="text-muted">-</span>
+          {% endif %}
+        </dd>
+
+        <dt class="col-sm-4 text-muted">LinkedIn</dt>
+        <dd class="col-sm-8">
+          {% if social and social.linkedin %}
+          <a href="{{ social.linkedin if social.linkedin.startswith('http') else 'https://linkedin.com/' + social.linkedin }}" target="_blank" rel="noopener" class="text-decoration-none fw-semibold text-primary-emphasis">
+            <i class="bi bi-linkedin me-1"></i>{{ social.linkedin }}
+          </a>
+          {% else %}
+          <span class="text-muted">-</span>
+          {% endif %}
+        </dd>
+
+        <dt class="col-sm-4 text-muted">Estimasi Karyawan</dt>
+        <dd class="col-sm-8">{{ org.employee_size or '-' }}</dd>
+
+        <dt class="col-sm-4 text-muted">Deskripsi Singkat</dt>
+        <dd class="col-sm-8 text-secondary">{{ org.description or '-' }}</dd>
+      </dl>
+    </div>
+  </div>
+
+  <!-- Right Column: Product-Fit & Intelligence Assessment -->
+  <div class="col-lg-5">
+    <div class="card border-0 shadow-sm p-4 h-100">
+      <h5 class="fw-bold mb-3 pb-2 border-bottom"><i class="bi bi-stars text-warning me-2"></i>Product-Fit & Intelligence</h5>
+
+      <div class="mb-4">
+        <label class="text-muted small fw-semibold text-uppercase d-block mb-1">Rekomendasi Produk Merchandise / Seragam</label>
+        {% if org.product_fit %}
+        <div class="p-3 bg-primary-subtle text-primary-emphasis rounded border border-primary-subtle fw-semibold">
+          <i class="bi bi-bag-check me-2 fs-5"></i>{{ org.product_fit }}
+        </div>
+        {% else %}
+        <div class="p-3 bg-light text-muted rounded">Belum ada rekomendasi produk spesifik.</div>
+        {% endif %}
+      </div>
+
+      <div class="mb-4">
+        <label class="text-muted small fw-semibold text-uppercase d-block mb-2">Kelengkapan Kanal Kontak</label>
+        <div class="d-flex flex-wrap gap-2">
+          <span class="badge {% if org.phone %}bg-success{% else %}bg-secondary text-white opacity-50{% endif %} p-2">
+            <i class="bi bi-telephone-fill me-1"></i> Telepon: {{ 'Ada' if org.phone else 'Kosong' }}
+          </span>
+          <span class="badge {% if org.email %}bg-info text-dark{% else %}bg-secondary text-white opacity-50{% endif %} p-2">
+            <i class="bi bi-envelope-fill me-1"></i> Email: {{ 'Ada' if org.email else 'Kosong' }}
+          </span>
+          <span class="badge {% if org.domain %}bg-primary{% else %}bg-secondary text-white opacity-50{% endif %} p-2">
+            <i class="bi bi-globe me-1"></i> Domain: {{ 'Ada' if org.domain else 'Kosong' }}
+          </span>
+          {% if social and (social.instagram or social.facebook or social.linkedin) %}
+          <span class="badge text-white p-2" style="background-color: #8b5cf6;">
+            <i class="bi bi-share me-1"></i> Media Sosial: Ada
+          </span>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="p-3 bg-light rounded border small">
+        <div class="d-flex justify-content-between mb-1">
+          <span class="text-muted">Compatibility Layer:</span>
+          <span class="fw-bold">{{ legacy_prospects_count }} Prospek terhubung</span>
+        </div>
+        <div class="d-flex justify-content-between">
+          <span class="text-muted">Tipe Sumber Master:</span>
+          <span class="badge bg-secondary">{{ org.source_type or 'bps_upload' }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Event-Based Intelligence (Phase 6.3) -->
+<div class="card border-0 shadow-sm p-4 mb-4">
+  <h5 class="fw-bold mb-3 pb-2 border-bottom d-flex justify-content-between align-items-center">
+    <span><i class="bi bi-calendar-event text-primary me-2"></i>Partisipasi Event B2B & Intelijen (F6.3)</span>
+    <span class="badge {% if participations %}bg-primary{% else %}bg-secondary{% endif %}">
+      {{ participations|length }} Partisipasi
+    </span>
+  </h5>
+
+  {% if participations %}
+  <div class="table-responsive">
+    <table class="table table-sm table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Nama Event & Tipe</th>
+          <th>Peran (Role)</th>
+          <th>Lokasi / Venue</th>
+          <th>Jadwal Pelaksanaan</th>
+          <th>Booth</th>
+          <th>Relevansi Event</th>
+          <th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for part in participations %}
+        <tr>
+          <td>
+            <div class="fw-bold text-dark">
+              {% if part.event_id %}
+              <a href="{{ url_for('events.detail', event_id=part.event_id) }}" class="text-decoration-none">
+                {{ part.event_name }} <i class="bi bi-box-arrow-up-right small"></i>
+              </a>
+              {% else %}
+              {{ part.event_name }}
+              {% endif %}
+            </div>
+            <small class="text-muted">{{ part.event_type }}</small>
+          </td>
+          <td>
+            <span class="badge {% if part.role == 'organizer' %}bg-dark{% elif part.role == 'sponsor' %}bg-warning text-dark{% elif part.role == 'exhibitor' %}bg-primary{% elif part.role == 'speaker' %}bg-success{% else %}bg-info text-dark{% endif %} text-uppercase">
+              <i class="bi bi-person-badge me-1"></i>{{ part.role }}
+            </span>
+          </td>
+          <td>
+            <div><i class="bi bi-geo-alt text-danger me-1"></i>{{ part.city or '-' }}, {{ part.province or '-' }}</div>
+            <small class="text-muted">{{ part.venue or '-' }}</small>
+          </td>
+          <td>
+            <small class="font-monospace">
+              {% if part.start_date %}
+              {{ part.start_date.strftime('%d %b %Y') }}
+              {% if part.end_date and part.end_date != part.start_date %} - {{ part.end_date.strftime('%d %b %Y') }}{% endif %}
+              {% else %}
+              -
+              {% endif %}
+            </small>
+          </td>
+          <td>
+            {% if part.booth_number %}
+            <span class="badge bg-light text-dark border font-monospace">{{ part.booth_number }}</span>
+            {% else %}
+            <span class="text-muted">-</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if part.relevance_score >= 80 %}
+            <span class="badge bg-danger">HIGH ({{ part.relevance_score }})</span>
+            {% elif part.relevance_score >= 50 %}
+            <span class="badge bg-warning text-dark">MEDIUM ({{ part.relevance_score }})</span>
+            {% elif part.relevance_score > 0 %}
+            <span class="badge bg-secondary">LOW ({{ part.relevance_score }})</span>
+            {% else %}
+            <span class="badge bg-light text-muted border">-</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if part.event_id %}
+            <a href="{{ url_for('events.detail', event_id=part.event_id) }}" class="btn btn-sm btn-outline-primary">
+              <i class="bi bi-eye"></i> Detail Event
+            </a>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="text-muted small mb-0"><i class="bi bi-info-circle me-1"></i>Entitas ini belum tercatat berpartisipasi dalam event expo/konferensi terverifikasi.</p>
+  {% endif %}
+</div>
+
+<!-- Granular Field-Level Provenance (Phase 4.5) -->
+{% if field_provenance %}
+<div class="card border-0 shadow-sm p-4 mb-4">
+  <h5 class="fw-bold mb-3 pb-2 border-bottom d-flex justify-content-between align-items-center">
+    <span><i class="bi bi-patch-check-fill text-success me-2"></i>Granular Field-Level Provenance & Verification</span>
+    <span class="badge bg-success-subtle text-success-emphasis border border-success-subtle">{{ field_provenance|length }} field terverifikasi</span>
+  </h5>
+  <div class="table-responsive">
+    <table class="table table-sm table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Field</th>
+          <th>Nilai Intelijen</th>
+          <th>Tingkat / Sumber Data</th>
+          <th>URL Bukti Sumber</th>
+          <th>Status / Confidence</th>
+          <th>Waktu Ditemukan</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for field_key, f_data in field_provenance.items() %}
+        <tr>
+          <td class="fw-bold text-capitalize"><code>{{ field_key }}</code></td>
+          <td class="fw-semibold text-dark">{{ f_data.value }}</td>
+          <td><span class="badge bg-primary-subtle text-primary-emphasis">{{ f_data.source }}</span></td>
+          <td>
+            {% if f_data.source_url %}
+            <a href="{{ f_data.source_url }}" target="_blank" rel="noopener" class="text-decoration-none small">
+              <i class="bi bi-box-arrow-up-right me-1"></i>{{ f_data.source_url[:40] }}...
+            </a>
+            {% else %}
+            <span class="text-muted">-</span>
+            {% endif %}
+          </td>
+          <td>
+            <span class="badge {% if f_data.confidence == 'high' %}bg-success{% elif f_data.confidence == 'medium' %}bg-info text-dark{% else %}bg-secondary{% endif %}">
+              {{ f_data.confidence|upper }}
+            </span>
+          </td>
+          <td><small class="text-muted font-monospace">{{ f_data.discovered_at or '-' }}</small></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+<!-- Provenance & Audit Trail -->
+<div class="card border-0 shadow-sm p-4 mb-4">
+  <h5 class="fw-bold mb-3 pb-2 border-bottom d-flex justify-content-between align-items-center">
+    <span><i class="bi bi-clock-history text-secondary me-2"></i>Riwayat Sumber & Provenance Audit Trail</span>
+    <span class="badge bg-light text-muted border">{{ provenance|length }} entri riwayat</span>
+  </h5>
+
+  {% if provenance %}
+  <div class="table-responsive">
+    <table class="table table-sm table-striped align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Waktu Penggabungan</th>
+          <th>Tipe Sumber</th>
+          <th>Source / Raw Data ID</th>
+          <th>Nama di Sumber</th>
+          <th>Matching Signal (Tier)</th>
+          <th>Confidence</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in provenance %}
+        <tr>
+          <td><small class="font-monospace text-muted">{{ p.merged_at or '-' }}</small></td>
+          <td><span class="badge bg-info-subtle text-info-emphasis">{{ p.source_type }}</span></td>
+          <td><code>{{ p.raw_data_id or p.source_id or '-' }}</code></td>
+          <td class="fw-semibold">{{ p.raw_name or org.name }}</td>
+          <td>
+            <span class="badge {% if p.match_tier == 'initial_creation' %}bg-primary{% elif 'tier1' in p.match_tier %}bg-success{% elif 'tier2' in p.match_tier %}bg-info text-dark{% else %}bg-secondary{% endif %}">
+              {{ p.match_tier }}
+            </span>
+          </td>
+          <td><strong>{{ (p.confidence * 100)|round(1) if p.confidence is defined and p.confidence is number else '-' }}%</strong></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="text-muted small mb-0">Entitas ini belum memiliki log riwayat provenance terstruktur.</p>
+  {% endif %}
+</div>
+
+<!-- Candidate Reviews for this Organization (if any) -->
+{% if candidates %}
+<div class="card border-0 shadow-sm p-4 mb-4 border-start border-4 border-warning">
+  <h5 class="fw-bold mb-3 pb-2 border-bottom text-warning-emphasis">
+    <i class="bi bi-exclamation-triangle-fill me-2"></i>Kandidat Duplikasi yang Memerlukan Review ({{ candidates|length }})
+  </h5>
+  <div class="table-responsive">
+    <table class="table table-sm align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Nama Calon Entitas</th>
+          <th>Sinyal Pencocokan</th>
+          <th>Confidence</th>
+          <th>Status Review</th>
+          <th>Waktu Terdeteksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in candidates %}
+        <tr>
+          <td class="fw-bold">{{ c.candidate_name }}</td>
+          <td><code>{{ c.match_tier }}</code></td>
+          <td>{{ (c.confidence_score * 100)|round(1) }}%</td>
+          <td>
+            <span class="badge {% if c.status == 'pending' %}bg-warning text-dark{% elif c.status == 'approved' %}bg-success{% else %}bg-secondary{% endif %}">
+              {{ c.status|upper }}
+            </span>
+          </td>
+          <td><small class="text-muted">{{ c.created_at.strftime('%d %b %Y, %H:%M') if c.created_at else '-' }}</small></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

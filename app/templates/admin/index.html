@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}System Management{% endblock %}
+{% block content %}
+<h3 class="mb-4">System Management</h3>
+<div class="row g-3">
+  <div class="col-md-4"><a class="btn btn-outline-primary w-100 py-3" href="{{ url_for('admin.users') }}"><i class="bi bi-people"></i><br>Kelola Pengguna & Hak Akses</a></div>
+  <div class="col-md-4"><a class="btn btn-outline-primary w-100 py-3" href="{{ url_for('admin.data_sources') }}"><i class="bi bi-hdd-network"></i><br>Kelola Sumber Data</a></div>
+  <div class="col-md-4"><a class="btn btn-outline-primary w-100 py-3" href="{{ url_for('admin.data_manager', resource='organizations') }}"><i class="bi bi-building"></i><br>CRUD Organisasi</a></div>
+  <div class="col-md-4"><a class="btn btn-outline-primary w-100 py-3" href="{{ url_for('admin.data_manager', resource='events') }}"><i class="bi bi-calendar-event"></i><br>CRUD Event</a></div>
+  <div class="col-md-4"><a class="btn btn-outline-primary w-100 py-3" href="{{ url_for('admin.data_manager', resource='discovery-sources') }}"><i class="bi bi-search"></i><br>CRUD Discovery Source</a></div>
+  <div class="col-md-4"><a class="btn btn-outline-primary w-100 py-3" href="{{ url_for('admin.data_manager', resource='cron-jobs') }}"><i class="bi bi-clock-history"></i><br>CRUD Cron Job</a></div>
+  <div class="col-md-4"><a class="btn btn-outline-primary w-100 py-3" href="{{ url_for('admin.data_manager', resource='ai-configs') }}"><i class="bi bi-robot"></i><br>CRUD Konfigurasi AI</a></div>
+  <div class="col-md-4"><a class="btn btn-outline-primary w-100 py-3" href="{{ url_for('admin.discovery') }}"><i class="bi bi-search"></i><br>Discovery Organisasi & Event</a></div>
+  <div class="col-md-4"><a class="btn btn-outline-primary w-100 py-3" href="{{ url_for('admin.monitoring') }}"><i class="bi bi-activity"></i><br>Monitoring Proses (Scraping/AI)</a></div>
+  <div class="col-md-4"><a class="btn btn-outline-primary w-100 py-3" href="{{ url_for('admin.cron_jobs') }}"><i class="bi bi-clock-history"></i><br>Mengatur Jadwal Cron Job</a></div>
+  <div class="col-md-4"><a class="btn btn-outline-primary w-100 py-3" href="{{ url_for('admin.logs') }}"><i class="bi bi-journal-text"></i><br>Melihat Log Aktivitas</a></div>
+  <div class="col-md-4"><a class="btn btn-outline-primary w-100 py-3" href="{{ url_for('admin.ai_config') }}"><i class="bi bi-robot"></i><br>Mengelola Konfigurasi AI Agent</a></div>
+</div>
+{% endblock %}

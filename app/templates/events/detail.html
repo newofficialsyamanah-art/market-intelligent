@@ -1,0 +1,393 @@
+{% extends "base.html" %}
+
+{% block title %}{{ event.name }} - Event Intelligence{% endblock %}
+
+{% block content %}
+<div class="mb-3">
+  <a href="{{ url_for('events.index') }}" class="btn btn-outline-secondary btn-sm">
+    <i class="bi bi-arrow-left me-1"></i> Kembali ke Daftar Event
+  </a>
+</div>
+
+<!-- Header Card -->
+<div class="card border-0 shadow-sm rounded-3 mb-4">
+  <div class="card-body p-4">
+    <div class="row align-items-start">
+      <div class="col-lg-8">
+        <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
+          <span class="badge bg-light text-dark border">{{ event.event_type or 'Exhibition' }}</span>
+          {% if event.relevance_score >= 80 %}
+            <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">
+              <i class="bi bi-star-fill me-1"></i> RELEVANSI TINGGI (Score: {{ event.relevance_score }}/100)
+            </span>
+          {% elif event.relevance_score >= 50 %}
+            <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-1">
+              RELEVANSI SEDANG (Score: {{ event.relevance_score }}/100)
+            </span>
+          {% else %}
+            <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1">
+              RELEVANSI RENDAH (Score: {{ event.relevance_score }}/100)
+            </span>
+          {% endif %}
+          <span class="badge bg-info-subtle text-info border border-info-subtle">{{ event.status|upper }}</span>
+        </div>
+        <h2 class="fw-bold text-dark mb-2">{{ event.name }}</h2>
+        <p class="text-secondary mb-3">{{ event.description or 'Tidak ada keterangan naratif tambahan.' }}</p>
+
+        {% if event.relevance_notes %}
+        <div class="alert alert-info py-2 px-3 mb-3 small d-flex align-items-center">
+          <i class="bi bi-info-circle-fill me-2 fs-5"></i>
+          <div><strong>Analisis Peluang Apparel/Merchandise:</strong> {{ event.relevance_notes }}</div>
+        </div>
+        {% endif %}
+      </div>
+      <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+        <div class="d-flex flex-column gap-2 align-items-lg-end">
+          <a href="{{ url_for('events.export', event_id=event.id) }}" class="btn btn-outline-success">
+            <i class="bi bi-file-earmark-spreadsheet me-1"></i> Export Peserta Event Ini (CSV)
+          </a>
+          {% if current_user.role in ['admin', 'business_analyst', 'marketing'] %}
+          <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#linkParticipantModal">
+            <i class="bi bi-person-plus me-1"></i> Hubungkan Partisipan
+          </button>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <hr class="my-3">
+
+    <!-- Metadata Grid -->
+    <div class="row g-3">
+      <div class="col-md-3">
+        <span class="text-muted small d-block">Tanggal Pelaksanaan</span>
+        <span class="fw-bold text-dark">
+          {% if event.start_date %}
+            <i class="bi bi-calendar3 me-1 text-primary"></i>
+            {{ event.start_date.strftime('%d %B %Y') }}
+            {% if event.end_date and event.end_date != event.start_date %}
+              <br><small class="text-muted">s/d {{ event.end_date.strftime('%d %B %Y') }}</small>
+            {% endif %}
+          {% else %}
+            TBA
+          {% endif %}
+        </span>
+      </div>
+      <div class="col-md-3">
+        <span class="text-muted small d-block">Lokasi / Venue</span>
+        <span class="fw-bold text-dark"><i class="bi bi-geo-alt me-1 text-danger"></i>{{ event.venue or 'TBA' }}</span>
+        <div class="text-muted small">{{ event.city or '-' }}{% if event.province %}, {{ event.province }}{% endif %}</div>
+      </div>
+      <div class="col-md-3">
+        <span class="text-muted small d-block">Penyelenggara (Organizer)</span>
+        {% if event.organizer_id %}
+          <a href="{{ url_for('market_analysis.org_detail', org_id=event.organizer_id) }}" class="fw-bold text-primary text-decoration-none">
+            <i class="bi bi-building me-1"></i>{{ event.organizer or 'Lihat Profil' }}
+          </a>
+        {% elif event.organizer %}
+          <span class="fw-bold text-dark"><i class="bi bi-building me-1 text-secondary"></i>{{ event.organizer }}</span>
+        {% else %}
+          <span class="text-muted">-</span>
+        {% endif %}
+      </div>
+      <div class="col-md-3">
+        <span class="text-muted small d-block">Website & Sumber</span>
+        {% if event.website %}
+          <a href="{{ event.website }}" target="_blank" rel="noopener" class="text-primary text-decoration-none small d-block text-truncate">
+            <i class="bi bi-globe me-1"></i>{{ event.website }}
+          </a>
+        {% endif %}
+        {% if socials %}
+          <div class="d-flex gap-2 mt-1">
+            {% if socials.get('instagram') %}
+              <a href="{{ socials.instagram }}" target="_blank" class="text-danger fs-6" title="Instagram"><i class="bi bi-instagram"></i></a>
+            {% endif %}
+            {% if socials.get('facebook') %}
+              <a href="{{ socials.facebook }}" target="_blank" class="text-primary fs-6" title="Facebook"><i class="bi bi-facebook"></i></a>
+            {% endif %}
+            {% if socials.get('linkedin') %}
+              <a href="{{ socials.linkedin }}" target="_blank" class="text-info fs-6" title="LinkedIn"><i class="bi bi-linkedin"></i></a>
+            {% endif %}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Source & Provenance Verification Card -->
+<div class="card border-0 shadow-sm rounded-3 mb-4">
+  <div class="card-body p-3">
+    <div class="row g-3 align-items-center small">
+      <div class="col-md-3">
+        <span class="text-muted d-block">Status Verifikasi:</span>
+        <span class="badge {% if event.verification_status == 'verified' %}bg-success{% elif event.verification_status == 'review' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
+          <i class="bi bi-patch-check-fill me-1"></i> {{ (event.verification_status or 'VERIFIED')|upper }}
+        </span>
+      </div>
+      <div class="col-md-3">
+        <span class="text-muted d-block">URL Sumber Resmi:</span>
+        {% if event.source_url or event.website %}
+          <a href="{{ event.source_url or event.website }}" target="_blank" rel="noopener" class="text-primary text-truncate d-inline-block" style="max-width: 220px;">
+            <i class="bi bi-link-45deg me-1"></i>{{ event.source_url or event.website }}
+          </a>
+        {% else %}
+          <span class="text-muted">-</span>
+        {% endif %}
+      </div>
+      <div class="col-md-3">
+        <span class="text-muted d-block">Terakhir Diverifikasi (Freshness):</span>
+        <span class="fw-semibold font-monospace">{{ event.last_seen.strftime('%d %b %Y, %H:%M') if event.last_seen else (event.created_at.strftime('%d %b %Y, %H:%M') if event.created_at else '-') }}</span>
+      </div>
+      <div class="col-md-3">
+        <span class="text-muted d-block">Evidence Rationale:</span>
+        <span class="text-dark">{{ event.relevance_notes or 'Terverifikasi dari website resmi penyelenggara.' }}</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Participants Section -->
+<div class="card border-0 shadow-sm rounded-3 mb-4">
+  <div class="card-header bg-white py-3 border-0">
+    <div class="d-flex justify-content-between align-items-center">
+      <h5 class="mb-0 fw-bold">
+        <i class="bi bi-people me-2 text-primary"></i>Partisipan & Peserta Terverifikasi ({{ participants_count }})
+      </h5>
+    </div>
+  </div>
+  <div class="card-body p-0">
+    <ul class="nav nav-tabs px-3" id="participantTabs" role="tablist">
+      <li class="nav-item">
+        <button class="nav-link active fw-medium" id="exhibitors-tab" data-bs-toggle="tab" data-bs-target="#exhibitors" type="button">
+          Exhibitors ({{ by_role.exhibitors|length }})
+        </button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link fw-medium" id="sponsors-tab" data-bs-toggle="tab" data-bs-target="#sponsors" type="button">
+          Sponsors ({{ by_role.sponsors|length }})
+        </button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link fw-medium" id="partners-tab" data-bs-toggle="tab" data-bs-target="#partners" type="button">
+          Partners ({{ by_role.partners|length }})
+        </button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link fw-medium" id="speakers-tab" data-bs-toggle="tab" data-bs-target="#speakers" type="button">
+          Speakers ({{ by_role.speakers|length }})
+        </button>
+      </li>
+    </ul>
+
+    <div class="tab-content p-3" id="participantTabsContent">
+      <!-- Exhibitors -->
+      <div class="tab-pane fade show active" id="exhibitors" role="tabpanel">
+        {% if by_role.exhibitors %}
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Nama Perusahaan</th>
+                  <th>Industri</th>
+                  <th>Booth / Stand</th>
+                  <th>Website</th>
+                  <th>Catatan</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for p in by_role.exhibitors %}
+                <tr>
+                  <td>
+                    <a href="{{ url_for('market_analysis.org_detail', org_id=p.organization_id) }}" class="fw-bold text-primary text-decoration-none">
+                      {{ p.organization_name }}
+                    </a>
+                  </td>
+                  <td>{{ p.organization_industry or '-' }}</td>
+                  <td>
+                    <span class="badge bg-light text-dark border">{{ p.booth_number or 'Belum ada' }}</span>
+                  </td>
+                  <td>
+                    {% if p.organization_website %}
+                    <a href="{{ p.organization_website }}" target="_blank" class="small text-truncate d-inline-block" style="max-width: 200px;">
+                      {{ p.organization_website }}
+                    </a>
+                    {% else %}
+                    <span class="text-muted small">-</span>
+                    {% endif %}
+                  </td>
+                  <td class="small text-secondary">{{ p.notes or '-' }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <p class="text-muted py-4 text-center">Belum ada peserta exhibitor yang terhubung ke event ini.</p>
+        {% endif %}
+      </div>
+
+      <!-- Sponsors -->
+      <div class="tab-pane fade" id="sponsors" role="tabpanel">
+        {% if by_role.sponsors %}
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Nama Sponsor</th>
+                  <th>Industri</th>
+                  <th>Paket / Booth</th>
+                  <th>Website</th>
+                  <th>Catatan</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for p in by_role.sponsors %}
+                <tr>
+                  <td>
+                    <a href="{{ url_for('market_analysis.org_detail', org_id=p.organization_id) }}" class="fw-bold text-primary text-decoration-none">
+                      {{ p.organization_name }}
+                    </a>
+                  </td>
+                  <td>{{ p.organization_industry or '-' }}</td>
+                  <td><span class="badge bg-warning-subtle text-warning-emphasis border">{{ p.booth_number or 'Sponsor' }}</span></td>
+                  <td>
+                    {% if p.organization_website %}
+                    <a href="{{ p.organization_website }}" target="_blank" class="small text-truncate d-inline-block" style="max-width: 200px;">
+                      {{ p.organization_website }}
+                    </a>
+                    {% else %}
+                    <span class="text-muted small">-</span>
+                    {% endif %}
+                  </td>
+                  <td class="small text-secondary">{{ p.notes or '-' }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <p class="text-muted py-4 text-center">Belum ada sponsor yang terdaftar untuk event ini.</p>
+        {% endif %}
+      </div>
+
+      <!-- Partners -->
+      <div class="tab-pane fade" id="partners" role="tabpanel">
+        {% if by_role.partners %}
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Nama Partner</th>
+                  <th>Industri</th>
+                  <th>Area / Stand</th>
+                  <th>Website</th>
+                  <th>Catatan</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for p in by_role.partners %}
+                <tr>
+                  <td>
+                    <a href="{{ url_for('market_analysis.org_detail', org_id=p.organization_id) }}" class="fw-bold text-primary text-decoration-none">
+                      {{ p.organization_name }}
+                    </a>
+                  </td>
+                  <td>{{ p.organization_industry or '-' }}</td>
+                  <td>{{ p.booth_number or '-' }}</td>
+                  <td>
+                    {% if p.organization_website %}
+                    <a href="{{ p.organization_website }}" target="_blank" class="small">{{ p.organization_website }}</a>
+                    {% else %}-{% endif %}
+                  </td>
+                  <td class="small text-secondary">{{ p.notes or '-' }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <p class="text-muted py-4 text-center">Belum ada partner yang terdaftar untuk event ini.</p>
+        {% endif %}
+      </div>
+
+      <!-- Speakers -->
+      <div class="tab-pane fade" id="speakers" role="tabpanel">
+        {% if by_role.speakers %}
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Organisasi Pembicara</th>
+                  <th>Industri</th>
+                  <th>Sesi / Stage</th>
+                  <th>Catatan</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for p in by_role.speakers %}
+                <tr>
+                  <td>
+                    <a href="{{ url_for('market_analysis.org_detail', org_id=p.organization_id) }}" class="fw-bold text-primary text-decoration-none">
+                      {{ p.organization_name }}
+                    </a>
+                  </td>
+                  <td>{{ p.organization_industry or '-' }}</td>
+                  <td>{{ p.booth_number or '-' }}</td>
+                  <td class="small text-secondary">{{ p.notes or '-' }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <p class="text-muted py-4 text-center">Belum ada pembicara / speaker yang terdaftar untuk event ini.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Link Participant -->
+<div class="modal fade" id="linkParticipantModal" tabindex="-1" aria-labelledby="linkParticipantModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="POST" action="{{ url_for('events.link_participant', event_id=event.id) }}">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold" id="linkParticipantModalLabel">Hubungkan Organisasi ke Event</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label fw-medium">ID Organisasi Master *</label>
+            <input type="number" name="organization_id" class="form-control" placeholder="Masukkan ID Organisasi (misal: 12)" required>
+            <div class="form-text">Dapat dilihat pada halaman Company Intelligence Explorer.</div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-medium">Peran Partisipan *</label>
+            <select name="role" class="form-select" required>
+              <option value="exhibitor" selected>Exhibitor (Peserta Pameran)</option>
+              <option value="sponsor">Sponsor</option>
+              <option value="partner">Partner</option>
+              <option value="speaker">Speaker / Pembicara</option>
+              <option value="organizer">Organizer / Co-Organizer</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-medium">Nomor Booth / Stand</label>
+            <input type="text" name="booth_number" class="form-control" placeholder="Contoh: Hall A-12, Booth 35">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-medium">Catatan / Detail</label>
+            <textarea name="notes" class="form-control" rows="2" placeholder="Catatan tambahan peran peserta..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="submit" class="btn btn-primary">Simpan Relasi</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

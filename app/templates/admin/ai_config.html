@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Konfigurasi AI Agent{% endblock %}
+{% block content %}
+<h3>Mengelola Konfigurasi AI Agent</h3>
+<div class="card p-3 my-3">
+  <form method="post" action="{{ url_for('admin.create_ai_config') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="row g-2">
+      <div class="col-md-4">
+        <select name="agent_task" class="form-select form-select-sm">
+          <option value="classify_data">Klasifikasi Data</option>
+          <option value="map_columns">Mapping Kolom</option>
+          <option value="validate_record">Validasi Data</option>
+          <option value="enrich_prospect">Enrichment Data</option>
+          <option value="score_prospect">Scoring Prospek</option>
+          <option value="recommend_products">Rekomendasi Produk</option>
+          <option value="summarize_report">Ringkasan Laporan</option>
+        </select>
+      </div>
+      <div class="col-md-4"><input name="model_name" class="form-control form-control-sm" value="llama-3.3-70b-versatile" placeholder="Model Groq"></div>
+      <div class="col-md-4"><button class="btn btn-primary btn-sm w-100">Simpan Konfigurasi</button></div>
+    </div>
+    <textarea name="prompt_template" class="form-control form-control-sm mt-2" rows="3" placeholder="Custom prompt template (opsional, override default di ai_agent.py)"></textarea>
+  </form>
+  <p class="small text-muted mt-2 mb-0">Model default dipakai dari env <code>GROQ_MODEL</code>. Daftar model Groq terkini bisa dicek di console.groq.com.</p>
+</div>
+<table class="table table-sm bg-white">
+  <thead><tr><th>Task</th><th>Model</th><th>Aktif</th></tr></thead>
+  <tbody>
+  {% for c in configs %}
+    <tr><td>{{ c.agent_task }}</td><td>{{ c.model_name }}</td><td>{{ 'Ya' if c.is_active else 'Tidak' }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

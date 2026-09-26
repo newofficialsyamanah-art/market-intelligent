@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}{{ p.company_name }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between">
+  <h3>{{ p.company_name }}</h3>
+  {% if current_user.role in ['admin', 'business_analyst'] %}
+  <div>
+    <a href="{{ url_for('prospect.edit', pid=p.id) }}" class="btn btn-outline-secondary btn-sm">Edit</a>
+    <form method="post" action="{{ url_for('prospect.delete', pid=p.id) }}" class="d-inline" onsubmit="return confirm('Hapus prospek ini?');">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="btn btn-outline-danger btn-sm">Hapus</button>
+    </form>
+  </div>
+  {% endif %}
+</div>
+<div class="row g-3 mt-2">
+  <div class="col-md-8">
+    <div class="card p-3">
+      <table class="table table-sm">
+        <tr><th style="width:180px;">Industri</th><td>{{ p.industry or '-' }}</td></tr>
+        <tr><th>Wilayah</th><td>{{ p.region or '-' }}</td></tr>
+        <tr><th>Ukuran Perusahaan</th><td>{{ p.company_size or '-' }}</td></tr>
+        <tr><th>Website</th><td>{{ p.website or '-' }}</td></tr>
+        <tr><th>Kontak</th><td>{{ p.contact_name or '-' }} / {{ p.contact_email or '-' }} / {{ p.contact_phone or '-' }}</td></tr>
+        <tr><th>Deskripsi</th><td>{{ p.description or '-' }}</td></tr>
+        <tr><th>Status</th><td>{{ p.status }}</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card p-3">
+      <h6>Prioritas Prospek (Scoring AI)</h6>
+      <h2 class="text-primary">{{ p.score }}</h2>
+      <p class="small">Segmen: <strong>{{ p.segment or '-' }}</strong></p>
+      <p class="small text-muted">{{ p.score_reason or 'Belum ada penilaian AI.' }}</p>
+      {% if current_user.role in ['admin', 'business_analyst'] %}
+      <form method="post" action="{{ url_for('prospect.score', pid=p.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="btn btn-sm btn-primary w-100">Hitung Ulang Skor (AI)</button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

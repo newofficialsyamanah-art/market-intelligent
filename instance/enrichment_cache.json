@@ -1,0 +1,1014 @@
+{
+  "web:3mindonesia.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.3mindonesia.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.3mindonesia.co.id', port=443): Failed to resolve 'www.3mindonesia.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:3mindonesia.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.3mindonesia.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.3mindonesia.com', port=443): Failed to resolve 'www.3mindonesia.com' ([Errno 11002] getaddrinfo failed)\"))"
+  },
+  "web:3mindonesia.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.3mindonesia.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.3mindonesia.id', port=443): Failed to resolve 'www.3mindonesia.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:3m-indonesia.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.3m-indonesia.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.3m-indonesia.co.id', port=443): Failed to resolve 'www.3m-indonesia.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:3m-indonesia.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.3m-indonesia.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.3m-indonesia.com', port=443): Failed to resolve 'www.3m-indonesia.com' ([Errno 11002] getaddrinfo failed)\"))"
+  },
+  "web:apindustryindonesia.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.apindustryindonesia.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.apindustryindonesia.co.id', port=443): Failed to resolve 'www.apindustryindonesia.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:apindustryindonesia.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.apindustryindonesia.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.apindustryindonesia.com', port=443): Failed to resolve 'www.apindustryindonesia.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:apindustryindonesia.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.apindustryindonesia.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.apindustryindonesia.id', port=443): Failed to resolve 'www.apindustryindonesia.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:a-p-industry-indonesia.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.a-p-industry-indonesia.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.a-p-industry-indonesia.co.id', port=443): Failed to resolve 'www.a-p-industry-indonesia.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:a-p-industry-indonesia.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.a-p-industry-indonesia.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.a-p-industry-indonesia.com', port=443): Failed to resolve 'www.a-p-industry-indonesia.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:ajuasiatex.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.ajuasiatex.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.ajuasiatex.co.id', port=443): Failed to resolve 'www.ajuasiatex.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:ajuasiatex.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.ajuasiatex.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.ajuasiatex.com', port=443): Failed to resolve 'www.ajuasiatex.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:ajuasiatex.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.ajuasiatex.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.ajuasiatex.id', port=443): Failed to resolve 'www.ajuasiatex.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:a-ju-asiatex.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.a-ju-asiatex.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.a-ju-asiatex.co.id', port=443): Failed to resolve 'www.a-ju-asiatex.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:a-ju-asiatex.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.a-ju-asiatex.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.a-ju-asiatex.com', port=443): Failed to resolve 'www.a-ju-asiatex.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:avankaickindonesiaavk.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.avankaickindonesiaavk.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.avankaickindonesiaavk.co.id', port=443): Failed to resolve 'www.avankaickindonesiaavk.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:avankaickindonesiaavk.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.avankaickindonesiaavk.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.avankaickindonesiaavk.com', port=443): Failed to resolve 'www.avankaickindonesiaavk.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:avankaickindonesiaavk.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.avankaickindonesiaavk.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.avankaickindonesiaavk.id', port=443): Failed to resolve 'www.avankaickindonesiaavk.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:a-van-kaick-indonesia-avk.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.a-van-kaick-indonesia-avk.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.a-van-kaick-indonesia-avk.co.id', port=443): Failed to resolve 'www.a-van-kaick-indonesia-avk.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:a-van-kaick-indonesia-avk.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.a-van-kaick-indonesia-avk.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.a-van-kaick-indonesia-avk.com', port=443): Failed to resolve 'www.a-van-kaick-indonesia-avk.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:awfabercastellindonesia.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.awfabercastellindonesia.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.awfabercastellindonesia.co.id', port=443): Failed to resolve 'www.awfabercastellindonesia.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:awfabercastellindonesia.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.awfabercastellindonesia.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.awfabercastellindonesia.com', port=443): Failed to resolve 'www.awfabercastellindonesia.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:awfabercastellindonesia.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.awfabercastellindonesia.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.awfabercastellindonesia.id', port=443): Failed to resolve 'www.awfabercastellindonesia.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:a-w-faber-castell-indonesia.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.a-w-faber-castell-indonesia.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.a-w-faber-castell-indonesia.co.id', port=443): Failed to resolve 'www.a-w-faber-castell-indonesia.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:a-w-faber-castell-indonesia.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.a-w-faber-castell-indonesia.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.a-w-faber-castell-indonesia.com', port=443): Failed to resolve 'www.a-w-faber-castell-indonesia.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:aaminadrianmedicalindo.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.aaminadrianmedicalindo.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.aaminadrianmedicalindo.co.id', port=443): Failed to resolve 'www.aaminadrianmedicalindo.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:aaminadrianmedicalindo.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.aaminadrianmedicalindo.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.aaminadrianmedicalindo.com', port=443): Failed to resolve 'www.aaminadrianmedicalindo.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:aaminadrianmedicalindo.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.aaminadrianmedicalindo.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.aaminadrianmedicalindo.id', port=443): Failed to resolve 'www.aaminadrianmedicalindo.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:aamin-adrian-medical-indo.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.aamin-adrian-medical-indo.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.aamin-adrian-medical-indo.co.id', port=443): Failed to resolve 'www.aamin-adrian-medical-indo.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:aamin-adrian-medical-indo.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.aamin-adrian-medical-indo.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.aamin-adrian-medical-indo.com', port=443): Failed to resolve 'www.aamin-adrian-medical-indo.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:aamin.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.aamin.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.aamin.co.id', port=443): Failed to resolve 'www.aamin.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:aamin.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.aamin.com', port=443): Max retries exceeded with url: / (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1032)')))"
+  },
+  "web:aansuryana.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.aansuryana.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.aansuryana.co.id', port=443): Failed to resolve 'www.aansuryana.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:aansuryana.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.aansuryana.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.aansuryana.com', port=443): Failed to resolve 'www.aansuryana.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:aansuryana.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.aansuryana.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.aansuryana.id', port=443): Failed to resolve 'www.aansuryana.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:aan-suryana.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.aan-suryana.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.aan-suryana.co.id', port=443): Failed to resolve 'www.aan-suryana.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:aan-suryana.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.aan-suryana.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.aan-suryana.com', port=443): Failed to resolve 'www.aan-suryana.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:aaspasbersuperpasber.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.aaspasbersuperpasber.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.aaspasbersuperpasber.co.id', port=443): Failed to resolve 'www.aaspasbersuperpasber.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:aaspasbersuperpasber.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.aaspasbersuperpasber.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.aaspasbersuperpasber.com', port=443): Failed to resolve 'www.aaspasbersuperpasber.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:aaspasbersuperpasber.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.aaspasbersuperpasber.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.aaspasbersuperpasber.id', port=443): Failed to resolve 'www.aaspasbersuperpasber.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:aas-pasber-super-pasber.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.aas-pasber-super-pasber.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.aas-pasber-super-pasber.co.id', port=443): Failed to resolve 'www.aas-pasber-super-pasber.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:aas-pasber-super-pasber.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.aas-pasber-super-pasber.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.aas-pasber-super-pasber.com', port=443): Failed to resolve 'www.aas-pasber-super-pasber.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abadidanjayagarmindo.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abadidanjayagarmindo.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abadidanjayagarmindo.co.id', port=443): Failed to resolve 'www.abadidanjayagarmindo.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abadidanjayagarmindo.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abadidanjayagarmindo.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abadidanjayagarmindo.com', port=443): Failed to resolve 'www.abadidanjayagarmindo.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abadidanjayagarmindo.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abadidanjayagarmindo.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abadidanjayagarmindo.id', port=443): Failed to resolve 'www.abadidanjayagarmindo.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abadi-dan-jaya-garmindo.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abadi-dan-jaya-garmindo.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abadi-dan-jaya-garmindo.co.id', port=443): Failed to resolve 'www.abadi-dan-jaya-garmindo.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abadi-dan-jaya-garmindo.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abadi-dan-jaya-garmindo.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abadi-dan-jaya-garmindo.com', port=443): Failed to resolve 'www.abadi-dan-jaya-garmindo.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abadi.co.id": {
+    "is_valid": false,
+    "reason": "Low token match ratio (0.00)"
+  },
+  "web:abadimajuindahjaya.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abadimajuindahjaya.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abadimajuindahjaya.co.id', port=443): Failed to resolve 'www.abadimajuindahjaya.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abadimajuindahjaya.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abadimajuindahjaya.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abadimajuindahjaya.com', port=443): Failed to resolve 'www.abadimajuindahjaya.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abadimajuindahjaya.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abadimajuindahjaya.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abadimajuindahjaya.id', port=443): Failed to resolve 'www.abadimajuindahjaya.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abadi-maju-indah-jaya.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abadi-maju-indah-jaya.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abadi-maju-indah-jaya.co.id', port=443): Failed to resolve 'www.abadi-maju-indah-jaya.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abadi-maju-indah-jaya.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abadi-maju-indah-jaya.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abadi-maju-indah-jaya.com', port=443): Failed to resolve 'www.abadi-maju-indah-jaya.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abadi.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abadi.com', port=443): Max retries exceeded with url: / (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1032)')))"
+  },
+  "web:abadiplastik.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abadiplastik.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abadiplastik.co.id', port=443): Failed to resolve 'www.abadiplastik.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abadiplastik.com": {
+    "is_valid": true,
+    "final_url": "https://abadiplastik.com/"
+  },
+  "web:abastatechnologyaplications.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abastatechnologyaplications.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abastatechnologyaplications.co.id', port=443): Failed to resolve 'www.abastatechnologyaplications.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abastatechnologyaplications.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abastatechnologyaplications.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abastatechnologyaplications.com', port=443): Failed to resolve 'www.abastatechnologyaplications.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abastatechnologyaplications.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abastatechnologyaplications.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abastatechnologyaplications.id', port=443): Failed to resolve 'www.abastatechnologyaplications.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abasta-technology-aplications.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abasta-technology-aplications.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abasta-technology-aplications.co.id', port=443): Failed to resolve 'www.abasta-technology-aplications.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abasta-technology-aplications.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abasta-technology-aplications.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abasta-technology-aplications.com', port=443): Failed to resolve 'www.abasta-technology-aplications.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abasta.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abasta.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abasta.co.id', port=443): Failed to resolve 'www.abasta.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abasta.com": {
+    "is_valid": true,
+    "final_url": "https://www.abasta.com/"
+  },
+  "web:abbottindonesia.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abbottindonesia.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abbottindonesia.co.id', port=443): Failed to resolve 'www.abbottindonesia.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abbottindonesia.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abbottindonesia.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abbottindonesia.com', port=443): Failed to resolve 'www.abbottindonesia.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abbottindonesia.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abbottindonesia.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abbottindonesia.id', port=443): Failed to resolve 'www.abbottindonesia.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abbott-indonesia.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abbott-indonesia.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abbott-indonesia.co.id', port=443): Failed to resolve 'www.abbott-indonesia.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abbott-indonesia.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abbott-indonesia.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abbott-indonesia.com', port=443): Failed to resolve 'www.abbott-indonesia.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abbott.co.id": {
+    "is_valid": true,
+    "final_url": "https://www.id.abbott"
+  },
+  "web:abbtipetanisejahteranusantara.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abbtipetanisejahteranusantara.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abbtipetanisejahteranusantara.co.id', port=443): Failed to resolve 'www.abbtipetanisejahteranusantara.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abbtipetanisejahteranusantara.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abbtipetanisejahteranusantara.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abbtipetanisejahteranusantara.com', port=443): Failed to resolve 'www.abbtipetanisejahteranusantara.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abbtipetanisejahteranusantara.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abbtipetanisejahteranusantara.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abbtipetanisejahteranusantara.id', port=443): Failed to resolve 'www.abbtipetanisejahteranusantara.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abbti-petani-sejahtera-nusantara.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abbti-petani-sejahtera-nusantara.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abbti-petani-sejahtera-nusantara.co.id', port=443): Failed to resolve 'www.abbti-petani-sejahtera-nusantara.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abbti-petani-sejahtera-nusantara.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abbti-petani-sejahtera-nusantara.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abbti-petani-sejahtera-nusantara.com', port=443): Failed to resolve 'www.abbti-petani-sejahtera-nusantara.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abbti.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abbti.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abbti.co.id', port=443): Failed to resolve 'www.abbti.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abbti.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abbti.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abbti.com', port=443): Failed to resolve 'www.abbti.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abdihydroulic.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abdihydroulic.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abdihydroulic.co.id', port=443): Failed to resolve 'www.abdihydroulic.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abdihydroulic.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abdihydroulic.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abdihydroulic.com', port=443): Failed to resolve 'www.abdihydroulic.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abdihydroulic.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abdihydroulic.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abdihydroulic.id', port=443): Failed to resolve 'www.abdihydroulic.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abdi-hydroulic.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abdi-hydroulic.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abdi-hydroulic.co.id', port=443): Failed to resolve 'www.abdi-hydroulic.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abdi-hydroulic.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abdi-hydroulic.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abdi-hydroulic.com', port=443): Failed to resolve 'www.abdi-hydroulic.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abdi.co.id": {
+    "is_valid": true,
+    "final_url": "https://pusatalatbantudengar.com/"
+  },
+  "web:abekogyoindonesia.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abekogyoindonesia.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abekogyoindonesia.co.id', port=443): Failed to resolve 'www.abekogyoindonesia.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abekogyoindonesia.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abekogyoindonesia.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abekogyoindonesia.com', port=443): Failed to resolve 'www.abekogyoindonesia.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abekogyoindonesia.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abekogyoindonesia.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abekogyoindonesia.id', port=443): Failed to resolve 'www.abekogyoindonesia.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abe-kogyo-indonesia.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abe-kogyo-indonesia.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abe-kogyo-indonesia.co.id', port=443): Failed to resolve 'www.abe-kogyo-indonesia.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abe-kogyo-indonesia.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abe-kogyo-indonesia.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abe-kogyo-indonesia.com', port=443): Failed to resolve 'www.abe-kogyo-indonesia.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abebersapratama.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abebersapratama.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abebersapratama.co.id', port=443): Failed to resolve 'www.abebersapratama.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abebersapratama.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abebersapratama.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abebersapratama.com', port=443): Failed to resolve 'www.abebersapratama.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abebersapratama.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abebersapratama.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abebersapratama.id', port=443): Failed to resolve 'www.abebersapratama.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abebersa-pratama.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abebersa-pratama.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abebersa-pratama.co.id', port=443): Failed to resolve 'www.abebersa-pratama.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abebersa-pratama.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abebersa-pratama.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abebersa-pratama.com', port=443): Failed to resolve 'www.abebersa-pratama.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abebersa.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abebersa.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abebersa.co.id', port=443): Failed to resolve 'www.abebersa.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abebersa.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abebersa.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abebersa.com', port=443): Failed to resolve 'www.abebersa.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abhyaktadharmayasaperseroda.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abhyaktadharmayasaperseroda.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abhyaktadharmayasaperseroda.co.id', port=443): Failed to resolve 'www.abhyaktadharmayasaperseroda.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abhyaktadharmayasaperseroda.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abhyaktadharmayasaperseroda.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abhyaktadharmayasaperseroda.com', port=443): Failed to resolve 'www.abhyaktadharmayasaperseroda.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abhyaktadharmayasaperseroda.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abhyaktadharmayasaperseroda.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abhyaktadharmayasaperseroda.id', port=443): Failed to resolve 'www.abhyaktadharmayasaperseroda.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abhyakta-dharma-yasa-perseroda.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abhyakta-dharma-yasa-perseroda.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abhyakta-dharma-yasa-perseroda.co.id', port=443): Failed to resolve 'www.abhyakta-dharma-yasa-perseroda.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abhyakta-dharma-yasa-perseroda.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abhyakta-dharma-yasa-perseroda.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abhyakta-dharma-yasa-perseroda.com', port=443): Failed to resolve 'www.abhyakta-dharma-yasa-perseroda.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abhyakta.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abhyakta.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abhyakta.co.id', port=443): Failed to resolve 'www.abhyakta.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abhyakta.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abhyakta.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abhyakta.com', port=443): Failed to resolve 'www.abhyakta.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abimanyusekarnusantara.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abimanyusekarnusantara.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abimanyusekarnusantara.co.id', port=443): Failed to resolve 'www.abimanyusekarnusantara.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abimanyusekarnusantara.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abimanyusekarnusantara.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abimanyusekarnusantara.com', port=443): Failed to resolve 'www.abimanyusekarnusantara.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abimanyusekarnusantara.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abimanyusekarnusantara.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abimanyusekarnusantara.id', port=443): Failed to resolve 'www.abimanyusekarnusantara.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abimanyu-sekar-nusantara.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abimanyu-sekar-nusantara.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abimanyu-sekar-nusantara.co.id', port=443): Failed to resolve 'www.abimanyu-sekar-nusantara.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abimanyu-sekar-nusantara.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abimanyu-sekar-nusantara.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abimanyu-sekar-nusantara.com', port=443): Failed to resolve 'www.abimanyu-sekar-nusantara.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abimanyu.co.id": {
+    "is_valid": true,
+    "final_url": "https://www.abimanyu.co.id/"
+  },
+  "web:abuyamastirtasejahtera.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abuyamastirtasejahtera.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abuyamastirtasejahtera.co.id', port=443): Failed to resolve 'www.abuyamastirtasejahtera.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abuyamastirtasejahtera.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abuyamastirtasejahtera.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abuyamastirtasejahtera.com', port=443): Failed to resolve 'www.abuyamastirtasejahtera.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abuyamastirtasejahtera.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abuyamastirtasejahtera.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abuyamastirtasejahtera.id', port=443): Failed to resolve 'www.abuyamastirtasejahtera.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abuyamas-tirta-sejahtera.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abuyamas-tirta-sejahtera.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abuyamas-tirta-sejahtera.co.id', port=443): Failed to resolve 'www.abuyamas-tirta-sejahtera.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abuyamas-tirta-sejahtera.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abuyamas-tirta-sejahtera.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abuyamas-tirta-sejahtera.com', port=443): Failed to resolve 'www.abuyamas-tirta-sejahtera.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abuyamas.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abuyamas.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abuyamas.co.id', port=443): Failed to resolve 'www.abuyamas.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abuyamas.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abuyamas.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abuyamas.com', port=443): Failed to resolve 'www.abuyamas.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abyperkasamandiri.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abyperkasamandiri.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abyperkasamandiri.co.id', port=443): Failed to resolve 'www.abyperkasamandiri.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abyperkasamandiri.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abyperkasamandiri.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abyperkasamandiri.com', port=443): Failed to resolve 'www.abyperkasamandiri.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abyperkasamandiri.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abyperkasamandiri.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abyperkasamandiri.id', port=443): Failed to resolve 'www.abyperkasamandiri.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:aby-perkasa-mandiri.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.aby-perkasa-mandiri.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.aby-perkasa-mandiri.co.id', port=443): Failed to resolve 'www.aby-perkasa-mandiri.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:aby-perkasa-mandiri.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.aby-perkasa-mandiri.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.aby-perkasa-mandiri.com', port=443): Failed to resolve 'www.aby-perkasa-mandiri.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abyaktamitraabadi.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abyaktamitraabadi.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abyaktamitraabadi.co.id', port=443): Failed to resolve 'www.abyaktamitraabadi.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abyaktamitraabadi.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abyaktamitraabadi.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abyaktamitraabadi.com', port=443): Failed to resolve 'www.abyaktamitraabadi.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abyaktamitraabadi.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abyaktamitraabadi.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abyaktamitraabadi.id', port=443): Failed to resolve 'www.abyaktamitraabadi.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abyakta-mitra-abadi.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abyakta-mitra-abadi.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abyakta-mitra-abadi.co.id', port=443): Failed to resolve 'www.abyakta-mitra-abadi.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abyakta-mitra-abadi.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abyakta-mitra-abadi.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abyakta-mitra-abadi.com', port=443): Failed to resolve 'www.abyakta-mitra-abadi.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abyakta.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.abyakta.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.abyakta.co.id', port=443): Failed to resolve 'www.abyakta.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:abyakta.com": {
+    "is_valid": false,
+    "reason": "Status 403"
+  },
+  "web:acemoldtech.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.acemoldtech.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.acemoldtech.co.id', port=443): Failed to resolve 'www.acemoldtech.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:acemoldtech.com": {
+    "is_valid": true,
+    "final_url": "https://www.acemoldtech.com/"
+  },
+  "web:aceoldfields.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.aceoldfields.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.aceoldfields.co.id', port=443): Failed to resolve 'www.aceoldfields.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:aceoldfields.com": {
+    "is_valid": true,
+    "final_url": "https://www.aceoldfields.com/"
+  },
+  "web:acektendabandung.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.acektendabandung.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.acektendabandung.co.id', port=443): Failed to resolve 'www.acektendabandung.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:acektendabandung.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.acektendabandung.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.acektendabandung.com', port=443): Failed to resolve 'www.acektendabandung.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:acektendabandung.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.acektendabandung.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.acektendabandung.id', port=443): Failed to resolve 'www.acektendabandung.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:acek-tenda-bandung.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.acek-tenda-bandung.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.acek-tenda-bandung.co.id', port=443): Failed to resolve 'www.acek-tenda-bandung.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:acek-tenda-bandung.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.acek-tenda-bandung.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.acek-tenda-bandung.com', port=443): Failed to resolve 'www.acek-tenda-bandung.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:acek.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.acek.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.acek.co.id', port=443): Failed to resolve 'www.acek.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:acek.com": {
+    "is_valid": true,
+    "final_url": "https://www.acek.com/"
+  },
+  "web:achintyakaylaabadi.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.achintyakaylaabadi.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.achintyakaylaabadi.co.id', port=443): Failed to resolve 'www.achintyakaylaabadi.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:achintyakaylaabadi.com": {
+    "is_valid": true,
+    "final_url": "https://www.achintyakaylaabadi.com/"
+  },
+  "web:achtechteknikmandiri.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.achtechteknikmandiri.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.achtechteknikmandiri.co.id', port=443): Failed to resolve 'www.achtechteknikmandiri.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:achtechteknikmandiri.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.achtechteknikmandiri.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.achtechteknikmandiri.com', port=443): Failed to resolve 'www.achtechteknikmandiri.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:achtechteknikmandiri.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.achtechteknikmandiri.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.achtechteknikmandiri.id', port=443): Failed to resolve 'www.achtechteknikmandiri.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:achtech-teknik-mandiri.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.achtech-teknik-mandiri.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.achtech-teknik-mandiri.co.id', port=443): Failed to resolve 'www.achtech-teknik-mandiri.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:achtech-teknik-mandiri.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.achtech-teknik-mandiri.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.achtech-teknik-mandiri.com', port=443): Failed to resolve 'www.achtech-teknik-mandiri.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:achtech.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.achtech.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.achtech.co.id', port=443): Failed to resolve 'www.achtech.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:achtech.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.achtech.com', port=443): Read timed out. (read timeout=6)"
+  },
+  "web:acihmenoch.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.acihmenoch.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.acihmenoch.co.id', port=443): Failed to resolve 'www.acihmenoch.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:acihmenoch.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.acihmenoch.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.acihmenoch.com', port=443): Failed to resolve 'www.acihmenoch.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:acihmenoch.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.acihmenoch.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.acihmenoch.id', port=443): Failed to resolve 'www.acihmenoch.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:aci-hm-enoch.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.aci-hm-enoch.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.aci-hm-enoch.co.id', port=443): Failed to resolve 'www.aci-hm-enoch.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:aci-hm-enoch.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.aci-hm-enoch.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.aci-hm-enoch.com', port=443): Failed to resolve 'www.aci-hm-enoch.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:actmetalindonesia.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.actmetalindonesia.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.actmetalindonesia.co.id', port=443): Failed to resolve 'www.actmetalindonesia.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:actmetalindonesia.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.actmetalindonesia.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.actmetalindonesia.com', port=443): Failed to resolve 'www.actmetalindonesia.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:actmetalindonesia.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.actmetalindonesia.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.actmetalindonesia.id', port=443): Failed to resolve 'www.actmetalindonesia.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:act-metal-indonesia.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.act-metal-indonesia.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.act-metal-indonesia.co.id', port=443): Failed to resolve 'www.act-metal-indonesia.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:act-metal-indonesia.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.act-metal-indonesia.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.act-metal-indonesia.com', port=443): Failed to resolve 'www.act-metal-indonesia.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:actadiurna.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.actadiurna.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.actadiurna.co.id', port=443): Failed to resolve 'www.actadiurna.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:actadiurna.com": {
+    "is_valid": true,
+    "final_url": "https://www.actadiurna.com/"
+  },
+  "web:acuankapasutama.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.acuankapasutama.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.acuankapasutama.co.id', port=443): Failed to resolve 'www.acuankapasutama.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:acuankapasutama.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.acuankapasutama.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.acuankapasutama.com', port=443): Failed to resolve 'www.acuankapasutama.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:acuankapasutama.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.acuankapasutama.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.acuankapasutama.id', port=443): Failed to resolve 'www.acuankapasutama.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:acuan-kapas-utama.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.acuan-kapas-utama.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.acuan-kapas-utama.co.id', port=443): Failed to resolve 'www.acuan-kapas-utama.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:acuan-kapas-utama.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.acuan-kapas-utama.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.acuan-kapas-utama.com', port=443): Failed to resolve 'www.acuan-kapas-utama.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:acuan.co.id": {
+    "is_valid": true,
+    "final_url": "https://www.acuan.co.id/"
+  },
+  "web:adabarumetalperkasa.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adabarumetalperkasa.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.adabarumetalperkasa.co.id', port=443): Failed to resolve 'www.adabarumetalperkasa.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:adabarumetalperkasa.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adabarumetalperkasa.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.adabarumetalperkasa.com', port=443): Failed to resolve 'www.adabarumetalperkasa.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:adabarumetalperkasa.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adabarumetalperkasa.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.adabarumetalperkasa.id', port=443): Failed to resolve 'www.adabarumetalperkasa.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:ada-baru-metal-perkasa.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.ada-baru-metal-perkasa.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.ada-baru-metal-perkasa.co.id', port=443): Failed to resolve 'www.ada-baru-metal-perkasa.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:ada-baru-metal-perkasa.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.ada-baru-metal-perkasa.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.ada-baru-metal-perkasa.com', port=443): Failed to resolve 'www.ada-baru-metal-perkasa.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:adamtex.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adamtex.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.adamtex.co.id', port=443): Failed to resolve 'www.adamtex.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:adamtex.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adamtex.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.adamtex.com', port=443): Failed to resolve 'www.adamtex.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:adamtex.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adamtex.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.adamtex.id', port=443): Failed to resolve 'www.adamtex.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:adarasejahteralestari.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adarasejahteralestari.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.adarasejahteralestari.co.id', port=443): Failed to resolve 'www.adarasejahteralestari.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:adarasejahteralestari.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adarasejahteralestari.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.adarasejahteralestari.com', port=443): Failed to resolve 'www.adarasejahteralestari.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:adarasejahteralestari.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adarasejahteralestari.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.adarasejahteralestari.id', port=443): Failed to resolve 'www.adarasejahteralestari.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:adara-sejahtera-lestari.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adara-sejahtera-lestari.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.adara-sejahtera-lestari.co.id', port=443): Failed to resolve 'www.adara-sejahtera-lestari.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:adara-sejahtera-lestari.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adara-sejahtera-lestari.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.adara-sejahtera-lestari.com', port=443): Failed to resolve 'www.adara-sejahtera-lestari.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:adara.co.id": {
+    "is_valid": true,
+    "final_url": "https://www.adara.co.id/"
+  },
+  "web:addvantageteknologi.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.addvantageteknologi.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.addvantageteknologi.co.id', port=443): Failed to resolve 'www.addvantageteknologi.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:addvantageteknologi.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.addvantageteknologi.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.addvantageteknologi.com', port=443): Failed to resolve 'www.addvantageteknologi.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:addvantageteknologi.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.addvantageteknologi.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.addvantageteknologi.id', port=443): Failed to resolve 'www.addvantageteknologi.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:add-vantage-teknologi.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.add-vantage-teknologi.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.add-vantage-teknologi.co.id', port=443): Failed to resolve 'www.add-vantage-teknologi.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:add-vantage-teknologi.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.add-vantage-teknologi.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.add-vantage-teknologi.com', port=443): Failed to resolve 'www.add-vantage-teknologi.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:adeabubakar.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adeabubakar.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.adeabubakar.co.id', port=443): Failed to resolve 'www.adeabubakar.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:adeabubakar.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adeabubakar.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.adeabubakar.com', port=443): Failed to resolve 'www.adeabubakar.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:adeabubakar.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adeabubakar.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.adeabubakar.id', port=443): Failed to resolve 'www.adeabubakar.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:ade-abubakar.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.ade-abubakar.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.ade-abubakar.co.id', port=443): Failed to resolve 'www.ade-abubakar.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:ade-abubakar.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.ade-abubakar.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.ade-abubakar.com', port=443): Failed to resolve 'www.ade-abubakar.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:adehametalindo.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adehametalindo.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.adehametalindo.co.id', port=443): Failed to resolve 'www.adehametalindo.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:adehametalindo.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adehametalindo.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.adehametalindo.com', port=443): Failed to resolve 'www.adehametalindo.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:adehametalindo.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adehametalindo.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.adehametalindo.id', port=443): Failed to resolve 'www.adehametalindo.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:adeha-metalindo.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adeha-metalindo.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.adeha-metalindo.co.id', port=443): Failed to resolve 'www.adeha-metalindo.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:adeha-metalindo.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adeha-metalindo.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.adeha-metalindo.com', port=443): Failed to resolve 'www.adeha-metalindo.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:adeha.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adeha.co.id', port=443): Max retries exceeded with url: / (Caused by SSLError(SSLCertVerificationError(1, \"[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: Hostname mismatch, certificate is not valid for 'www.adeha.co.id'. (_ssl.c:1032)\")))"
+  },
+  "web:adeha.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adeha.com', port=443): Read timed out. (read timeout=6)"
+  },
+  "web:adelphapersadakosmetindo.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adelphapersadakosmetindo.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.adelphapersadakosmetindo.co.id', port=443): Failed to resolve 'www.adelphapersadakosmetindo.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:adelphapersadakosmetindo.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adelphapersadakosmetindo.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.adelphapersadakosmetindo.com', port=443): Failed to resolve 'www.adelphapersadakosmetindo.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:adelphapersadakosmetindo.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adelphapersadakosmetindo.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.adelphapersadakosmetindo.id', port=443): Failed to resolve 'www.adelphapersadakosmetindo.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:adelpha-persada-kosmetindo.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adelpha-persada-kosmetindo.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.adelpha-persada-kosmetindo.co.id', port=443): Failed to resolve 'www.adelpha-persada-kosmetindo.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:adelpha-persada-kosmetindo.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adelpha-persada-kosmetindo.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.adelpha-persada-kosmetindo.com', port=443): Failed to resolve 'www.adelpha-persada-kosmetindo.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:adelpha.co.id": {
+    "is_valid": false,
+    "reason": "Status 500"
+  },
+  "web:adelpha.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adelpha.com', port=443): Max retries exceeded with url: / (Caused by SSLError(SSLCertVerificationError(1, \"[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: Hostname mismatch, certificate is not valid for 'www.adelpha.com'. (_ssl.c:1032)\")))"
+  },
+  "web:adevnaturalindonesia.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adevnaturalindonesia.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.adevnaturalindonesia.co.id', port=443): Failed to resolve 'www.adevnaturalindonesia.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:adevnaturalindonesia.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adevnaturalindonesia.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.adevnaturalindonesia.com', port=443): Failed to resolve 'www.adevnaturalindonesia.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:adevnaturalindonesia.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adevnaturalindonesia.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.adevnaturalindonesia.id', port=443): Failed to resolve 'www.adevnaturalindonesia.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:adev-natural-indonesia.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adev-natural-indonesia.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.adev-natural-indonesia.co.id', port=443): Failed to resolve 'www.adev-natural-indonesia.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:adev-natural-indonesia.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adev-natural-indonesia.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.adev-natural-indonesia.com', port=443): Failed to resolve 'www.adev-natural-indonesia.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:adev.co.id": {
+    "is_valid": true,
+    "final_url": "https://adev.co.id/"
+  },
+  "web:adharcojayaselaras.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adharcojayaselaras.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.adharcojayaselaras.co.id', port=443): Failed to resolve 'www.adharcojayaselaras.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:adharcojayaselaras.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adharcojayaselaras.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.adharcojayaselaras.com', port=443): Failed to resolve 'www.adharcojayaselaras.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:adharcojayaselaras.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adharcojayaselaras.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.adharcojayaselaras.id', port=443): Failed to resolve 'www.adharcojayaselaras.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:adharco-jaya-selaras.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adharco-jaya-selaras.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.adharco-jaya-selaras.co.id', port=443): Failed to resolve 'www.adharco-jaya-selaras.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:adharco-jaya-selaras.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adharco-jaya-selaras.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.adharco-jaya-selaras.com', port=443): Failed to resolve 'www.adharco-jaya-selaras.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:adharco.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adharco.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.adharco.co.id', port=443): Failed to resolve 'www.adharco.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:adharco.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adharco.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.adharco.com', port=443): Failed to resolve 'www.adharco.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:adhichandrajaya.co.id": {
+    "is_valid": true,
+    "final_url": "https://www.adhichandrajaya.id/"
+  },
+  "web:adhikaryaperkasa.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adhikaryaperkasa.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.adhikaryaperkasa.co.id', port=443): Failed to resolve 'www.adhikaryaperkasa.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:adhikaryaperkasa.com": {
+    "is_valid": true,
+    "final_url": "https://www.adhikaryaperkasa.com/"
+  },
+  "web:adhimitradinamika.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adhimitradinamika.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.adhimitradinamika.co.id', port=443): Failed to resolve 'www.adhimitradinamika.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:adhimitradinamika.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adhimitradinamika.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.adhimitradinamika.com', port=443): Failed to resolve 'www.adhimitradinamika.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:adhimitradinamika.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adhimitradinamika.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.adhimitradinamika.id', port=443): Failed to resolve 'www.adhimitradinamika.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:adhi-mitra-dinamika.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adhi-mitra-dinamika.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.adhi-mitra-dinamika.co.id', port=443): Failed to resolve 'www.adhi-mitra-dinamika.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:adhi-mitra-dinamika.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adhi-mitra-dinamika.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.adhi-mitra-dinamika.com', port=443): Failed to resolve 'www.adhi-mitra-dinamika.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:adhi.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adhi.co.id', port=443): Max retries exceeded with url: / (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1032)')))"
+  },
+  "web:adhi.com": {
+    "is_valid": true,
+    "final_url": "https://www.adhi.com/"
+  },
+  "web:adhipersadabeton.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adhipersadabeton.co.id', port=443): Max retries exceeded with url: / (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1032)')))"
+  },
+  "web:adhipersadabeton.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adhipersadabeton.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.adhipersadabeton.com', port=443): Failed to resolve 'www.adhipersadabeton.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:adhipersadabeton.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adhipersadabeton.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.adhipersadabeton.id', port=443): Failed to resolve 'www.adhipersadabeton.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:adhi-persada-beton.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adhi-persada-beton.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.adhi-persada-beton.co.id', port=443): Failed to resolve 'www.adhi-persada-beton.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:adhi-persada-beton.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adhi-persada-beton.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.adhi-persada-beton.com', port=443): Failed to resolve 'www.adhi-persada-beton.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:adhipetrogassarana.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adhipetrogassarana.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.adhipetrogassarana.co.id', port=443): Failed to resolve 'www.adhipetrogassarana.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:adhipetrogassarana.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adhipetrogassarana.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.adhipetrogassarana.com', port=443): Failed to resolve 'www.adhipetrogassarana.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:adhipetrogassarana.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adhipetrogassarana.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.adhipetrogassarana.id', port=443): Failed to resolve 'www.adhipetrogassarana.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:adhi-petrogas-sarana.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adhi-petrogas-sarana.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.adhi-petrogas-sarana.co.id', port=443): Failed to resolve 'www.adhi-petrogas-sarana.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:adhi-petrogas-sarana.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adhi-petrogas-sarana.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.adhi-petrogas-sarana.com', port=443): Failed to resolve 'www.adhi-petrogas-sarana.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:adhiteknomandiri.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adhiteknomandiri.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.adhiteknomandiri.co.id', port=443): Failed to resolve 'www.adhiteknomandiri.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:adhiteknomandiri.com": {
+    "is_valid": true,
+    "final_url": "https://www.adhiteknomandiri.com/"
+  },
+  "web:adhimixpciindonesia.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adhimixpciindonesia.co.id', port=443): Max retries exceeded with url: / (Caused by SSLError(SSLCertVerificationError(1, \"[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: Hostname mismatch, certificate is not valid for 'www.adhimixpciindonesia.co.id'. (_ssl.c:1032)\")))"
+  },
+  "web:adhimixpciindonesia.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adhimixpciindonesia.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.adhimixpciindonesia.com', port=443): Failed to resolve 'www.adhimixpciindonesia.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:adhimixpciindonesia.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adhimixpciindonesia.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.adhimixpciindonesia.id', port=443): Failed to resolve 'www.adhimixpciindonesia.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:adhimix-pci-indonesia.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adhimix-pci-indonesia.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.adhimix-pci-indonesia.co.id', port=443): Failed to resolve 'www.adhimix-pci-indonesia.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:adhimix-pci-indonesia.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adhimix-pci-indonesia.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.adhimix-pci-indonesia.com', port=443): Failed to resolve 'www.adhimix-pci-indonesia.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:adhimix.co.id": {
+    "is_valid": true,
+    "final_url": "https://www.adhimix.co.id/about-us"
+  },
+  "web:adhimixprecastindonesia.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adhimixprecastindonesia.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.adhimixprecastindonesia.co.id', port=443): Failed to resolve 'www.adhimixprecastindonesia.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:adhimixprecastindonesia.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adhimixprecastindonesia.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.adhimixprecastindonesia.com', port=443): Failed to resolve 'www.adhimixprecastindonesia.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:adhimixprecastindonesia.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adhimixprecastindonesia.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.adhimixprecastindonesia.id', port=443): Failed to resolve 'www.adhimixprecastindonesia.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:adhimix-precast-indonesia.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adhimix-precast-indonesia.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.adhimix-precast-indonesia.co.id', port=443): Failed to resolve 'www.adhimix-precast-indonesia.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:adhimix-precast-indonesia.com": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adhimix-precast-indonesia.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.adhimix-precast-indonesia.com', port=443): Failed to resolve 'www.adhimix-precast-indonesia.com' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:adhimixrmcindonesia.co.id": {
+    "is_valid": false,
+    "reason": "HTTPSConnectionPool(host='www.adhimixrmcindonesia.co.id', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='www.adhimixrmcindonesia.co.id', port=443): Failed to resolve 'www.adhimixrmcindonesia.co.id' ([Errno 11001] getaddrinfo failed)\"))"
+  },
+  "web:adhimixrmcindonesia.com": {
+    "is_valid": true,
+    "final_url": "https://www.adhimixrmcindonesia.com/"
+  },
+  "web:id.abbott": {
+    "is_valid": true,
+    "final_url": "https://www.id.abbott/"
+  },
+  "web:pusatalatbantudengar.com": {
+    "is_valid": true,
+    "final_url": "https://pusatalatbantudengar.com/"
+  },
+  "web:adhichandrajaya.id": {
+    "is_valid": true,
+    "final_url": "https://www.adhichandrajaya.id/"
+  }
+}

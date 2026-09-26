@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% block title %}Proses Data #{{ raw.id }}{% endblock %}
+{% block content %}
+<h3 class="mb-3">Proses Data #{{ raw.id }} — {{ raw.original_name }}</h3>
+<p><span class="badge bg-secondary">{{ raw.source_type }}</span> Status: <strong>{{ raw.status }}</strong>
+{% if raw.ai_classification %} | Klasifikasi AI: <strong>{{ raw.ai_classification }}</strong>{% endif %}</p>
+
+{% if raw.error_message %}<div class="alert alert-danger">{{ raw.error_message }}</div>{% endif %}
+
+{% if extracted.download_filename %}
+<div class="alert alert-success d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h5 class="alert-heading mb-1"><i class="bi bi-file-earmark-spreadsheet-fill text-success"></i> File Hasil Enrichment Excel Siap Diunduh</h5>
+    <div>Total: <strong>{{ extracted.total_rows }}</strong> baris data berhasil dienrichment secara lengkap.</div>
+  </div>
+  <a class="btn btn-success" href="{{ url_for('data_collection.download_file', filename=extracted.download_filename) }}">
+    <i class="bi bi-download"></i> Unduh Hasil Enrichment (.xlsx)
+  </a>
+</div>
+{% endif %}
+
+<div class="row g-3">
+  <div class="col-md-5">
+    <div class="card p-3 mb-3">
+      <h6>Langkah 1: Klasifikasi Jenis Data (AI Agent)</h6>
+      <p class="text-muted small">Mengidentifikasi struktur & jenis data menggunakan Groq AI.</p>
+      <form method="post" action="{{ url_for('data_processing.classify', raw_id=raw.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="btn btn-sm btn-outline-primary">Jalankan Klasifikasi AI</button>
+      </form>
+    </div>
+
+    <div class="card p-3">
+      <h6>Langkah 3: Validasi, Deduplikasi, Enrichment & Simpan</h6>
+      <p class="text-muted small">Baris data akan divalidasi kualitasnya, difilter duplikasi internal & database, opsional diperkaya profilnya oleh AI, lalu disimpan ke katalog Prospek.</p>
+      <form method="post" action="{{ url_for('data_processing.process_to_prospects', raw_id=raw.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="form-check mb-2">
+          <input class="form-check-input" type="checkbox" name="enrich" id="enrich">
+          <label class="form-check-label small" for="enrich">Jalankan Enrichment Tambahan (AI, maks. 15 entri pertama)</label>
+        </div>
+        <button class="btn btn-success btn-sm w-100">Proses ke Database Prospek</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="col-md-7">
+    <div class="card p-3">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h6 class="mb-0">Langkah 2: Pemetaan Kolom (Mapping Kolom)</h6>
+        <form method="post" action="{{ url_for('data_processing.map_columns', raw_id=raw.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn btn-sm btn-outline-primary"><i class="bi bi-magic"></i> Mapping Otomatis (AI)</button>
+        </form>
+      </div>
+      <p class="text-muted small">Sesuaikan pemetaan kolom sumber file dengan skema target database prospek.</p>
+
+      {% set map_dict = mapping.get('mapping', {}) if mapping else {} %}
+      {% set target_options = [
+        ('company_name', 'Nama Perusahaan (Wajib)'),
+        ('industry', 'Industri'),
+        ('region', 'Wilayah / Kota'),
+        ('company_size', 'Ukuran Perusahaan'),
+        ('website', 'Website'),
+        ('contact_name', 'Nama Kontak PIC'),
+        ('contact_email', 'Email Kontak'),
+        ('contact_phone', 'Nomor Telepon'),
+        ('description', 'Deskripsi Bisnis')
+      ] %}
+
+      {% if extracted.columns and extracted.columns|length > 0 %}
+      <form method="post" action="{{ url_for('data_processing.save_mapping', raw_id=raw.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="table-responsive" style="max-height: 280px; overflow-y: auto;">
+          <table class="table table-sm table-bordered align-middle">
+            <thead class="table-light">
+              <tr>
+                <th style="width: 45%;">Kolom Sumber Data</th>
+                <th style="width: 55%;">Target Skema Prospek</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for col in extracted.columns %}
+              <tr>
+                <td><code>{{ col }}</code></td>
+                <td>
+                  <select name="map_{{ col }}" class="form-select form-select-sm">
+                    <option value="">-- Abaikan Kolom Ini --</option>
+                    {% for opt_val, opt_label in target_options %}
+                      <option value="{{ opt_val }}" {% if map_dict.get(col) == opt_val %}selected{% endif %}>
+                        {{ opt_label }}
+                      </option>
+                    {% endfor %}
+                  </select>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <button class="btn btn-primary btn-sm mt-2">Simpan Pemetaan Kolom</button>
+      </form>
+      {% else %}
+        <p class="text-muted small">Data tidak memiliki kolom terstruktur (misal dokumen teks atau ekstraksi kosong).</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<h5 class="mt-4">Data Terekstrak (Preview)</h5>
+{% if extracted.sample %}
+<p class="text-muted small">Menampilkan sample data preview dari file ({{ extracted.total_rows }} total baris):</p>
+<div class="table-responsive border rounded bg-white mb-3" style="max-height: 400px; overflow-y: auto;">
+  <table class="table table-sm table-striped mb-0 small">
+    <thead class="table-light sticky-top">
+      <tr>
+        {% for col in extracted.columns %}
+        <th>{{ col }}</th>
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in extracted.sample %}
+      <tr>
+        {% for col in extracted.columns %}
+        <td>{{ row.get(col, '') }}</td>
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<pre class="small bg-light p-3 border rounded" style="max-height:350px; overflow:auto;">{{ extracted | tojson(indent=2) }}</pre>
+{% endif %}
+{% endblock %}

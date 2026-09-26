@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Log Aktivitas{% endblock %}
+{% block content %}
+<h3>Melihat Log Aktivitas</h3>
+<table class="table table-sm bg-white mt-3">
+  <thead><tr><th>User ID</th><th>Aksi</th><th>Detail</th><th>Waktu</th></tr></thead>
+  <tbody>
+  {% for e in entries %}
+    <tr><td>{{ e.user_id }}</td><td>{{ e.action }}</td><td class="small">{{ e.detail }}</td><td>{{ e.created_at }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if record else 'Tambah' }} {{ config.title }}{% endblock %}
+{% block content %}
+<h3>{{ 'Edit' if record else 'Tambah' }} {{ config.title }}</h3>
+<form method="post" class="card p-3 mt-3" style="max-width:900px;">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="row g-3">
+  {% for field in config.fields %}
+    {% set value = record|attr(field) if record else '' %}
+    <div class="col-md-6">
+      <label class="form-label">{{ field|replace('_', ' ')|title }}{% if field in config.required %} *{% endif %}</label>
+      {% if field == 'is_active' %}
+      <div class="form-check mt-2"><input type="checkbox" name="{{ field }}" value="1" class="form-check-input" {% if value %}checked{% endif %}><label class="form-check-label">Aktif</label></div>
+      {% elif field in ['description', 'prompt_template', 'config_json', 'source_urls_json', 'social_json'] %}
+      <textarea name="{{ field }}" class="form-control" rows="4" {% if field in config.required %}required{% endif %}>{{ value or '' }}</textarea>
+      {% else %}
+      <input name="{{ field }}" class="form-control" value="{{ value or '' }}" {% if field in config.required %}required{% endif %}>
+      {% endif %}
+    </div>
+  {% endfor %}
+  </div>
+  <div class="mt-3"><button class="btn btn-primary">Simpan</button> <a class="btn btn-outline-secondary" href="{{ url_for('admin.data_manager', resource=resource) }}">Batal</a></div>
+</form>
+{% endblock %}

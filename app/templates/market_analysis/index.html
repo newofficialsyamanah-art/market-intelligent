@@ -1,0 +1,364 @@
+{% extends "base.html" %}
+{% block title %}BA Workspace & Intelligence Analytics - SYAMANAH{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+  <div>
+    <h3 class="mb-0"><i class="bi bi-briefcase text-primary me-2"></i>Business Analyst Workspace</h3>
+    <p class="text-muted small mb-0">Master Organization Intelligence, Market Segmentation, and Opportunity Analytics.</p>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{{ url_for('market_analysis.explorer') }}" class="btn btn-outline-primary btn-sm">
+      <i class="bi bi-building me-1"></i> Company Explorer
+    </a>
+    <form method="post" action="{{ url_for('market_analysis.product_recommendation') }}" class="d-inline">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="btn btn-primary btn-sm">
+        <i class="bi bi-magic me-1"></i> Rekomendasi Produk (AI)
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- Navigation Tabs -->
+<ul class="nav nav-pills mb-4 border-bottom pb-2">
+  <li class="nav-item">
+    <a class="nav-link active" href="{{ url_for('market_analysis.index') }}">
+      <i class="bi bi-graph-up me-1"></i> Market & Sektor Analytics
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="{{ url_for('market_analysis.explorer') }}">
+      <i class="bi bi-funnel me-1"></i> Company Intelligence Explorer
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="{{ url_for('market_analysis.history') }}">
+      <i class="bi bi-clock-history me-1"></i> Riwayat AI Recommendation
+    </a>
+  </li>
+</ul>
+
+<!-- KPI Cards -->
+<div class="row g-3 mb-4">
+  <div class="col-md-3 col-sm-6">
+    <div class="card h-100 border-0 shadow-sm p-3 border-start border-4 border-primary">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <span class="text-muted small text-uppercase fw-semibold">Master Organizations</span>
+          <h3 class="mb-0 mt-1 fw-bold text-dark">{{ overview.total_orgs }}</h3>
+          <small class="text-success"><i class="bi bi-shield-check"></i> Single Source of Truth</small>
+        </div>
+        <div class="bg-primary-subtle text-primary p-3 rounded-circle">
+          <i class="bi bi-buildings fs-4"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3 col-sm-6">
+    <div class="card h-100 border-0 shadow-sm p-3 border-start border-4 border-success">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <span class="text-muted small text-uppercase fw-semibold">Avg Opportunity Score</span>
+          <h3 class="mb-0 mt-1 fw-bold text-dark">{{ overview.avg_opportunity_score }} <small class="text-muted fs-6">/ 100</small></h3>
+          <small class="text-muted">Kelayakan Prospek Pasar</small>
+        </div>
+        <div class="bg-success-subtle text-success p-3 rounded-circle">
+          <i class="bi bi-speedometer2 fs-4"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3 col-sm-6">
+    <div class="card h-100 border-0 shadow-sm p-3 border-start border-4 border-warning">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <span class="text-muted small text-uppercase fw-semibold">High Priority (Tier A/B)</span>
+          <h3 class="mb-0 mt-1 fw-bold text-dark">{{ overview.high_priority_count }} <small class="text-muted fs-6">({{ overview.high_priority_pct }}%)</small></h3>
+          <small class="text-warning-emphasis">Lead bernilai tinggi</small>
+        </div>
+        <div class="bg-warning-subtle text-warning-emphasis p-3 rounded-circle">
+          <i class="bi bi-fire fs-4"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3 col-sm-6">
+    <div class="card h-100 border-0 shadow-sm p-3 border-start border-4 border-info">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <span class="text-muted small text-uppercase fw-semibold">Contactability Rate</span>
+          <h3 class="mb-0 mt-1 fw-bold text-dark">{{ overview.contactability_rate }}%</h3>
+          <small class="text-muted">{{ overview.contactable_count }} entitas berkanal kontak</small>
+        </div>
+        <div class="bg-info-subtle text-info p-3 rounded-circle">
+          <i class="bi bi-telephone-inbound fs-4"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Charts Row 1: Industry Distribution & Priority Tiers -->
+<div class="row g-3 mb-4">
+  <div class="col-lg-8">
+    <div class="card border-0 shadow-sm p-3 h-100">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h6 class="mb-0 fw-bold"><i class="bi bi-bar-chart me-1 text-primary"></i> Distribusi Sektor Industri Utama & Skor Rata-rata</h6>
+        <span class="badge bg-light text-secondary">Top 10 Sektor</span>
+      </div>
+      <div style="height: 300px;">
+        <canvas id="industryChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card border-0 shadow-sm p-3 h-100">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h6 class="mb-0 fw-bold"><i class="bi bi-pie-chart me-1 text-primary"></i> Segmentasi Priority Tier</h6>
+        <span class="badge bg-light text-secondary">A / B / C / D</span>
+      </div>
+      <div style="height: 300px;" class="d-flex align-items-center justify-content-center">
+        <canvas id="segmentationChart"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Charts Row 2: Regional Distribution & Product-Fit Opportunities -->
+<div class="row g-3 mb-4">
+  <div class="col-lg-6">
+    <div class="card border-0 shadow-sm p-3 h-100">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h6 class="mb-0 fw-bold"><i class="bi bi-geo-alt me-1 text-primary"></i> Konsentrasi Geografis (Top Provinsi)</h6>
+        <span class="badge bg-light text-secondary">Persebaran Pasar</span>
+      </div>
+      <div style="height: 280px;">
+        <canvas id="regionChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="card border-0 shadow-sm p-3 h-100">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h6 class="mb-0 fw-bold"><i class="bi bi-tag me-1 text-primary"></i> Peluang Rekomendasi Produk Apparel / Merchandise</h6>
+        <span class="badge bg-light text-secondary">Product-Fit Matrix</span>
+      </div>
+      <div style="height: 280px;">
+        <canvas id="productFitChart"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Row 3: White-Space Market Gaps & Data Quality Visibility -->
+<div class="row g-3 mb-4">
+  <!-- White-Space Market Gaps -->
+  <div class="col-lg-8">
+    <div class="card border-0 shadow-sm p-3 h-100">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <h6 class="mb-0 fw-bold"><i class="bi bi-stars text-warning me-1"></i> White-Space Market Gap Analysis</h6>
+          <small class="text-muted">Kluster industri regional berpotensi tinggi yang belum tersentuh (Discovered).</small>
+        </div>
+        <a href="{{ url_for('market_analysis.explorer') }}" class="btn btn-outline-secondary btn-sm">Buka Semua &rarr;</a>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle table-sm">
+          <thead class="table-light">
+            <tr>
+              <th>Wilayah (Provinsi)</th>
+              <th>Sektor Industri</th>
+              <th class="text-center">Jumlah Perusahaan</th>
+              <th class="text-center">Skor Peluang</th>
+              <th class="text-center">Aksi BA</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for cluster in white_space %}
+            <tr>
+              <td class="fw-semibold">{{ cluster.province }}</td>
+              <td><span class="badge bg-secondary-subtle text-secondary-emphasis">{{ cluster.industry }}</span></td>
+              <td class="text-center fw-bold">{{ cluster.count }}</td>
+              <td class="text-center">
+                <span class="badge {% if cluster.avg_score >= 60 %}bg-success{% else %}bg-primary{% endif %}">
+                  {{ cluster.avg_score }}
+                </span>
+              </td>
+              <td class="text-center">
+                <a href="{{ url_for('market_analysis.explorer', province=cluster.province, industry=cluster.industry) }}" class="btn btn-outline-primary btn-sm py-0 px-2">
+                  <i class="bi bi-search"></i> Eksplorasi
+                </a>
+              </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" class="text-center text-muted py-3">Belum ada kluster white-space yang teridentifikasi.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Data Quality & Freshness Visibility -->
+  <div class="col-lg-4">
+    <div class="card border-0 shadow-sm p-3 h-100">
+      <h6 class="mb-2 fw-bold"><i class="bi bi-check2-circle text-success me-1"></i> Data Quality & Freshness</h6>
+      <p class="text-muted small mb-3">Visibilitas kelengkapan atribut kontak dan usia pembaharuan data master.</p>
+
+      <div class="mb-3">
+        <div class="d-flex justify-content-between small mb-1">
+          <span>Nomor Telepon Kantor</span>
+          <span class="fw-bold">{{ data_quality.phone_pct }}%</span>
+        </div>
+        <div class="progress" style="height: 6px;">
+          <div class="progress-bar bg-primary" style="width: {{ data_quality.phone_pct }}%;"></div>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <div class="d-flex justify-content-between small mb-1">
+          <span>Corporate Email</span>
+          <span class="fw-bold">{{ data_quality.email_pct }}%</span>
+        </div>
+        <div class="progress" style="height: 6px;">
+          <div class="progress-bar bg-info" style="width: {{ data_quality.email_pct }}%;"></div>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <div class="d-flex justify-content-between small mb-1">
+          <span>Corporate Domain / Website</span>
+          <span class="fw-bold">{{ data_quality.domain_pct }}%</span>
+        </div>
+        <div class="progress" style="height: 6px;">
+          <div class="progress-bar bg-success" style="width: {{ data_quality.domain_pct }}%;"></div>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <div class="d-flex justify-content-between small mb-1">
+          <span>Alamat Lengkap</span>
+          <span class="fw-bold">{{ data_quality.address_pct }}%</span>
+        </div>
+        <div class="progress" style="height: 6px;">
+          <div class="progress-bar bg-secondary" style="width: {{ data_quality.address_pct }}%;"></div>
+        </div>
+      </div>
+
+      <hr class="my-3">
+
+      <div class="small">
+        <span class="fw-bold d-block mb-1">Kebaruan Data (Freshness):</span>
+        <div class="d-flex justify-content-between py-1 border-bottom">
+          <span class="text-success"><i class="bi bi-dot"></i> Terkini (&lt; 30 hari)</span>
+          <span class="fw-bold">{{ data_quality.fresh_30d }}</span>
+        </div>
+        <div class="d-flex justify-content-between py-1 border-bottom">
+          <span class="text-warning"><i class="bi bi-dot"></i> Sedang (30–90 hari)</span>
+          <span class="fw-bold">{{ data_quality.moderate_90d }}</span>
+        </div>
+        <div class="d-flex justify-content-between py-1">
+          <span class="text-muted"><i class="bi bi-dot"></i> Perlu Verifikasi (&gt; 90 hari)</span>
+          <span class="fw-bold">{{ data_quality.older_90d }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const chartData = {{ chart_data|tojson }};
+
+  // 1. Industry Distribution Chart
+  new Chart(document.getElementById('industryChart'), {
+    type: 'bar',
+    data: {
+      labels: chartData.ind_labels,
+      datasets: [{
+        label: 'Jumlah Perusahaan',
+        data: chartData.ind_counts,
+        backgroundColor: '#3b82f6',
+        borderRadius: 4
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { autoSkip: false, maxRotation: 45, minRotation: 25, font: { size: 10 } } },
+        y: { beginAtZero: true }
+      }
+    }
+  });
+
+  // 2. Segmentation Chart (Doughnut)
+  new Chart(document.getElementById('segmentationChart'), {
+    type: 'doughnut',
+    data: {
+      labels: chartData.tier_labels,
+      datasets: [{
+        data: chartData.tier_data,
+        backgroundColor: ['#ef4444', '#f97316', '#eab308', '#94a3b8', '#cbd5e1']
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } }
+      }
+    }
+  });
+
+  // 3. Regional Chart
+  new Chart(document.getElementById('regionChart'), {
+    type: 'bar',
+    data: {
+      labels: chartData.prov_labels,
+      datasets: [{
+        label: 'Perusahaan',
+        data: chartData.prov_counts,
+        backgroundColor: '#10b981',
+        borderRadius: 4
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      indexAxis: 'y',
+      plugins: { legend: { display: false } },
+      scales: { x: { beginAtZero: true } }
+    }
+  });
+
+  // 4. Product-Fit Chart
+  new Chart(document.getElementById('productFitChart'), {
+    type: 'bar',
+    data: {
+      labels: chartData.prod_labels,
+      datasets: [{
+        label: 'Perusahaan Cocok',
+        data: chartData.prod_counts,
+        backgroundColor: '#8b5cf6',
+        borderRadius: 4
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true } }
+    }
+  });
+});
+</script>
+{% endblock %}

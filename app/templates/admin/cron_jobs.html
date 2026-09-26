@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+{% block title %}Kelola & Eksekusi Otomasi Cron Jobs{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h3 class="mb-0">Kelola Jadwal & Eksekusi Otomasi (Cron Jobs)</h3>
+    <small class="text-muted">Eksekusi background otomatis & manual run bergaransi idempotent dengan tracking performa real-time.</small>
+  </div>
+</div>
+
+<div class="card p-3 my-3 shadow-sm border-0">
+  <h6 class="fw-bold mb-2"><i class="bi bi-plus-circle me-1"></i> Tambah Jadwal Otomasi Baru</h6>
+  <form method="post" action="{{ url_for('admin.create_cron_job') }}" class="row g-2">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="col-md-3">
+      <label class="form-label small text-muted mb-1">Nama Job</label>
+      <input name="name" class="form-control form-control-sm" placeholder="Misal: Daily Education Discovery" required>
+    </div>
+    <div class="col-md-4">
+      <label class="form-label small text-muted mb-1">Tipe Tugas Eksekusi</label>
+      <select name="task_type" class="form-select form-select-sm" required>
+        <optgroup label="Tugas Otomasi Indonesia Market Intelligence">
+          <option value="education_discovery">Discovery Institusi Pendidikan (PAUD - PT)</option>
+          <option value="community_discovery">Discovery Komunitas Olahraga & Mahasiswa</option>
+          <option value="social_discovery">Discovery Profil Media Sosial (IG, TikTok, FB, LinkedIn)</option>
+          <option value="social_enrichment">Enrichment Media Sosial & Sinyal Jersey Master Org</option>
+          <option value="event_refresh">Sinkronisasi Event & Turnamen Olahraga</option>
+          <option value="ai_product_scoring">AI Product Fit Scoring (Jersey & Teamwear)</option>
+          <option value="data_quality_check">Audit Kualitas Data & Kelengkapan Kontak</option>
+          <option value="duplicate_detection">Deteksi Duplikasi Ambigu (Identity Engine)</option>
+          <option value="retry_failed_jobs">Percobaan Ulang Otomatis (Retry Failed Jobs)</option>
+          <option value="cache_maintenance">Pembersihan Cache & Berkas Sementara</option>
+        </optgroup>
+        <optgroup label="Tugas Kompatibilitas Sistem">
+          <option value="scraping">Scraping Sumber URL</option>
+          <option value="ai_classification">Klasifikasi Kategori AI</option>
+          <option value="enrichment">Enrichment AI Legacy</option>
+          <option value="report_generation">Generate Laporan Berkala</option>
+          <option value="discovery_sync">Sync Discovery Sources</option>
+        </optgroup>
+      </select>
+    </div>
+    <div class="col-md-3">
+      <label class="form-label small text-muted mb-1">Jadwal Cron (5 Kolom)</label>
+      <input name="schedule_cron" class="form-control form-control-sm font-monospace" placeholder="0 2 * * * (cth: tiap pk 02:00)" required>
+    </div>
+    <div class="col-md-2 d-flex align-items-end">
+      <button class="btn btn-primary btn-sm w-100"><i class="bi bi-save me-1"></i> Simpan Jadwal</button>
+    </div>
+  </form>
+</div>
+
+<div class="card shadow-sm border-0">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover table-striped align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Job Name & Tipe</th>
+            <th>Jadwal Cron</th>
+            <th>Status</th>
+            <th>Durasi</th>
+            <th>Data Diproses</th>
+            <th>Terakhir Jalan</th>
+            <th>Jadwal Berikutnya</th>
+            <th class="text-end">Aksi Eksekusi</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for j in jobs %}
+          <tr>
+            <td>
+              <div class="fw-bold">{{ j.name }}</div>
+              <span class="badge bg-light text-dark border font-monospace small">{{ j.task_type }}</span>
+              {% if j.error_summary %}
+              <div class="text-danger small mt-1" style="font-size:0.75rem;" title="{{ j.error_summary }}">
+                <i class="bi bi-exclamation-triangle"></i> {{ j.error_summary[:60] }}...
+              </div>
+              {% endif %}
+            </td>
+            <td><code>{{ j.schedule_cron }}</code></td>
+            <td>
+              {% if j.last_status == 'success' %}
+                <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i> Sukses</span>
+              {% elif j.last_status == 'running' %}
+                <span class="badge bg-primary"><i class="bi bi-arrow-repeat spin me-1"></i> Berjalan</span>
+              {% elif j.last_status and 'error' in j.last_status %}
+                <span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i> Gagal</span>
+              {% else %}
+                <span class="badge bg-secondary">Idle</span>
+              {% endif %}
+              <div>
+                {% if j.is_active %}
+                  <span class="badge bg-success-subtle text-success small">Aktif</span>
+                {% else %}
+                  <span class="badge bg-secondary-subtle text-muted small">Nonaktif</span>
+                {% endif %}
+              </div>
+            </td>
+            <td>
+              {% if j.duration_seconds is not none %}
+                {{ j.duration_seconds }}s
+              {% else %}
+                -
+              {% endif %}
+            </td>
+            <td>
+              {% if j.records_processed is not none %}
+                <span class="fw-semibold text-dark">{{ j.records_processed }}</span>
+                <span class="text-muted small">({{ j.success_count or 0 }} ok / {{ j.failed_count or 0 }} fail)</span>
+              {% else %}
+                -
+              {% endif %}
+            </td>
+            <td class="small">{{ j.last_run.strftime('%Y-%m-%d %H:%M') if j.last_run else '-' }}</td>
+            <td class="small text-muted">{{ j.next_run.strftime('%Y-%m-%d %H:%M') if j.next_run else '-' }}</td>
+            <td class="text-end text-nowrap">
+              <!-- Run Now -->
+              <form method="post" action="{{ url_for('admin.run_cron_job', jid=j.id) }}" class="d-inline" onsubmit="return confirm('Jalankan task \'{{ j.name }}\' sekarang?');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-sm btn-primary" title="Jalankan sekarang secara manual">
+                  <i class="bi bi-play-fill"></i> Run Now
+                </button>
+              </form>
+
+              {% if j.last_status and 'error' in j.last_status %}
+              <!-- Retry -->
+              <form method="post" action="{{ url_for('admin.retry_cron_job', jid=j.id) }}" class="d-inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-sm btn-outline-warning" title="Retry job yang gagal">
+                  <i class="bi bi-arrow-clockwise"></i> Retry
+                </button>
+              </form>
+              {% endif %}
+
+              <!-- Toggle Active -->
+              <form method="post" action="{{ url_for('admin.toggle_cron_job', jid=j.id) }}" class="d-inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="btn btn-sm btn-outline-secondary" title="{{ 'Nonaktifkan' if j.is_active else 'Aktifkan' }}">
+                  {{ 'Pause' if j.is_active else 'Resume' }}
+                </button>
+              </form>
+            </td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="8" class="text-center text-muted py-4">Belum ada cron job terdaftar.</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

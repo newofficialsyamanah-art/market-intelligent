@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}Data Collection{% endblock %}
+{% block content %}
+<h3 class="mb-4">Data Collection</h3>
+<div class="row g-3">
+  <div class="col-md-6">
+    <div class="card p-3">
+      <h6><i class="bi bi-file-earmark-arrow-up"></i> Upload File (Excel/CSV/PDF)</h6>
+      <form method="post" action="{{ url_for('data_collection.upload_file') }}" enctype="multipart/form-data" class="mt-2">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="file" name="file" class="form-control mb-2" accept=".xlsx,.xls,.csv,.pdf" required>
+        <button class="btn btn-primary btn-sm">Upload & Ekstrak</button>
+      </form>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card p-3">
+      <h6><i class="bi bi-globe"></i> Input URL / Scraping</h6>
+      <form method="post" action="{{ url_for('data_collection.scrape_url') }}" class="mt-2">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="url" name="url" class="form-control mb-2" placeholder="https://contoh-perusahaan.com" required>
+        <button class="btn btn-primary btn-sm">Ambil Data dari Website</button>
+      </form>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card p-3">
+      <h6><i class="bi bi-plug"></i> Integrasi API</h6>
+      <form method="post" action="{{ url_for('data_collection.api_integration') }}" class="mt-2">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="url" name="api_url" class="form-control mb-2" placeholder="https://api.contoh.com/companies" required>
+        <select name="method" class="form-select mb-2">
+          <option>GET</option><option>POST</option>
+        </select>
+        <textarea name="headers" class="form-control mb-2" rows="2" placeholder='Headers JSON, mis: {"Authorization":"Bearer xxx"}'></textarea>
+        <textarea name="body" class="form-control mb-2" rows="2" placeholder="Body JSON (jika POST)"></textarea>
+        <button class="btn btn-primary btn-sm">Ambil Data dari API</button>
+      </form>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card p-3">
+      <h6><i class="bi bi-pencil-square"></i> Input Manual</h6>
+      <form method="post" action="{{ url_for('data_collection.manual_input') }}" class="mt-2">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input name="company_name" class="form-control mb-2" placeholder="Nama Perusahaan" required>
+        <div class="row">
+          <div class="col-6"><input name="industry" class="form-control mb-2" placeholder="Industri"></div>
+          <div class="col-6"><input name="region" class="form-control mb-2" placeholder="Wilayah"></div>
+        </div>
+        <div class="row">
+          <div class="col-6"><input name="company_size" class="form-control mb-2" placeholder="Ukuran Perusahaan"></div>
+          <div class="col-6"><input name="website" class="form-control mb-2" placeholder="Website"></div>
+        </div>
+        <input name="contact_email" class="form-control mb-2" placeholder="Email Kontak">
+        <textarea name="description" class="form-control mb-2" rows="2" placeholder="Deskripsi"></textarea>
+        <button class="btn btn-primary btn-sm">Simpan</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<h5 class="mt-4">Riwayat Data Mentah Terbaru</h5>
+<div class="table-responsive">
+<table class="table table-sm bg-white">
+  <thead><tr><th>ID</th><th>Sumber</th><th>Nama</th><th>Status</th><th>Waktu</th><th class="text-end">Aksi</th></tr></thead>
+  <tbody>
+  {% for item in items %}
+    <tr>
+      <td>{{ item.id }}</td>
+      <td><span class="badge bg-secondary">{{ item.source_type }}</span></td>
+      <td>{{ item.original_name }}</td>
+      <td>
+        {% if item.status == 'error' %}<span class="badge bg-danger">error</span>
+        {% elif item.status == 'processed' %}<span class="badge bg-success">processed</span>
+        {% else %}<span class="badge bg-info text-dark">{{ item.status }}</span>{% endif %}
+      </td>
+      <td>{{ item.created_at }}</td>
+      <td class="text-end">
+        {% if item.source_type == 'file' and item.status == 'processed' %}
+          <a class="btn btn-sm btn-outline-success me-1" href="{{ url_for('data_collection.download_by_raw_id', raw_id=item.id) }}">
+            <i class="bi bi-download"></i> Unduh Excel
+          </a>
+        {% endif %}
+        <a class="btn btn-sm btn-outline-primary" href="{{ url_for('data_processing.detail', raw_id=item.id) }}">
+          Detail
+        </a>
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

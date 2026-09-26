@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}Tambah Event Baru - Event Intelligence{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card border-0 shadow-sm rounded-3">
+      <div class="card-header bg-white py-3 border-0">
+        <h4 class="mb-0 fw-bold"><i class="bi bi-calendar-plus me-2 text-primary"></i>Tambah Event Baru</h4>
+        <p class="text-secondary small mb-0">Event akan otomatis dianalisis dan diskor relevansinya terhadap peluang apparel & merchandise B2B.</p>
+      </div>
+      <div class="card-body p-4">
+        <form method="POST" action="{{ url_for('events.create_event') }}">
+          <div class="mb-3">
+            <label class="form-label fw-medium">Nama Event *</label>
+            <input type="text" name="name" class="form-control" placeholder="Contoh: Indonesia Textile Expo 2026" required>
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label fw-medium">Tipe Event</label>
+              <select name="event_type" class="form-select">
+                <option value="Exhibition / Trade Fair" selected>Exhibition / Trade Fair</option>
+                <option value="Conference / Summit">Conference / Summit</option>
+                <option value="Career & Campus Fair">Career & Campus Fair</option>
+                <option value="Fashion Week / Showcase">Fashion Week / Showcase</option>
+                <option value="Industry Gathering">Industry Gathering</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-medium">Penyelenggara (Organizer)</label>
+              <input type="text" name="organizer" class="form-control" placeholder="Nama instansi/EO penyelenggara">
+            </div>
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label fw-medium">Tanggal Mulai</label>
+              <input type="date" name="start_date" class="form-control">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-medium">Tanggal Berakhir</label>
+              <input type="date" name="end_date" class="form-control">
+            </div>
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label fw-medium">Nama Venue / Lokasi</label>
+              <input type="text" name="venue" class="form-control" placeholder="Contoh: JIExpo Kemayoran">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label fw-medium">Kota</label>
+              <input type="text" name="city" class="form-control" placeholder="Jakarta Pusat">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label fw-medium">Provinsi</label>
+              <input type="text" name="province" class="form-control" placeholder="DKI Jakarta">
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-medium">Alamat Lengkap</label>
+            <input type="text" name="address" class="form-control" placeholder="Jl. H. Benyamin Sueb, Kemayoran">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-medium">Website Resmi</label>
+            <input type="url" name="website" class="form-control" placeholder="https://indointertex.com">
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label fw-medium">Deskripsi / Profil Event</label>
+            <textarea name="description" class="form-control" rows="3" placeholder="Informasi bidang industri, produk pameran, profil peserta..."></textarea>
+          </div>
+
+          <div class="d-flex justify-content-end gap-2">
+            <a href="{{ url_for('events.index') }}" class="btn btn-secondary">Batal</a>
+            <button type="submit" class="btn btn-primary px-4">Simpan & Analisis Relevansi</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,396 @@
+{% extends "base.html" %}
+
+{% block title %}Marketing Intelligence Dashboard - Market Intelligence{% endblock %}
+
+{% block content %}
+<div class="row align-items-center mb-4">
+  <div class="col-md-7">
+    <h2 class="mb-1 fw-bold text-dark"><i class="bi bi-bullseye me-2 text-danger"></i>Marketing Intelligence Workspace</h2>
+    <p class="text-secondary mb-0">Eksplorasi target pasar B2B, segmentasi apparel & merchandise, dan analisis akun prioritas.</p>
+  </div>
+  <div class="col-md-5 text-md-end mt-3 mt-md-0">
+    <a href="{{ url_for('marketing.targets') }}" class="btn btn-outline-primary me-2">
+      <i class="bi bi-search me-1"></i> Target Explorer
+    </a>
+    <a href="{{ url_for('marketing.segments') }}" class="btn btn-outline-info me-2">
+      <i class="bi bi-pie-chart me-1"></i> Segmentasi Pasar
+    </a>
+    <a href="{{ url_for('marketing.export') }}" class="btn btn-success">
+      <i class="bi bi-download me-1"></i> Export Target (CSV)
+    </a>
+  </div>
+</div>
+
+<!-- Primary KPIs (F6.4 Marketing Dashboard) -->
+<div class="row g-3 mb-3">
+  <div class="col-sm-6 col-xl-3">
+    <div class="card border-0 shadow-sm rounded-3 p-3">
+      <div class="d-flex align-items-center">
+        <div class="rounded-3 bg-primary bg-opacity-10 p-3 me-3 text-primary fs-3">
+          <i class="bi bi-buildings"></i>
+        </div>
+        <div>
+          <div class="text-secondary small fw-medium">Total Akun Master</div>
+          <div class="fs-4 fw-bold text-dark">{{ metrics.total_organizations }}</div>
+          <div class="text-muted" style="font-size: 0.75rem;">Single Source of Truth</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="card border-0 shadow-sm rounded-3 p-3">
+      <div class="d-flex align-items-center">
+        <div class="rounded-3 bg-success bg-opacity-10 p-3 me-3 text-success fs-3">
+          <i class="bi bi-patch-check"></i>
+        </div>
+        <div>
+          <div class="text-secondary small fw-medium">Enriched Organizations</div>
+          <div class="fs-4 fw-bold text-dark">{{ metrics.enriched_organizations }} <small class="text-muted fs-6">({{ metrics.enrichment_coverage }}%)</small></div>
+          <div class="text-muted" style="font-size: 0.75rem;">Enrichment Coverage</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="card border-0 shadow-sm rounded-3 p-3">
+      <div class="d-flex align-items-center">
+        <div class="rounded-3 bg-info bg-opacity-10 p-3 me-3 text-info fs-3">
+          <i class="bi bi-telephone-check"></i>
+        </div>
+        <div>
+          <div class="text-secondary small fw-medium">Contactable Accounts</div>
+          <div class="fs-4 fw-bold text-dark">{{ metrics.contactable_organizations }} <small class="text-muted fs-6">({{ metrics.contactability.contactability_pct }}%)</small></div>
+          <div class="text-muted" style="font-size: 0.75rem;">Phone/Email/Social/Domain</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="card border-0 shadow-sm rounded-3 p-3">
+      <div class="d-flex align-items-center">
+        <div class="rounded-3 bg-danger bg-opacity-10 p-3 me-3 text-danger fs-3">
+          <i class="bi bi-star-fill"></i>
+        </div>
+        <div>
+          <div class="text-secondary small fw-medium">Priority Organizations</div>
+          <div class="fs-4 fw-bold text-dark">{{ metrics.priority_organizations }}</div>
+          <div class="text-muted" style="font-size: 0.75rem;">Tier A (HOT) & Tier B (WARM)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-sm-6 col-xl-3">
+    <div class="card border-0 shadow-sm rounded-3 p-3">
+      <div class="d-flex align-items-center">
+        <div class="rounded-3 bg-warning bg-opacity-10 p-3 me-3 text-warning fs-3">
+          <i class="bi bi-calendar2-event"></i>
+        </div>
+        <div>
+          <div class="text-secondary small fw-medium">Event-Linked Orgs</div>
+          <div class="fs-4 fw-bold text-dark">{{ metrics.event_linked_organizations }} <small class="text-muted fs-6">({{ metrics.event_coverage }}%)</small></div>
+          <div class="text-muted" style="font-size: 0.75rem;">Partisipan Expo & Pameran</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="card border-0 shadow-sm rounded-3 p-3">
+      <div class="d-flex align-items-center">
+        <div class="rounded-3 bg-primary bg-opacity-10 p-3 me-3 text-primary fs-3">
+          <i class="bi bi-clock-history"></i>
+        </div>
+        <div>
+          <div class="text-secondary small fw-medium">Upcoming B2B Events</div>
+          <div class="fs-4 fw-bold text-dark">{{ metrics.upcoming_events }} <small class="text-muted fs-6">Event</small></div>
+          <div class="text-muted" style="font-size: 0.75rem;">Jadwal Aktif Mendatang</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="card border-0 shadow-sm rounded-3 p-3">
+      <div class="d-flex align-items-center">
+        <div class="rounded-3 bg-danger bg-opacity-10 p-3 me-3 text-danger fs-3">
+          <i class="bi bi-lightning-charge-fill"></i>
+        </div>
+        <div>
+          <div class="text-secondary small fw-medium">High Relevance Events</div>
+          <div class="fs-4 fw-bold text-dark">{{ metrics.high_relevance_events }} <small class="text-muted fs-6">Event</small></div>
+          <div class="text-muted" style="font-size: 0.75rem;">Fokus Apparel/Tekstil/Seragam</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="card border-0 shadow-sm rounded-3 p-3">
+      <div class="d-flex align-items-center">
+        <div class="rounded-3 bg-secondary bg-opacity-10 p-3 me-3 text-secondary fs-3">
+          <i class="bi bi-fire"></i>
+        </div>
+        <div>
+          <div class="text-secondary small fw-medium">High Opportunity Orgs</div>
+          <div class="fs-4 fw-bold text-dark">{{ metrics.high_opportunity_count }}</div>
+          <div class="text-muted" style="font-size: 0.75rem;">Skor Peluang &ge; 80</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Priority Tiers & Contactability Breakdown -->
+<div class="row g-4 mb-4">
+  <!-- Priority Tiers -->
+  <div class="col-lg-6">
+    <div class="card border-0 shadow-sm rounded-3 h-100">
+      <div class="card-header bg-white py-3 border-0">
+        <h5 class="mb-0 fw-bold"><i class="bi bi-bar-chart-steps me-2 text-primary"></i>Distribusi Priority Tiers</h5>
+      </div>
+      <div class="card-body p-4">
+        <div class="row g-3 text-center mb-3">
+          <div class="col-3">
+            <div class="p-2 rounded bg-danger-subtle text-danger border border-danger-subtle">
+              <div class="small fw-bold">Tier A (HOT)</div>
+              <div class="fs-5 fw-bold">{{ metrics.tier_distribution.A }}</div>
+            </div>
+          </div>
+          <div class="col-3">
+            <div class="p-2 rounded bg-warning-subtle text-warning-emphasis border border-warning-subtle">
+              <div class="small fw-bold">Tier B (WARM)</div>
+              <div class="fs-5 fw-bold">{{ metrics.tier_distribution.B }}</div>
+            </div>
+          </div>
+          <div class="col-3">
+            <div class="p-2 rounded bg-info-subtle text-info-emphasis border border-info-subtle">
+              <div class="small fw-bold">Tier C</div>
+              <div class="fs-5 fw-bold">{{ metrics.tier_distribution.C }}</div>
+            </div>
+          </div>
+          <div class="col-3">
+            <div class="p-2 rounded bg-secondary-subtle text-secondary border border-secondary-subtle">
+              <div class="small fw-bold">Tier D (LOW)</div>
+              <div class="fs-5 fw-bold">{{ metrics.tier_distribution.D }}</div>
+            </div>
+          </div>
+        </div>
+        <p class="text-muted small mb-0">
+          Akun diklasifikasikan berdasarkan relevansi industri terhadap seragam, skala perusahaan, dan skor potensi pesanan (opportunity score).
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contactability Matrix -->
+  <div class="col-lg-6">
+    <div class="card border-0 shadow-sm rounded-3 h-100">
+      <div class="card-header bg-white py-3 border-0">
+        <h5 class="mb-0 fw-bold"><i class="bi bi-shield-check me-2 text-success"></i>Kesiapan Kanal Komunikasi (Contactability)</h5>
+      </div>
+      <div class="card-body p-4">
+        <div class="row g-3">
+          <div class="col-6">
+            <div class="d-flex align-items-center p-3 rounded bg-light border">
+              <i class="bi bi-globe fs-3 me-3 text-primary"></i>
+              <div>
+                <div class="text-muted small">Website / Domain</div>
+                <div class="fs-5 fw-bold">{{ metrics.contactability.with_website }}</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="d-flex align-items-center p-3 rounded bg-light border">
+              <i class="bi bi-envelope-at fs-3 me-3 text-info"></i>
+              <div>
+                <div class="text-muted small">Email Korporat</div>
+                <div class="fs-5 fw-bold">{{ metrics.contactability.with_email }}</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="d-flex align-items-center p-3 rounded bg-light border">
+              <i class="bi bi-telephone fs-3 me-3 text-success"></i>
+              <div>
+                <div class="text-muted small">Nomor Telepon</div>
+                <div class="fs-5 fw-bold">{{ metrics.contactability.with_phone }}</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="d-flex align-items-center p-3 rounded bg-light border">
+              <i class="bi bi-share fs-3 me-3 text-danger"></i>
+              <div>
+                <div class="text-muted small">Media Sosial</div>
+                <div class="fs-5 fw-bold">{{ metrics.contactability.with_social }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Preset Segments B2B -->
+<div class="card border-0 shadow-sm rounded-3 mb-4">
+  <div class="card-header bg-white py-3 border-0">
+    <div class="d-flex justify-content-between align-items-center">
+      <h5 class="mb-0 fw-bold"><i class="bi bi-grid me-2 text-primary"></i>Preset Segmentasi Pasar B2B</h5>
+      <a href="{{ url_for('marketing.segments') }}" class="btn btn-sm btn-outline-primary">Lihat Seluruh Segment</a>
+    </div>
+  </div>
+  <div class="card-body p-4">
+    <div class="row g-3">
+      {% for p in presets %}
+      <div class="col-md-6 col-lg-4">
+        <div class="card h-100 border rounded-3 p-3 hover-shadow">
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <span class="badge bg-{{ p.color }}-subtle text-{{ p.color }} border border-{{ p.color }}-subtle px-2 py-1">
+              <i class="bi {{ p.icon }} me-1"></i> {{ p.count }} Akun
+            </span>
+            <a href="{{ url_for('marketing.segments', preset=p.key) }}" class="btn btn-sm btn-link text-decoration-none p-0">
+              Drilldown <i class="bi bi-chevron-right"></i>
+            </a>
+          </div>
+          <h6 class="fw-bold mb-1">{{ p.title }}</h6>
+          <p class="text-secondary small mb-3 flex-grow-1">{{ p.description }}</p>
+          <div class="d-flex gap-2">
+            <a href="{{ url_for('marketing.export', preset=p.key) }}" class="btn btn-sm btn-outline-success w-100">
+              <i class="bi bi-download me-1"></i> Export Segment
+            </a>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- Event-Driven Opportunities & Product Demand -->
+<div class="row g-4">
+  <!-- Event Driven -->
+  <div class="col-lg-6">
+    <div class="card border-0 shadow-sm rounded-3 h-100">
+      <div class="card-header bg-white py-3 border-0">
+        <h5 class="mb-0 fw-bold"><i class="bi bi-calendar-check me-2 text-info"></i>Akun Aktif Partisipasi Event</h5>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Perusahaan</th>
+                <th>Industri</th>
+                <th>Tier</th>
+                <th class="text-end">Event Diikuti</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if metrics.event_driven.top_participating_orgs %}
+                {% for o in metrics.event_driven.top_participating_orgs %}
+                <tr>
+                  <td>
+                    <a href="{{ url_for('market_analysis.org_detail', org_id=o.id) }}" class="fw-bold text-primary text-decoration-none">
+                      {{ o.name }}
+                    </a>
+                  </td>
+                  <td>{{ o.industry }}</td>
+                  <td><span class="badge bg-light text-dark border">{{ o.priority_tier }}</span></td>
+                  <td class="text-end">
+                    <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill">
+                      {{ o.events_count }} Event
+                    </span>
+                  </td>
+                </tr>
+                {% endfor %}
+              {% else %}
+                <tr>
+                  <td colspan="4" class="text-center py-4 text-muted">Belum ada akun yang terhubung ke partisipasi event.</td>
+                </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Product Demand Distribution -->
+  <div class="col-lg-6">
+    <div class="card border-0 shadow-sm rounded-3 h-100">
+      <div class="card-header bg-white py-3 border-0">
+        <h5 class="mb-0 fw-bold"><i class="bi bi-tags me-2 text-warning"></i>Distribusi Demand Kategori Apparel</h5>
+      </div>
+      <div class="card-body p-4">
+        {% for prod, cnt in metrics.product_fit_distribution.items() %}
+        <div class="mb-3">
+          <div class="d-flex justify-content-between small fw-medium mb-1">
+            <span>{{ prod }}</span>
+            <span class="text-muted">{{ cnt }} Akun</span>
+          </div>
+          <div class="progress" style="height: 8px;">
+            <div class="progress-bar bg-primary" role="progressbar" style="width: {{ (cnt / metrics.total_organizations * 100)|round(1) }}%;"></div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Industry & Geographic Distribution (F6.4) -->
+<div class="row g-4 mt-1">
+  <!-- Industry Distribution -->
+  <div class="col-lg-6">
+    <div class="card border-0 shadow-sm rounded-3 h-100">
+      <div class="card-header bg-white py-3 border-0">
+        <h5 class="mb-0 fw-bold"><i class="bi bi-buildings me-2 text-primary"></i>Distribusi Sektor Industri Utama</h5>
+      </div>
+      <div class="card-body p-4">
+        {% if metrics.industry_distribution %}
+          {% for ind, cnt in metrics.industry_distribution.items() %}
+          <div class="mb-3">
+            <div class="d-flex justify-content-between small fw-medium mb-1">
+              <span class="text-truncate" style="max-width: 75%;">{{ ind }}</span>
+              <span class="text-muted">{{ cnt }} Akun ({{ (cnt / metrics.total_organizations * 100)|round(1) }}%)</span>
+            </div>
+            <div class="progress" style="height: 6px;">
+              <div class="progress-bar bg-info" role="progressbar" style="width: {{ (cnt / metrics.total_organizations * 100)|round(1) }}%;"></div>
+            </div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <p class="text-muted small">Data distribusi industri belum tersedia.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Geographic Distribution -->
+  <div class="col-lg-6">
+    <div class="card border-0 shadow-sm rounded-3 h-100">
+      <div class="card-header bg-white py-3 border-0">
+        <h5 class="mb-0 fw-bold"><i class="bi bi-geo-alt me-2 text-danger"></i>Distribusi Geografis (Provinsi Utama)</h5>
+      </div>
+      <div class="card-body p-4">
+        {% if metrics.geographic_distribution %}
+          {% for prov, cnt in metrics.geographic_distribution.items() %}
+          <div class="mb-3">
+            <div class="d-flex justify-content-between small fw-medium mb-1">
+              <span class="text-truncate" style="max-width: 75%;">{{ prov }}</span>
+              <span class="text-muted">{{ cnt }} Akun ({{ (cnt / metrics.total_organizations * 100)|round(1) }}%)</span>
+            </div>
+            <div class="progress" style="height: 6px;">
+              <div class="progress-bar bg-success" role="progressbar" style="width: {{ (cnt / metrics.total_organizations * 100)|round(1) }}%;"></div>
+            </div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <p class="text-muted small">Data distribusi geografis belum tersedia.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

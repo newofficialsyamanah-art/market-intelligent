@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block title %}Campaign Management - Market Intelligence{% endblock %}
+
+{% block content %}
+<div class="row align-items-center mb-4">
+  <div class="col-md-7">
+    <h2 class="mb-1 fw-bold text-dark"><i class="bi bi-megaphone me-2 text-primary"></i>Marketing Campaign Management</h2>
+    <p class="text-secondary mb-0">Pencatatan aktivitas marketing terhadap target Master Organizations dalam periode tertentu.</p>
+  </div>
+  <div class="col-md-5 text-md-end mt-3 mt-md-0 d-flex gap-2 justify-content-md-end">
+    <a href="{{ url_for('marketing.targets') }}" class="btn btn-outline-secondary">
+      <i class="bi bi-crosshair me-1"></i> Target Explorer
+    </a>
+    <a href="{{ url_for('marketing.create_campaign') }}" class="btn btn-primary">
+      <i class="bi bi-plus-circle me-1"></i> Buat Campaign Baru
+    </a>
+  </div>
+</div>
+
+<!-- KPI Cards -->
+<div class="row g-3 mb-4">
+  <div class="col-md-3">
+    <div class="card border-0 shadow-sm p-3 border-start border-4 border-primary">
+      <div class="text-muted small">Total Campaign</div>
+      <h3 class="fw-bold mb-0 text-dark">{{ total_campaigns }}</h3>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card border-0 shadow-sm p-3 border-start border-4 border-success">
+      <div class="text-muted small">Active Campaigns</div>
+      <h3 class="fw-bold mb-0 text-success">{{ active_campaigns }}</h3>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card border-0 shadow-sm p-3 border-start border-4 border-info">
+      <div class="text-muted small">Ready Campaigns</div>
+      <h3 class="fw-bold mb-0 text-info">{{ ready_campaigns }}</h3>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card border-0 shadow-sm p-3 border-start border-4 border-secondary">
+      <div class="text-muted small">Draft Campaigns</div>
+      <h3 class="fw-bold mb-0 text-secondary">{{ draft_campaigns }}</h3>
+    </div>
+  </div>
+</div>
+
+<!-- Filter Tabs -->
+<ul class="nav nav-pills mb-3 gap-2">
+  <li class="nav-item">
+    <a class="nav-link {% if not current_status %}active{% endif %}" href="{{ url_for('marketing.campaigns_index') }}">Semua</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link {% if current_status == 'active' %}active{% endif %}" href="{{ url_for('marketing.campaigns_index', status='active') }}">Active</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link {% if current_status == 'ready' %}active{% endif %}" href="{{ url_for('marketing.campaigns_index', status='ready') }}">Ready</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link {% if current_status == 'draft' %}active{% endif %}" href="{{ url_for('marketing.campaigns_index', status='draft') }}">Draft</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link {% if current_status == 'completed' %}active{% endif %}" href="{{ url_for('marketing.campaigns_index', status='completed') }}">Completed</a>
+  </li>
+</ul>
+
+<!-- Campaign List Table -->
+<div class="card border-0 shadow-sm rounded-3">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Nama Campaign & Periode</th>
+          <th>Produk Target</th>
+          <th>Segmen / Tipe Target</th>
+          <th>Channel</th>
+          <th>Jumlah Target</th>
+          <th>Status</th>
+          <th class="text-end">Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if campaigns %}
+          {% for c in campaigns %}
+          <tr>
+            <td>
+              <a href="{{ url_for('marketing.campaign_detail', cid=c.id) }}" class="fw-bold text-dark text-decoration-none fs-6">
+                {{ c.name }}
+              </a>
+              <div class="text-muted small mt-1">
+                <i class="bi bi-calendar3 me-1"></i>
+                {% if c.start_date %}{{ c.start_date.strftime('%d %b %Y') }}{% else %}TBA{% endif %}
+                s/d
+                {% if c.end_date %}{{ c.end_date.strftime('%d %b %Y') }}{% else %}TBA{% endif %}
+              </div>
+            </td>
+            <td>
+              <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1">
+                {{ c.product or 'Jersey / Custom Teamwear' }}
+              </span>
+            </td>
+            <td>
+              <div class="small fw-semibold text-dark">{{ c.target_segment or c.organization_type or 'Semua Segmen' }}</div>
+              {% if c.province or c.city %}
+                <div class="text-muted small"><i class="bi bi-geo-alt me-1"></i>{{ c.city or '' }} {{ c.province or '' }}</div>
+              {% endif %}
+            </td>
+            <td>
+              <span class="badge bg-light text-dark border">{{ c.channel or 'Multi-Channel' }}</span>
+            </td>
+            <td>
+              <div class="fw-bold fs-6 text-primary">{{ c.target_count }} Akun</div>
+              <small class="text-muted">Master Orgs</small>
+            </td>
+            <td>
+              {% if c.status == 'active' %}
+                <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">Active</span>
+              {% elif c.status == 'ready' %}
+                <span class="badge bg-info-subtle text-info border border-info-subtle px-2 py-1">Ready</span>
+              {% elif c.status == 'completed' %}
+                <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1">Completed</span>
+              {% elif c.status == 'exported' %}
+                <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1">Exported</span>
+              {% else %}
+                <span class="badge bg-light text-muted border px-2 py-1">Draft</span>
+              {% endif %}
+            </td>
+            <td class="text-end">
+              <a href="{{ url_for('marketing.campaign_detail', cid=c.id) }}" class="btn btn-sm btn-outline-primary" title="Lihat Detail">
+                Detail <i class="bi bi-chevron-right ms-1"></i>
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="7" class="text-center py-5 text-muted">
+              <i class="bi bi-megaphone fs-1 d-block mb-2"></i>
+              Belum ada campaign marketing yang dibuat. Klik tombol <strong>Buat Campaign Baru</strong> untuk memulai.
+            </td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

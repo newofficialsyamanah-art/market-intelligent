@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Marketing Delivery{% endblock %}
+{% block content %}
+<h3 class="mb-3">Marketing Delivery</h3>
+
+<div class="card p-3 mb-4">
+  <h6>Membuat Daftar Prospek untuk Campaign</h6>
+  <form method="post" action="{{ url_for('marketing.create_campaign') }}" class="row g-2">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="col-md-3"><input name="name" class="form-control form-control-sm" placeholder="Nama Campaign" required></div>
+    <div class="col-md-2"><input name="industry" class="form-control form-control-sm" placeholder="Industri (opsional)"></div>
+    <div class="col-md-2"><input name="region" class="form-control form-control-sm" placeholder="Wilayah (opsional)"></div>
+    <div class="col-md-2"><input name="segment" class="form-control form-control-sm" placeholder="Segmen (opsional)"></div>
+    <div class="col-md-2"><input name="min_score" type="number" class="form-control form-control-sm" placeholder="Skor Min."></div>
+    <div class="col-md-1"><button class="btn btn-primary btn-sm w-100">Buat</button></div>
+  </form>
+</div>
+
+<div class="table-responsive">
+<table class="table table-sm bg-white">
+  <thead><tr><th>Campaign</th><th>Jumlah Prospek</th><th>Status</th><th>Waktu</th><th></th></tr></thead>
+  <tbody>
+  {% for c in campaigns %}
+    <tr>
+      <td>{{ c.name }}</td>
+      <td>{{ c.prospect_count }}</td>
+      <td>
+        <form method="post" action="{{ url_for('marketing.update_campaign_status', cid=c.id) }}" class="d-flex gap-1">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
+            {% for s in ["draft","ready","exported","active","closed"] %}
+              <option value="{{ s }}" {% if c.status==s %}selected{% endif %}>{{ s }}</option>
+            {% endfor %}
+          </select>
+        </form>
+      </td>
+      <td>{{ c.created_at }}</td>
+      <td><a class="btn btn-sm btn-outline-success" href="{{ url_for('marketing.export_campaign', cid=c.id) }}">Export CSV</a></td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

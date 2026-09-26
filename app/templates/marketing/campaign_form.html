@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block title %}{% if campaign %}Edit Campaign: {{ campaign.name }}{% else %}Buat Campaign Baru{% endif %} - Market Intelligence{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card border-0 shadow-sm rounded-3">
+      <div class="card-header bg-white border-bottom py-3">
+        <h4 class="mb-0 fw-bold text-dark">
+          <i class="bi bi-megaphone me-2 text-primary"></i>
+          {% if campaign %}Edit Campaign: {{ campaign.name }}{% else %}Buat Campaign Marketing Baru{% endif %}
+        </h4>
+        <small class="text-muted">Pencatatan aktivitas marketing terhadap target Master Organizations dalam periode tertentu.</small>
+      </div>
+      <div class="card-body p-4">
+        <form method="post" action="{% if campaign %}{{ url_for('marketing.edit_campaign', cid=campaign.id) }}{% else %}{{ url_for('marketing.create_campaign') }}{% endif %}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+          <!-- Nama Campaign -->
+          <div class="mb-3">
+            <label class="form-label fw-bold">Nama Campaign <span class="text-danger">*</span></label>
+            <input type="text" name="name" class="form-control" placeholder="Contoh: Campaign Jersey Komunitas Futsal Jabar Q4" value="{{ campaign.name if campaign else '' }}" required>
+          </div>
+
+          <!-- Produk Target & Channel -->
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label fw-bold">Produk Utama Ditawarkan <span class="text-danger">*</span></label>
+              <select name="product" class="form-select">
+                {% for prod in supported_products %}
+                <option value="{{ prod }}" {% if campaign and campaign.product == prod %}selected{% elif not campaign and prod == 'Jersey / Custom Teamwear' %}selected{% endif %}>{{ prod }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold">Kanal Komunikasi / Channel</label>
+              <select name="channel" class="form-select">
+                <option value="Direct Outreach (WhatsApp / Call)" {% if campaign and campaign.channel == 'Direct Outreach (WhatsApp / Call)' %}selected{% endif %}>Direct Outreach (WhatsApp / Call)</option>
+                <option value="Email Marketing" {% if campaign and campaign.channel == 'Email Marketing' %}selected{% endif %}>Email Marketing</option>
+                <option value="Social Media DM (Instagram/LinkedIn)" {% if campaign and campaign.channel == 'Social Media DM (Instagram/LinkedIn)' %}selected{% endif %}>Social Media DM (Instagram/LinkedIn)</option>
+                <option value="Event Sponsorship / Expo Booth" {% if campaign and campaign.channel == 'Event Sponsorship / Expo Booth' %}selected{% endif %}>Event Sponsorship / Expo Booth</option>
+                <option value="Direct Visit / Field Sales" {% if campaign and campaign.channel == 'Direct Visit / Field Sales' %}selected{% endif %}>Direct Visit / Field Sales</option>
+                <option value="Multi-Channel" {% if campaign and campaign.channel == 'Multi-Channel' %}selected{% endif %}>Multi-Channel</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Target Segment & Organization Type -->
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label fw-bold">Target Segmen</label>
+              <input type="text" name="target_segment" class="form-control" placeholder="Contoh: Komunitas Olahraga, UKM Kampus, Corporate" value="{{ campaign.target_segment if campaign else '' }}">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold">Tipe Organisasi</label>
+              <select name="organization_type" class="form-select">
+                <option value="">Semua Tipe Organisasi</option>
+                <option value="Komunitas Olahraga" {% if campaign and campaign.organization_type == 'Komunitas Olahraga' %}selected{% endif %}>Komunitas Olahraga</option>
+                <option value="Organisasi Mahasiswa" {% if campaign and campaign.organization_type == 'Organisasi Mahasiswa' %}selected{% endif %}>Organisasi Mahasiswa</option>
+                <option value="Institusi Pendidikan" {% if campaign and campaign.organization_type == 'Institusi Pendidikan' %}selected{% endif %}>Institusi Pendidikan</option>
+                <option value="Perusahaan" {% if campaign and campaign.organization_type == 'Perusahaan' %}selected{% endif %}>Perusahaan</option>
+                <option value="Asosiasi" {% if campaign and campaign.organization_type == 'Asosiasi' %}selected{% endif %}>Asosiasi</option>
+                <option value="Yayasan" {% if campaign and campaign.organization_type == 'Yayasan' %}selected{% endif %}>Yayasan</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Lokasi Target -->
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label fw-bold">Provinsi</label>
+              <input type="text" name="province" class="form-control" placeholder="Contoh: Jawa Barat" value="{{ campaign.province if campaign else '' }}">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold">Kota / Kabupaten</label>
+              <input type="text" name="city" class="form-control" placeholder="Contoh: Bandung" value="{{ campaign.city if campaign else '' }}">
+            </div>
+          </div>
+
+          <!-- Periode Pelaksanaan & Status -->
+          <div class="row g-3 mb-3">
+            <div class="col-md-4">
+              <label class="form-label fw-bold">Tanggal Mulai</label>
+              <input type="date" name="start_date" class="form-control" value="{% if campaign and campaign.start_date %}{{ campaign.start_date.strftime('%Y-%m-%d') }}{% endif %}">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-bold">Tanggal Selesai</label>
+              <input type="date" name="end_date" class="form-control" value="{% if campaign and campaign.end_date %}{{ campaign.end_date.strftime('%Y-%m-%d') }}{% endif %}">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-bold">Status Campaign</label>
+              <select name="status" class="form-select">
+                <option value="draft" {% if campaign and campaign.status == 'draft' %}selected{% endif %}>Draft</option>
+                <option value="ready" {% if campaign and campaign.status == 'ready' %}selected{% endif %}>Ready</option>
+                <option value="active" {% if campaign and campaign.status == 'active' %}selected{% endif %}>Active</option>
+                <option value="completed" {% if campaign and campaign.status == 'completed' %}selected{% endif %}>Completed</option>
+                <option value="closed" {% if campaign and campaign.status == 'closed' %}selected{% endif %}>Closed</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Deskripsi & Catatan -->
+          <div class="mb-3">
+            <label class="form-label fw-bold">Deskripsi & Tujuan</label>
+            <textarea name="description" class="form-control" rows="3" placeholder="Jelaskan tujuan marketing campaign, target audiens, dan penawaran spesifik...">{{ campaign.description if campaign else '' }}</textarea>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label fw-bold">Catatan Internal</label>
+            <textarea name="notes" class="form-control" rows="2" placeholder="Catatan operasional tim marketing...">{{ campaign.notes if campaign else '' }}</textarea>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center">
+            <a href="{{ url_for('marketing.campaigns_index') }}" class="btn btn-outline-secondary">Batal</a>
+            <button type="submit" class="btn btn-primary px-4">
+              <i class="bi bi-check-circle me-1"></i> {% if campaign %}Simpan Perubahan{% else %}Buat Campaign{% endif %}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

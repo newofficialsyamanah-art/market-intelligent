@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+{% block title %}System Health & Pipeline Monitoring{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h3 class="mb-0">System Health & Pipeline Monitoring</h3>
+    <small class="text-muted">Pantau status eksekusi scheduler, antrian data ingestion, dan metrik kesehatan master dataset.</small>
+  </div>
+  <div>
+    <a href="{{ url_for('admin.cron_jobs') }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-clock-history me-1"></i> Kelola Cron Jobs</a>
+    <a href="{{ url_for('admin.logs') }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-journal-text me-1"></i> Log Aktivitas</a>
+  </div>
+</div>
+
+<!-- System Health Overview Cards -->
+<div class="row g-3 mb-4">
+  <div class="col-md-3">
+    <div class="card p-3 border-0 shadow-sm h-100">
+      <div class="d-flex justify-content-between align-items-center">
+        <span class="text-muted small">Scheduler Background</span>
+        <span class="badge {{ 'bg-success' if system_metrics.scheduler_running else 'bg-secondary' }}">
+          {{ 'RUNNING' if system_metrics.scheduler_running else 'IDLE / RESTARTING' }}
+        </span>
+      </div>
+      <h4 class="mt-2 mb-0">{{ system_metrics.active_jobs_count }} <small class="text-muted fs-6">jobs aktif</small></h4>
+      <div class="small text-muted mt-1">{{ system_metrics.failed_jobs_count }} failed jobs perlu perhatian</div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card p-3 border-0 shadow-sm h-100">
+      <div class="d-flex justify-content-between align-items-center">
+        <span class="text-muted small">Master Universe</span>
+        <i class="bi bi-building text-primary fs-5"></i>
+      </div>
+      <h4 class="mt-2 mb-0">{{ system_metrics.total_orgs }}</h4>
+      <div class="small text-muted mt-1">{{ system_metrics.total_prospects }} prospects tercatat</div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card p-3 border-0 shadow-sm h-100">
+      <div class="d-flex justify-content-between align-items-center">
+        <span class="text-muted small">AI Scored Accounts</span>
+        <i class="bi bi-robot text-success fs-5"></i>
+      </div>
+      <h4 class="mt-2 mb-0">{{ system_metrics.ai_scored_orgs }}</h4>
+      <div class="small text-muted mt-1">Organisasi memiliki Product Fit AI</div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card p-3 border-0 shadow-sm h-100">
+      <div class="d-flex justify-content-between align-items-center">
+        <span class="text-muted small">Review Duplikasi</span>
+        <span class="badge {{ 'bg-warning text-dark' if system_metrics.pending_duplicates > 0 else 'bg-success' }}">
+          {{ system_metrics.pending_duplicates }} Pending
+        </span>
+      </div>
+      <h4 class="mt-2 mb-0">{{ system_metrics.pending_duplicates }}</h4>
+      <div class="small text-muted mt-1"><a href="{{ url_for('market_analysis.explorer', review_status='has_candidate') }}" class="text-decoration-none">Review di Identity Resolution &raquo;</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- Raw Data Status Distribution -->
+<div class="card shadow-sm border-0 mb-4">
+  <div class="card-header bg-white py-3">
+    <h6 class="mb-0 fw-bold"><i class="bi bi-layers me-1"></i> Distribusi Antrian Raw Data Pipeline</h6>
+  </div>
+  <div class="card-body">
+    <div class="row g-2 text-center">
+      {% for status, count in status_counts.items() %}
+      <div class="col-6 col-md-3 col-lg-auto flex-fill">
+        <div class="p-2 border rounded bg-light">
+          <small class="text-uppercase text-muted fw-bold" style="font-size:0.75rem;">{{ status }}</small>
+          <h4 class="mb-0 mt-1 {{ 'text-danger' if status == 'error' and count > 0 else 'text-dark' }}">{{ count }}</h4>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- Active Cron Jobs Health Table -->
+<div class="card shadow-sm border-0 mb-4">
+  <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+    <h6 class="mb-0 fw-bold"><i class="bi bi-clock-history me-1"></i> Scheduled Background Jobs & Status Eksekusi</h6>
+    <a href="{{ url_for('admin.cron_jobs') }}" class="btn btn-sm btn-primary">Atur / Tambah Job</a>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Nama Job</th>
+          <th>Tipe Tugas</th>
+          <th>Jadwal</th>
+          <th>Status Terakhir</th>
+          <th>Durasi</th>
+          <th>Data Terproses</th>
+          <th>Terakhir Jalan</th>
+          <th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for job in jobs %}
+        <tr>
+          <td class="fw-semibold">{{ job.name }}</td>
+          <td><span class="badge bg-light text-dark border">{{ job.task_type }}</span></td>
+          <td><code>{{ job.schedule_cron }}</code></td>
+          <td>
+            {% if job.last_status == 'success' %}
+              <span class="badge bg-success">Success</span>
+            {% elif job.last_status == 'running' %}
+              <span class="badge bg-primary">Running</span>
+            {% elif job.last_status and 'error' in job.last_status %}
+              <span class="badge bg-danger" title="{{ job.error_summary or job.last_status }}">Error</span>
+            {% else %}
+              <span class="badge bg-secondary">Pending</span>
+            {% endif %}
+          </td>
+          <td>{{ job.duration_seconds ~ 's' if job.duration_seconds is not none else '-' }}</td>
+          <td>{{ job.records_processed if job.records_processed is not none else '-' }}</td>
+          <td class="small">{{ job.last_run.strftime('%Y-%m-%d %H:%M') if job.last_run else '-' }}</td>
+          <td>
+            <form method="post" action="{{ url_for('admin.run_cron_job', jid=job.id) }}" class="d-inline">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="btn btn-sm btn-outline-primary" title="Run manual"><i class="bi bi-play-fill"></i> Run</button>
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Raw Ingestion Log -->
+<div class="card shadow-sm border-0">
+  <div class="card-header bg-white py-3">
+    <h6 class="mb-0 fw-bold"><i class="bi bi-terminal me-1"></i> Log Ingestion Data Mentah Terbaru</h6>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-sm table-hover mb-0 align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>ID</th>
+          <th>Sumber</th>
+          <th>Judul / Entri</th>
+          <th>Status</th>
+          <th>Catatan Error</th>
+          <th>Waktu Masuk</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for item in items %}
+        <tr>
+          <td>#{{ item.id }}</td>
+          <td><span class="badge bg-light text-secondary border">{{ item.source_type }}</span></td>
+          <td class="text-truncate" style="max-width:300px;">{{ item.original_name }}</td>
+          <td>
+            <span class="badge {{ 'bg-success' if item.status == 'processed' else ('bg-danger' if item.status == 'error' else 'bg-info') }}">
+              {{ item.status }}
+            </span>
+          </td>
+          <td class="text-danger small">{{ item.error_message or '-' }}</td>
+          <td class="small text-muted">{{ item.created_at.strftime('%Y-%m-%d %H:%M') if item.created_at else '-' }}</td>
+        </tr>
+      {% else %}
+        <tr><td colspan="6" class="text-center text-muted py-3">Belum ada data mentah tercatat.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

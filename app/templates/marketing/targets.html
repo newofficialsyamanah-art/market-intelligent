@@ -1,0 +1,363 @@
+{% extends "base.html" %}
+
+{% block title %}Target Intelligence & Account Explorer - Market Intelligence{% endblock %}
+
+{% block content %}
+<div class="row align-items-center mb-4">
+  <!-- <div class="col-md-7">
+    <h2 class="mb-1 fw-bold text-dark"><i class="bi bi-search me-2 text-primary"></i>Target Intelligence Explorer</h2>
+    <p class="text-secondary mb-0">Eksplorasi akun target B2B spesifik berdasarkan tier prioritas, demand apparel, dan kanal kontak.</p>
+  </div> -->
+<div class="row align-items-center mb-4">
+  <div class="col-md-7">
+    <h2 class="mb-1 fw-bold text-dark"><i class="bi bi-search me-2 text-primary"></i>Target Intelligence Explorer</h2>
+    <p class="text-secondary mb-0">Eksplorasi akun target B2B spesifik berdasarkan tipe organisasi, industri, skala karyawan, relevansi event, dan kontak.</p>
+  </div>
+  <div class="col-md-5 text-md-end mt-3 mt-md-0 d-flex gap-2 justify-content-md-end">
+    <a href="{{ url_for('marketing.export', format='csv', **filters) }}" class="btn btn-outline-success">
+      <i class="bi bi-file-earmark-spreadsheet me-1"></i> Export CSV
+    </a>
+    <a href="{{ url_for('marketing.export', format='xlsx', **filters) }}" class="btn btn-success">
+      <i class="bi bi-file-earmark-excel me-1"></i> Export Excel (.xlsx)
+    </a>
+  </div>
+</div>
+
+<!-- Filter Section -->
+<div class="card border-0 shadow-sm rounded-3 mb-4">
+  <div class="card-body p-3">
+    <form method="get" action="{{ url_for('marketing.targets') }}" class="row g-2 align-items-center">
+      <div class="col-md-3">
+        <div class="input-group">
+          <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+          <input type="text" name="q" class="form-control border-start-0" placeholder="Cari nama, domain, kota..." value="{{ filters.q }}">
+        </div>
+      </div>
+      <div class="col-md-2">
+        <select name="organization_type" class="form-select">
+          <option value="">Semua Tipe Organisasi</option>
+          {% for ot in all_org_types %}
+          <option value="{{ ot }}" {% if filters.organization_type == ot %}selected{% endif %}>{{ ot }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <select name="priority_tier" class="form-select">
+          <option value="">Semua Priority Tier</option>
+          <option value="A - HOT" {% if filters.priority_tier == 'A - HOT' %}selected{% endif %}>Tier A - HOT</option>
+          <option value="B - WARM" {% if filters.priority_tier == 'B - WARM' %}selected{% endif %}>Tier B - WARM</option>
+          <option value="C - POTENTIAL" {% if filters.priority_tier == 'C - POTENTIAL' %}selected{% endif %}>Tier C - POTENTIAL</option>
+          <option value="D - LOW" {% if filters.priority_tier == 'D - LOW' %}selected{% endif %}>Tier D - LOW</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <select name="industry" class="form-select">
+          <option value="">Semua Industri</option>
+          {% for ind in all_industries %}
+          <option value="{{ ind }}" {% if filters.industry == ind %}selected{% endif %}>{{ ind }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <select name="province" class="form-select">
+          <option value="">Semua Provinsi</option>
+          {% for prov in all_provinces %}
+          <option value="{{ prov }}" {% if filters.province == prov %}selected{% endif %}>{{ prov }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-1">
+        <button type="submit" class="btn btn-primary w-100" title="Cari Akun"><i class="bi bi-filter"></i></button>
+      </div>
+
+      <!-- Second Filter Row: Location, Employee Size, Event Relevance -->
+      <div class="col-md-2">
+        <input type="text" name="city" class="form-control" placeholder="Filter Kota..." value="{{ filters.city }}">
+      </div>
+      <div class="col-md-2">
+        <input type="text" name="product_fit" class="form-control" placeholder="Product Fit Apparel..." value="{{ filters.product_fit }}">
+      </div>
+      <div class="col-md-2">
+        <input type="text" name="employee_size" class="form-control" placeholder="Skala Karyawan..." value="{{ filters.employee_size }}">
+      </div>
+      <div class="col-md-2">
+        <select name="event_relevance" class="form-select">
+          <option value="">Semua Relevansi Event</option>
+          <option value="HIGH" {% if filters.event_relevance == 'HIGH' %}selected{% endif %}>Peserta Event HIGH (>=80)</option>
+          <option value="MEDIUM" {% if filters.event_relevance == 'MEDIUM' %}selected{% endif %}>Peserta Event MEDIUM</option>
+          <option value="LOW" {% if filters.event_relevance == 'LOW' %}selected{% endif %}>Peserta Event LOW</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <select name="has_event" class="form-select">
+          <option value="">Semua Partisipasi</option>
+          <option value="1" {% if filters.has_event == '1' %}selected{% endif %}>Hanya Peserta Event</option>
+        </select>
+      </div>
+      <div class="col-md-2 d-flex gap-2">
+        <div class="input-group">
+          <span class="input-group-text bg-light small">Min:</span>
+          <input type="number" name="min_score" class="form-control" placeholder="0-100" value="{{ filters.min_score }}">
+        </div>
+        <a href="{{ url_for('marketing.targets') }}" class="btn btn-outline-secondary" title="Reset Filter"><i class="bi bi-arrow-counterclockwise"></i></a>
+      </div>
+
+      <!-- Third Row: Sport, Subtype, and Social Filters -->
+      <div class="col-md-3">
+        <select name="sport" class="form-select">
+          <option value="">Semua Cabang Olahraga</option>
+          {% for sp in all_sports %}
+          <option value="{{ sp }}" {% if filters.sport == sp %}selected{% endif %}>{{ sp }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3">
+        <input type="text" name="organization_subtype" class="form-control" placeholder="Subtipe (mis. Klub Futsal, BEM, SMK)..." value="{{ filters.organization_subtype or '' }}">
+      </div>
+      <div class="col-md-6 d-flex gap-3 flex-wrap align-items-center">
+        <span class="text-secondary small fw-bold"><i class="bi bi-share me-1"></i>Platform:</span>
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="checkbox" name="has_instagram" value="1" id="fIg" {% if filters.has_instagram == '1' %}checked{% endif %}>
+          <label class="form-check-label small" for="fIg"><i class="bi bi-instagram text-danger"></i> IG</label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="checkbox" name="has_tiktok" value="1" id="fTt" {% if filters.has_tiktok == '1' %}checked{% endif %}>
+          <label class="form-check-label small" for="fTt"><i class="bi bi-tiktok text-dark"></i> TikTok</label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="checkbox" name="has_facebook" value="1" id="fFb" {% if filters.has_facebook == '1' %}checked{% endif %}>
+          <label class="form-check-label small" for="fFb"><i class="bi bi-facebook text-primary"></i> FB</label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="checkbox" name="has_linkedin" value="1" id="fLi" {% if filters.has_linkedin == '1' %}checked{% endif %}>
+          <label class="form-check-label small" for="fLi"><i class="bi bi-linkedin text-info"></i> LinkedIn</label>
+        </div>
+      </div>
+
+      <!-- Fourth Row: Contactability Flags -->
+      <div class="col-12 mt-2 pt-2 border-top d-flex gap-3 flex-wrap align-items-center justify-content-between">
+        <div class="d-flex gap-3 flex-wrap align-items-center">
+          <span class="text-secondary small fw-bold"><i class="bi bi-shield-check me-1"></i>Kontak Terverifikasi:</span>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="checkbox" name="has_email" value="1" id="fEmail" {% if filters.has_email == '1' %}checked{% endif %}>
+            <label class="form-check-label small" for="fEmail">Email Korporat</label>
+          </div>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="checkbox" name="has_phone" value="1" id="fPhone" {% if filters.has_phone == '1' %}checked{% endif %}>
+            <label class="form-check-label small" for="fPhone">Nomor Telepon</label>
+          </div>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="checkbox" name="has_website" value="1" id="fWeb" {% if filters.has_website == '1' %}checked{% endif %}>
+            <label class="form-check-label small" for="fWeb">Website Resmi</label>
+          </div>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="checkbox" name="has_social" value="1" id="fSoc" {% if filters.has_social == '1' %}checked{% endif %}>
+            <label class="form-check-label small" for="fSoc">Ada Medsos</label>
+          </div>
+        </div>
+        <div class="d-flex gap-2">
+          <a href="{{ url_for('marketing.targets') }}" class="btn btn-sm btn-outline-secondary">Reset Filter</a>
+          <button type="submit" class="btn btn-sm btn-primary px-3"><i class="bi bi-search me-1"></i> Terapkan Filter</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Target Table & Batch Campaign Action -->
+<div class="card border-0 shadow-sm rounded-3">
+  <div class="card-header bg-white py-3 border-0">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+      <div>
+        <h5 class="mb-0 fw-bold">Hasil Akun Target (Total: {{ total_count }})</h5>
+        <small class="text-muted">Target Intelligence Explorer berbasis Master Organizations Single Source of Truth.</small>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        {% if active_campaigns %}
+        <form method="post" id="batchCampaignForm" class="d-flex align-items-center gap-2" onsubmit="return handleBatchCampaignSubmit(event);">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="org_ids" id="selectedOrgIds">
+          <select id="campaignSelect" class="form-select form-select-sm" style="max-width: 220px;" required>
+            <option value="">Pilih Campaign...</option>
+            {% for ac in active_campaigns %}
+            <option value="{{ ac.id }}">{{ ac.name }} ({{ ac.product }})</option>
+            {% endfor %}
+          </select>
+          <button type="submit" class="btn btn-sm btn-primary text-nowrap">
+            <i class="bi bi-plus-circle me-1"></i> Tambah ke Campaign
+          </button>
+        </form>
+        {% endif %}
+        <span class="badge bg-light text-secondary border">Halaman {{ current_page }} dari {{ total_pages }}</span>
+      </div>
+    </div>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th style="width: 30px;"><input type="checkbox" id="selectAllCheckbox" onclick="toggleSelectAll(this)"></th>
+          <th>Nama Organisasi & Lokasi</th>
+          <th>Tipe & Olahraga</th>
+          <th>AI Product Fit (Jersey)</th>
+          <th>Prioritas & Skor</th>
+          <th>Kontak & Media Sosial</th>
+          <th>Partisipasi Event</th>
+          <th class="text-end">Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if items %}
+          {% for o in items %}
+          <tr>
+            <td>
+              <input type="checkbox" class="org-checkbox" value="{{ o.id }}">
+            </td>
+            <td>
+              <div class="fw-bold text-dark fs-6">{{ o.name }}</div>
+              {% if o.domain and o.domain != 'nan' %}
+                <span class="text-muted small"><i class="bi bi-globe2 me-1"></i>{{ o.domain }}</span>
+              {% endif %}
+              <div class="text-muted small"><i class="bi bi-geo-alt me-1"></i>{{ o.city or '' }} {{ o.province or '' }}</div>
+            </td>
+            <td>
+              <span class="badge bg-light text-dark border">{{ o.organization_type or 'Perusahaan' }}</span>
+              {% if o.organization_subtype %}
+                <div class="small text-secondary mt-1">{{ o.organization_subtype }}</div>
+              {% endif %}
+              {% if o.sport %}
+                <span class="badge bg-info-subtle text-info border border-info-subtle mt-1"><i class="bi bi-trophy me-1"></i>{{ o.sport }}</span>
+              {% endif %}
+            </td>
+            <td>
+              <span class="small fw-semibold text-dark">{{ o.product_fit or 'Jersey / Custom Teamwear' }}</span>
+              {% if o.ai_product_fit_label %}
+                <div>
+                  <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-0 mt-1">
+                    {{ o.ai_product_fit_label }}
+                  </span>
+                </div>
+              {% endif %}
+              {% if o.ai_reasoning %}
+                <div class="text-muted small mt-1" style="max-width: 220px;" title="{{ o.ai_reasoning }}">
+                  <i class="bi bi-robot text-primary me-1"></i>{{ o.ai_reasoning[:70] }}...
+                </div>
+              {% endif %}
+            </td>
+            <td>
+              {% if o.priority_tier == 'A - HOT' %}
+                <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1">Tier A (HOT)</span>
+              {% elif o.priority_tier == 'B - WARM' %}
+                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-1">Tier B</span>
+              {% elif o.priority_tier == 'C - POTENTIAL' %}
+                <span class="badge bg-info-subtle text-info border border-info-subtle px-2 py-1">Tier C</span>
+              {% else %}
+                <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1">Tier D</span>
+              {% endif %}
+              <div class="small fw-bold text-muted mt-1">Score: {{ o.opportunity_score }}</div>
+            </td>
+            <td>
+              <div class="d-flex gap-2 align-items-center">
+                {% if o.email and o.email != 'nan' %}
+                  <span class="text-info fs-6" title="Email: {{ o.email }}"><i class="bi bi-envelope-fill"></i></span>
+                {% else %}
+                  <span class="text-muted opacity-25 fs-6"><i class="bi bi-envelope"></i></span>
+                {% endif %}
+                {% if o.phone and o.phone != 'nan' %}
+                  <span class="text-success fs-6" title="Telepon: {{ o.phone }}"><i class="bi bi-telephone-fill"></i></span>
+                {% else %}
+                  <span class="text-muted opacity-25 fs-6"><i class="bi bi-telephone"></i></span>
+                {% endif %}
+                {% if o.website and o.website != 'nan' %}
+                  <a href="{{ o.website }}" target="_blank" rel="noopener" class="text-primary fs-6" title="Website: {{ o.website }}"><i class="bi bi-globe"></i></a>
+                {% else %}
+                  <span class="text-muted opacity-25 fs-6"><i class="bi bi-globe"></i></span>
+                {% endif %}
+                {% if o.socials %}
+                  {% if o.socials.instagram %}<a href="{{ o.socials.instagram }}" target="_blank" class="text-danger fs-6" title="Instagram"><i class="bi bi-instagram"></i></a>{% endif %}
+                  {% if o.socials.tiktok %}<a href="{{ o.socials.tiktok }}" target="_blank" class="text-dark fs-6" title="TikTok"><i class="bi bi-tiktok"></i></a>{% endif %}
+                  {% if o.socials.facebook %}<a href="{{ o.socials.facebook }}" target="_blank" class="text-primary fs-6" title="Facebook"><i class="bi bi-facebook"></i></a>{% endif %}
+                  {% if o.socials.linkedin %}<a href="{{ o.socials.linkedin }}" target="_blank" class="text-info fs-6" title="LinkedIn"><i class="bi bi-linkedin"></i></a>{% endif %}
+                {% endif %}
+              </div>
+            </td>
+            <td>
+              {% if o.events_count > 0 %}
+                <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill">
+                  <i class="bi bi-calendar-event me-1"></i>{{ o.events_count }} Event Terhubung
+                </span>
+              {% else %}
+                <span class="text-muted small">-</span>
+              {% endif %}
+            </td>
+            <td class="text-end">
+              <a href="{{ url_for('market_analysis.org_detail', org_id=o.id) }}" class="btn btn-sm btn-outline-primary" title="Lihat Profil">
+                Profil <i class="bi bi-chevron-right ms-1"></i>
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="8" class="text-center py-5 text-muted">
+              <i class="bi bi-funnel-fill fs-1 d-block mb-2"></i>
+              Tidak ada akun yang sesuai kriteria filter pencarian.
+            </td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  {% if total_pages > 1 %}
+  <div class="card-footer bg-white border-0 py-3">
+    <nav>
+      <ul class="pagination justify-content-center mb-0">
+        <li class="page-item {% if current_page <= 1 %}disabled{% endif %}">
+          <a class="page-link" href="{{ url_for('marketing.targets', page=current_page-1, **filters) }}">Sebelumnya</a>
+        </li>
+        {% for p in range(1, total_pages + 1) %}
+          {% if p >= current_page - 2 and p <= current_page + 2 %}
+          <li class="page-item {% if p == current_page %}active{% endif %}">
+            <a class="page-link" href="{{ url_for('marketing.targets', page=p, **filters) }}">{{ p }}</a>
+          </li>
+          {% endif %}
+        {% endfor %}
+        <li class="page-item {% if current_page >= total_pages %}disabled{% endif %}">
+          <a class="page-link" href="{{ url_for('marketing.targets', page=current_page+1, **filters) }}">Berikutnya</a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function toggleSelectAll(master) {
+  document.querySelectorAll('.org-checkbox').forEach(cb => cb.checked = master.checked);
+}
+
+function handleBatchCampaignSubmit(event) {
+  event.preventDefault();
+  const select = document.getElementById('campaignSelect');
+  const campaignId = select.value;
+  if (!campaignId) {
+    alert('Pilih campaign tujuan terlebih dahulu.');
+    return false;
+  }
+  const checked = Array.from(document.querySelectorAll('.org-checkbox:checked')).map(cb => cb.value);
+  if (checked.length === 0) {
+    alert('Pilih minimal satu organisasi dengan mencentang kotak di tabel.');
+    return false;
+  }
+  const form = document.getElementById('batchCampaignForm');
+  form.action = `/marketing/campaigns/${campaignId}/add-targets`;
+  document.getElementById('selectedOrgIds').value = checked.join(',');
+  form.submit();
+  return true;
+}
+</script>
+{% endblock %}

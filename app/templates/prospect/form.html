@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if p else 'Tambah' }} Prospek{% endblock %}
+{% block content %}
+<h3>{{ 'Edit' if p else 'Tambah' }} Prospek</h3>
+<form method="post" class="card p-3 mt-3" style="max-width:600px;">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="mb-2"><label class="form-label">Nama Perusahaan</label><input name="company_name" class="form-control" value="{{ p.company_name if p else '' }}" required></div>
+  <div class="row">
+    <div class="col-6 mb-2"><label class="form-label">Industri</label><input name="industry" class="form-control" value="{{ p.industry if p else '' }}"></div>
+    <div class="col-6 mb-2"><label class="form-label">Wilayah</label><input name="region" class="form-control" value="{{ p.region if p else '' }}"></div>
+  </div>
+  <div class="row">
+    <div class="col-6 mb-2"><label class="form-label">Ukuran Perusahaan</label><input name="company_size" class="form-control" value="{{ p.company_size if p else '' }}"></div>
+    <div class="col-6 mb-2"><label class="form-label">Website</label><input name="website" class="form-control" value="{{ p.website if p else '' }}"></div>
+  </div>
+  <div class="row">
+    <div class="col-6 mb-2"><label class="form-label">Nama Kontak</label><input name="contact_name" class="form-control" value="{{ p.contact_name if p else '' }}"></div>
+    <div class="col-6 mb-2"><label class="form-label">Email Kontak</label><input name="contact_email" class="form-control" value="{{ p.contact_email if p else '' }}"></div>
+  </div>
+  <div class="mb-2"><label class="form-label">Telepon</label><input name="contact_phone" class="form-control" value="{{ p.contact_phone if p else '' }}"></div>
+  <div class="mb-2"><label class="form-label">Deskripsi</label><textarea name="description" class="form-control" rows="3">{{ p.description if p else '' }}</textarea></div>
+  {% if p %}
+  <div class="mb-2">
+    <label class="form-label">Status</label>
+    <select name="status" class="form-select">
+      {% for s in ["new","qualified","contacted","converted","rejected"] %}
+      <option value="{{ s }}" {% if p.status==s %}selected{% endif %}>{{ s }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  {% endif %}
+  <button class="btn btn-primary">Simpan</button>
+</form>
+{% endblock %}

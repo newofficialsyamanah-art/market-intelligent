@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Login - Market Intelligence System{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-center align-items-center" style="min-height:80vh;">
+  <div class="card p-4" style="width:380px;">
+    <h4 class="mb-3 text-center">Market Intelligence System</h4>
+    <form method="post">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="mb-3">
+        <label class="form-label">Email</label>
+        <input type="email" name="email" class="form-control" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Password</label>
+        <input type="password" name="password" class="form-control" required>
+      </div>
+      <button class="btn btn-primary w-100" type="submit">Login</button>
+    </form>
+    <p class="text-center mt-3 mb-0"><a href="{{ url_for('auth.register') }}">Buat akun admin awal</a></p>
+  </div>
+</div>
+{% endblock %}

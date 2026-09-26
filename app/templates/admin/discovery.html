@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+{% block title %}Indonesia Discovery & Intelligence Hub{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h3 class="mb-0">Indonesia Discovery & Intelligence Hub</h3>
+    <small class="text-muted">Pencarian dan penyerapan institusi pendidikan, organisasi mahasiswa, komunitas olahraga, dan profil media sosial publik ke Master Organization.</small>
+  </div>
+</div>
+
+<!-- Quick Trigger Automation Discovery Cards -->
+<div class="row g-3 mb-4">
+  <!-- 1. Education Discovery Card -->
+  <div class="col-md-4">
+    <div class="card h-100 shadow-sm border-0">
+      <div class="card-header bg-primary text-white py-2">
+        <h6 class="mb-0"><i class="bi bi-mortarboard me-1"></i> Discovery Institusi Pendidikan</h6>
+      </div>
+      <div class="card-body">
+        <p class="small text-muted mb-2">Cari sekolah (PAUD - SMK) dan perguruan tinggi (Universitas, Institut, Politeknik) di Indonesia.</p>
+        <form method="post" action="{{ url_for('admin.trigger_education_discovery') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <div class="mb-2">
+            <label class="form-label small mb-1">Provinsi</label>
+            <input type="text" name="province" class="form-control form-control-sm" value="Jawa Barat" required>
+          </div>
+          <div class="mb-2">
+            <label class="form-label small mb-1">Kota / Kabupaten</label>
+            <input type="text" name="city" class="form-control form-control-sm" value="Bandung" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small mb-1">Batas Institusi per Jenjang</label>
+            <input type="number" name="limit" class="form-control form-control-sm" value="5" min="1" max="50">
+          </div>
+          <button type="submit" class="btn btn-sm btn-primary w-100"><i class="bi bi-play-circle me-1"></i> Jalankan Discovery Pendidikan</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Community Discovery Card -->
+  <div class="col-md-4">
+    <div class="card h-100 shadow-sm border-0">
+      <div class="card-header bg-success text-white py-2">
+        <h6 class="mb-0"><i class="bi bi-people me-1"></i> Discovery Komunitas & Mahasiswa</h6>
+      </div>
+      <div class="card-body">
+        <p class="small text-muted mb-2">Cari klub olahraga (futsal, basket, sepak bola, running), BEM, HIMA, dan UKM kampus.</p>
+        <form method="post" action="{{ url_for('admin.trigger_community_discovery') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <div class="mb-2">
+            <label class="form-label small mb-1">Kategori Komunitas</label>
+            <select name="category" class="form-select form-select-sm">
+              <option value="futsal">Klub / Komunitas Futsal</option>
+              <option value="football">Klub / Komunitas Sepak Bola</option>
+              <option value="basketball">Klub / Komunitas Basket</option>
+              <option value="running">Komunitas Lari / Running Club</option>
+              <option value="volleyball">Komunitas Bola Voli</option>
+              <option value="cycling">Komunitas Sepeda / Cycling</option>
+              <option value="esports">Komunitas Gaming / Esports</option>
+              <option value="student_org">Organisasi Mahasiswa (BEM / UKM / HIMA)</option>
+              <option value="association">Asosiasi / Komunitas Profesi</option>
+            </select>
+          </div>
+          <div class="mb-2">
+            <label class="form-label small mb-1">Kota / Wilayah Target</label>
+            <input type="text" name="city" class="form-control form-control-sm" value="Bandung" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small mb-1">Maksimal Entri</label>
+            <input type="number" name="limit" class="form-control form-control-sm" value="10" min="1" max="50">
+          </div>
+          <button type="submit" class="btn btn-sm btn-success w-100"><i class="bi bi-play-circle me-1"></i> Jalankan Discovery Komunitas</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Social Media Discovery Card -->
+  <div class="col-md-4">
+    <div class="card h-100 shadow-sm border-0">
+      <div class="card-header bg-dark text-white py-2">
+        <h6 class="mb-0"><i class="bi bi-share me-1"></i> Social Discovery Publik</h6>
+      </div>
+      <div class="card-body">
+        <p class="small text-muted mb-2">Discovery profil organisasi publik di Instagram, TikTok, Facebook, dan LinkedIn secara legitimate.</p>
+        <form method="post" action="{{ url_for('admin.trigger_social_discovery') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <div class="mb-2">
+            <label class="form-label small mb-1">Platform Media Sosial</label>
+            <select name="platform" class="form-select form-select-sm">
+              <option value="instagram">Instagram</option>
+              <option value="tiktok">TikTok</option>
+              <option value="facebook">Facebook</option>
+              <option value="linkedin">LinkedIn</option>
+            </select>
+          </div>
+          <div class="mb-2">
+            <label class="form-label small mb-1">Keyword Pencarian</label>
+            <input type="text" name="keyword" class="form-control form-control-sm" value="jersey futsal bandung" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small mb-1">Batas Kandidat</label>
+            <input type="number" name="limit" class="form-control form-control-sm" value="10" min="1" max="50">
+          </div>
+          <button type="submit" class="btn btn-sm btn-dark w-100"><i class="bi bi-play-circle me-1"></i> Jalankan Social Discovery</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Custom Discovery Sources Configuration -->
+<div class="card p-3 my-3 shadow-sm border-0">
+  <h6 class="fw-bold mb-2"><i class="bi bi-plus-circle me-1"></i> Tambah Discovery Source Kustom</h6>
+  <form method="post" action="{{ url_for('admin.create_discovery_source') }}" class="row g-2">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="col-md-3"><input name="name" class="form-control form-control-sm" placeholder="Nama source" required></div>
+    <div class="col-md-2"><select name="source_kind" class="form-select form-select-sm"><option value="organization">Organisasi</option><option value="event">Event apparel</option></select></div>
+    <div class="col-md-2"><input name="category" class="form-control form-control-sm" placeholder="Kategori, mis. futsal"></div>
+    <div class="col-md-3"><input name="query_text" class="form-control form-control-sm" placeholder="Keyword, mis. turnamen futsal"></div>
+    <div class="col-md-2"><input name="region" class="form-control form-control-sm" value="Indonesia" placeholder="Wilayah"></div>
+    <div class="col-md-10"><textarea name="source_urls" class="form-control form-control-sm" rows="2" placeholder="URL sumber resmi, satu per baris (opsional)"></textarea></div>
+    <div class="col-md-2 d-flex align-items-end"><button class="btn btn-primary btn-sm w-100">Tambah Source</button></div>
+  </form>
+</div>
+
+<h5>Discovery Sources Terdaftar</h5>
+<div class="card shadow-sm border-0 mb-4">
+  <div class="table-responsive">
+    <table class="table table-sm table-hover align-middle mb-0">
+      <thead class="table-light"><tr><th>Nama</th><th>Tipe</th><th>Keyword</th><th>Wilayah</th><th>Status</th><th class="text-end">Aksi</th></tr></thead>
+      <tbody>{% for source in sources %}
+        <tr><td>{{ source.name }}</td><td><span class="badge bg-light text-dark border">{{ source.source_kind }}</span></td><td>{{ source.query_text or '-' }}</td><td>{{ source.region or '-' }}</td><td>{{ source.last_status or 'Belum dijalankan' }}</td>
+          <td class="text-end text-nowrap"><form method="post" action="{{ url_for('admin.sync_discovery_source', sid=source.id) }}" class="d-inline"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-sm btn-outline-primary"><i class="bi bi-arrow-repeat"></i> Sync</button></form>
+          <form method="post" action="{{ url_for('admin.toggle_discovery_source', sid=source.id) }}" class="d-inline"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-sm btn-outline-secondary">{{ 'Nonaktifkan' if source.is_active else 'Aktifkan' }}</button></form></td></tr>
+      {% else %}<tr><td colspan="6" class="text-center text-muted py-3">Belum ada source terdaftar.</td></tr>{% endfor %}</tbody>
+    </table>
+  </div>
+</div>
+
+<h5 class="mt-4">Organisasi Terbaru Hasil Discovery</h5>
+<div class="card shadow-sm border-0 mb-4">
+  <div class="table-responsive"><table class="table table-sm table-hover align-middle mb-0"><thead class="table-light"><tr><th>Nama</th><th>Tipe / Subtipe</th><th>Lokasi</th><th>Telepon / Email</th><th>Website / Medsos</th><th>Score</th></tr></thead><tbody>
+  {% for item in organizations %}<tr>
+    <td class="fw-semibold"><a href="{{ url_for('market_analysis.org_detail', org_id=item.id) }}" class="text-decoration-none">{{ item.name }}</a></td>
+    <td><span class="badge bg-light text-dark border">{{ item.organization_type }}</span> {% if item.organization_subtype %}<small class="text-muted d-block">{{ item.organization_subtype }}</small>{% endif %}</td>
+    <td>{{ item.city or item.province or '-' }}</td>
+    <td class="small">{{ item.phone or item.email or '-' }}</td>
+    <td class="small">{% if item.website %}<a href="{{ item.website }}" target="_blank" rel="noopener" class="text-truncate d-inline-block" style="max-width:180px;">{{ item.website }}</a>{% else %}-{% endif %}</td>
+    <td><span class="badge bg-primary">{{ item.opportunity_score or item.relevance_score or 0 }}</span></td>
+  </tr>{% else %}<tr><td colspan="6" class="text-center text-muted py-3">Belum ada organisasi.</td></tr>{% endfor %}
+  </tbody></table></div>
+</div>
+
+<h5 class="mt-4">Event Terbaru Teridentifikasi</h5>
+<div class="card shadow-sm border-0 mb-4">
+  <div class="table-responsive"><table class="table table-sm table-hover align-middle mb-0"><thead class="table-light"><tr><th>Event</th><th>Kategori</th><th>Lokasi</th><th>Penyelenggara</th><th>Website</th><th>Score</th></tr></thead><tbody>
+  {% for item in events %}<tr>
+    <td class="fw-semibold">{{ item.name }}</td>
+    <td><span class="badge bg-light text-dark border">{{ item.event_type or '-' }}</span></td>
+    <td>{{ item.city or item.province or '-' }}</td>
+    <td>{{ item.organizer or '-' }}</td>
+    <td class="small">{% if item.website %}<a href="{{ item.website }}" target="_blank" rel="noopener">{{ item.website }}</a>{% else %}-{% endif %}</td>
+    <td><span class="badge bg-secondary">{{ item.relevance_score }}</span></td>
+  </tr>{% else %}<tr><td colspan="6" class="text-center text-muted py-3">Belum ada event.</td></tr>{% endfor %}
+  </tbody></table></div>
+</div>
+{% endblock %}
