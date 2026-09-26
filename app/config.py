@@ -7,6 +7,8 @@ class Config:
     SECRET_KEY = os.getenv("FLASK_SECRET_KEY", "dev-secret-key")
 
     DATABASE_URL = os.getenv("DATABASE_URL", "")
+    if os.getenv("FLASK_ENV") == "production" and not DATABASE_URL:
+        raise RuntimeError("DATABASE_URL belum diatur di environment Deployment")
     if DATABASE_URL and "sslmode=" not in DATABASE_URL:
         DATABASE_URL += "&sslmode=require" if "?" in DATABASE_URL else "?sslmode=require"
     DB_HOST = os.getenv("DB_HOST", "localhost")
