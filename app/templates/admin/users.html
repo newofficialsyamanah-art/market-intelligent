@@ -14,6 +14,7 @@
         <option value="business_analyst">Business Analyst</option>
         <option value="marketing">Marketing</option>
         <option value="management">Management</option>
+        <option value="procurement">Procurement</option>
       </select>
     </div>
     <div class="col-md-1"><button class="btn btn-primary btn-sm w-100">+</button></div>
@@ -30,7 +31,7 @@
         <form method="post" action="{{ url_for('admin.change_role', uid=u.id) }}" class="d-flex gap-1">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <select name="role" class="form-select form-select-sm" onchange="this.form.submit()">
-            {% for r in ["admin","business_analyst","marketing","management"] %}
+            {% for r in ["admin","business_analyst","marketing","management","procurement"] %}
               <option value="{{ r }}" {% if u.role==r %}selected{% endif %}>{{ r }}</option>
             {% endfor %}
           </select>

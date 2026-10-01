@@ -330,6 +330,9 @@ class MarketingIntelligenceService:
         has_tiktok: bool = False,
         has_facebook: bool = False,
         has_linkedin: bool = False,
+        has_purchasing: bool = False,
+        has_procurement: bool = False,
+        has_hr: bool = False,
         min_score: Optional[int] = None,
         page: int = 1,
         per_page: int = 25
@@ -343,6 +346,8 @@ class MarketingIntelligenceService:
                     Organization.name.like(f"%{q}%"),
                     Organization.domain.like(f"%{q}%"),
                     Organization.city.like(f"%{q}%"),
+                    Organization.province.like(f"%{q}%"),
+                    Organization.address.like(f"%{q}%"),
                     Organization.industry.like(f"%{q}%"),
                     Organization.sport.like(f"%{q}%")
                 )
@@ -355,10 +360,10 @@ class MarketingIntelligenceService:
             query = query.filter(Organization.industry == industry)
 
         if province:
-            query = query.filter(Organization.province == province)
+            query = query.filter(Organization.province.ilike(f"%{province}%"))
 
         if city:
-            query = query.filter(Organization.city == city)
+            query = query.filter(Organization.city.ilike(f"%{city}%"))
 
         if organization_type:
             query = query.filter(Organization.organization_type == organization_type)
@@ -406,6 +411,15 @@ class MarketingIntelligenceService:
 
         if has_linkedin:
             query = query.filter(Organization.social_json.like("%linkedin%"))
+
+        if has_purchasing:
+            query = query.filter(Organization.department_contacts_json.like("%purchasing%"))
+
+        if has_procurement:
+            query = query.filter(Organization.department_contacts_json.like("%procurement%"))
+
+        if has_hr:
+            query = query.filter(Organization.department_contacts_json.like("%hr%"))
 
         if event_relevance:
             query = query.join(EventParticipant, Organization.id == EventParticipant.organization_id) \
@@ -468,6 +482,11 @@ class MarketingIntelligenceService:
                 "socials": socials,
                 "events_count": part_count,
                 "high_relevance_events_count": high_rel_events,
+                "department_contacts": org.get_department_contacts(),
+                "purchasing_contact": org.purchasing_contact,
+                "procurement_contact": org.procurement_contact,
+                "hr_contact": org.hr_contact,
+                "community_pic_contact": org.community_pic_contact,
             })
 
         return results, total_count, total_pages

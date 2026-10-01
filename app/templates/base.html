@@ -27,6 +27,7 @@
         </a>
         <ul class="dropdown-menu">
           <li><a class="dropdown-item" href="{{ url_for('market_analysis.explorer') }}"><i class="bi bi-search me-2"></i> Master Organizations</a></li>
+          <li><a class="dropdown-item" href="{{ url_for('prospect.list_prospects') }}"><i class="bi bi-person-lines-fill me-2"></i> Prospek</a></li>
           {% if current_user.role in ['admin', 'business_analyst', 'management'] %}
           <li><a class="dropdown-item" href="{{ url_for('market_analysis.index') }}"><i class="bi bi-graph-up me-2"></i> Market Analytics</a></li>
           {% endif %}
@@ -80,7 +81,12 @@
       <li class="nav-item"><a class="nav-link" href="{{ url_for('reporting.index') }}"><i class="bi bi-journal-text"></i> Reporting</a></li>
       {% endif %}
 
-      <!-- 5. Admin (Only Admin) -->
+      <!-- 5. Procurement Intelligence -->
+      {% if current_user.role in ['admin', 'business_analyst', 'marketing', 'management', 'procurement'] %}
+      <li class="nav-item"><a class="nav-link" href="{{ url_for('procurement.index') }}"><i class="bi bi-box-seam"></i> Procurement</a></li>
+      {% endif %}
+
+      <!-- 6. Admin (Only Admin) -->
       {% if current_user.role == 'admin' %}
       <li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -139,8 +145,13 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
   }
+
+  // Initialize Bootstrap Tooltips globally
+  const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+  [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
 });
 </script>
+{% include "components/wa_modal.html" %}
 {% block scripts %}{% endblock %}
 </body>
 </html>

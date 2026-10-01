@@ -16,6 +16,9 @@
       <i class="bi bi-file-earmark-spreadsheet me-1"></i> Export Partisipan CSV
     </a>
     {% if current_user.role in ['admin', 'business_analyst', 'marketing'] %}
+    <button type="button" class="btn btn-outline-primary me-2" data-bs-toggle="modal" data-bs-target="#modalDiscoverEvents">
+      <i class="bi bi-robot me-1"></i> Discovery Event AI
+    </button>
     <a href="{{ url_for('events.create_event') }}" class="btn btn-primary">
       <i class="bi bi-plus-circle me-1"></i> Tambah Event
     </a>
@@ -177,6 +180,22 @@
                 <span class="text-secondary">Penyelenggara:</span> <strong>{{ ev.organizer }}</strong>
               </div>
               {% endif %}
+              {% set panitia = ev.panitia_contact %}
+              {% if panitia and panitia.phone %}
+              <div class="mt-1 d-flex flex-wrap align-items-center gap-1">
+                <button type="button" class="btn btn-sm btn-success py-0 px-2 rounded-pill btn-wa-trigger d-inline-flex align-items-center gap-1"
+                        style="font-size: 0.72rem;"
+                        data-bs-toggle="modal" data-bs-target="#modalWhatsAppQuickSend"
+                        data-company="{{ ev.name }} (Panitia)"
+                        data-phone="{{ panitia.phone }}"
+                        data-wanumber="{{ panitia.phone }}"
+                        data-isvalid="true"
+                        data-type="mobile"
+                        title="Kirim WhatsApp ke Panitia Event">
+                  <i class="bi bi-whatsapp"></i> <span>Panitia: {{ panitia.phone }}</span>
+                </button>
+              </div>
+              {% endif %}
             </td>
             <td>
               <span class="badge bg-light text-dark border">{{ ev.event_type or 'General' }}</span>
@@ -272,4 +291,62 @@
   </div>
   {% endif %}
 </div>
+
+<!-- Modal Discovery Event AI Se-Indonesia -->
+<div class="modal fade" id="modalDiscoverEvents" tabindex="-1" aria-labelledby="modalDiscoverEventsLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title d-flex align-items-center gap-2" id="modalDiscoverEventsLabel">
+          <i class="bi bi-robot fs-4"></i>
+          <span>Discovery Event & Expo Se-Indonesia</span>
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Tutup"></button>
+      </div>
+      <form method="post" action="{{ url_for('events.discover_events_action') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="modal-body p-4">
+          <p class="small text-muted mb-3">
+            Sistem akan mencari dan mengumpulkan event pameran B2B, expo industri/tekstil, festival, dan turnamen olahraga nyata secara dinamis di kota/provinsi yang Anda tuju.
+          </p>
+
+          <div class="mb-3">
+            <label class="form-label small fw-semibold text-muted mb-1">Wilayah / Kota Target</label>
+            <input type="text" name="city" id="modalEventCityInput" class="form-control form-control-sm" placeholder="Contoh: Surabaya, Malang, atau kosongkan untuk Se-Indonesia" value="Surabaya">
+            <div class="mt-1 d-flex flex-wrap gap-1">
+              <span class="badge bg-light text-dark border pointer small py-1" style="cursor: pointer;" onclick="document.getElementById('modalEventCityInput').value='Kalimantan'">Kalimantan</span>
+              <span class="badge bg-light text-dark border pointer small py-1" style="cursor: pointer;" onclick="document.getElementById('modalEventCityInput').value='Samarinda'">Samarinda</span>
+              <span class="badge bg-light text-dark border pointer small py-1" style="cursor: pointer;" onclick="document.getElementById('modalEventCityInput').value='Balikpapan'">Balikpapan</span>
+              <span class="badge bg-light text-dark border pointer small py-1" style="cursor: pointer;" onclick="document.getElementById('modalEventCityInput').value='Pontianak'">Pontianak</span>
+              <span class="badge bg-light text-dark border pointer small py-1" style="cursor: pointer;" onclick="document.getElementById('modalEventCityInput').value='Banjarmasin'">Banjarmasin</span>
+              <span class="badge bg-light text-dark border pointer small py-1" style="cursor: pointer;" onclick="document.getElementById('modalEventCityInput').value='Surabaya'">Surabaya</span>
+              <span class="badge bg-light text-dark border pointer small py-1" style="cursor: pointer;" onclick="document.getElementById('modalEventCityInput').value='Makassar'">Makassar</span>
+              <span class="badge bg-light text-dark border pointer small py-1" style="cursor: pointer;" onclick="document.getElementById('modalEventCityInput').value='Medan'">Medan</span>
+              <span class="badge bg-light text-dark border pointer small py-1" style="cursor: pointer;" onclick="document.getElementById('modalEventCityInput').value=''">Se-Indonesia</span>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-semibold text-muted mb-1">Topik / Kategori Event</label>
+            <input type="text" name="query" class="form-control form-control-sm" placeholder="Contoh: Expo Industri, Pameran UMKM, Turnamen Lari" value="Pameran Bisnis dan Turnamen Olahraga">
+          </div>
+
+          <div class="mb-2">
+            <label class="form-label small fw-semibold text-muted mb-1">Jumlah Event Maksimal</label>
+            <input type="number" name="limit" class="form-control form-control-sm" value="6" min="1" max="20">
+          </div>
+        </div>
+        <div class="modal-footer bg-light border-0 py-2">
+          <button type="button" class="btn btn-sm btn-light border" data-bs-dismiss="modal">Batal</button>
+          <button type="submit" class="btn btn-sm btn-primary px-3 fw-semibold">
+            <i class="bi bi-play-circle me-1"></i> Mulai Pencarian Otomatis
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% include "components/wa_modal.html" %}
 {% endblock %}
+

@@ -70,6 +70,9 @@ def targets():
     has_tiktok = request.args.get("has_tiktok") == "1"
     has_facebook = request.args.get("has_facebook") == "1"
     has_linkedin = request.args.get("has_linkedin") == "1"
+    has_purchasing = request.args.get("has_purchasing") == "1"
+    has_procurement = request.args.get("has_procurement") == "1"
+    has_hr = request.args.get("has_hr") == "1"
     min_score_raw = request.args.get("min_score", "").strip()
     page = request.args.get("page", 1, type=int)
 
@@ -97,6 +100,9 @@ def targets():
         has_tiktok=has_tiktok,
         has_facebook=has_facebook,
         has_linkedin=has_linkedin,
+        has_purchasing=has_purchasing,
+        has_procurement=has_procurement,
+        has_hr=has_hr,
         min_score=min_score,
         page=page,
         per_page=25,
@@ -117,11 +123,13 @@ def targets():
         .filter(Organization.sport.isnot(None), Organization.sport != "")
         .distinct().order_by(Organization.sport).all()
     ]
-    all_provinces = [
+    from app.utils import get_all_indonesia_provinces
+    db_provinces = [
         r[0] for r in db.session.query(Organization.province)
         .filter(Organization.province.isnot(None), Organization.province != "", Organization.province != "nan")
-        .distinct().order_by(Organization.province).all()
+        .distinct().all()
     ]
+    all_provinces = get_all_indonesia_provinces(db_provinces)
     all_events = Event.query.order_by(Event.start_date.desc()).all()
     active_campaigns = Campaign.query.filter(Campaign.status.in_(["draft", "ready", "active"])).order_by(Campaign.created_at.desc()).all()
 
@@ -153,6 +161,9 @@ def targets():
             "has_tiktok": "1" if has_tiktok else "",
             "has_facebook": "1" if has_facebook else "",
             "has_linkedin": "1" if has_linkedin else "",
+            "has_purchasing": "1" if has_purchasing else "",
+            "has_procurement": "1" if has_procurement else "",
+            "has_hr": "1" if has_hr else "",
             "min_score": min_score_raw,
         },
         all_industries=all_industries,
@@ -260,6 +271,13 @@ def export():
         "city",
         "province",
         "employee_size",
+        "purchasing_phone",
+        "purchasing_email",
+        "procurement_phone",
+        "procurement_email",
+        "hr_phone",
+        "hr_email",
+        "community_pic_phone",
         "event_count",
         "high_relevance_event_count",
         "latest_event",
@@ -275,6 +293,11 @@ def export():
                 socials = json.loads(org.social_json) if isinstance(json.loads(org.social_json), dict) else {}
             except Exception:
                 socials = {}
+
+        p_contact = org.purchasing_contact
+        proc_contact = org.procurement_contact
+        hr_contact = org.hr_contact
+        comm_contact = org.community_pic_contact
 
         parts = org.participations
         event_count = len(parts)
@@ -312,6 +335,13 @@ def export():
             org.city if org.city != "nan" else "",
             org.province if org.province != "nan" else "",
             org.employee_size if org.employee_size != "nan" else "",
+            p_contact.get("phone", ""),
+            p_contact.get("email", ""),
+            proc_contact.get("phone", ""),
+            proc_contact.get("email", ""),
+            hr_contact.get("phone", ""),
+            hr_contact.get("email", ""),
+            comm_contact.get("phone", ""),
             event_count,
             high_rel_count,
             latest_event_name,

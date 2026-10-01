@@ -14,7 +14,7 @@ prospect_bp = Blueprint("prospect", __name__)
 
 @prospect_bp.route("/")
 @login_required
-@roles_required("business_analyst", "marketing")
+@roles_required("admin", "business_analyst", "marketing", "management")
 def list_prospects():
     q = request.args.get("q", "").strip()
     industry = request.args.get("industry", "").strip()
@@ -26,12 +26,17 @@ def list_prospects():
     if q:
         like = f"%{q}%"
         query = query.filter(
-            db.or_(Prospect.company_name.ilike(like), Prospect.contact_email.ilike(like))
+            db.or_(
+                Prospect.company_name.ilike(like),
+                Prospect.contact_email.ilike(like),
+                Prospect.region.ilike(like),
+                Prospect.industry.ilike(like)
+            )
         )
     if industry:
         query = query.filter(Prospect.industry == industry)
     if region:
-        query = query.filter(Prospect.region == region)
+        query = query.filter(Prospect.region.ilike(f"%{region}%"))
     if segment:
         query = query.filter(Prospect.segment == segment)
     if status:
@@ -39,8 +44,10 @@ def list_prospects():
 
     prospects = query.order_by(Prospect.score.desc(), Prospect.created_at.desc()).limit(300).all()
 
+    from app.utils import get_all_indonesia_provinces
     industries = [r[0] for r in db.session.query(distinct(Prospect.industry)).filter(Prospect.industry.isnot(None)).all()]
-    regions = [r[0] for r in db.session.query(distinct(Prospect.region)).filter(Prospect.region.isnot(None)).all()]
+    db_regions = [r[0] for r in db.session.query(distinct(Prospect.region)).filter(Prospect.region.isnot(None), Prospect.region != "", Prospect.region != "nan, nan").all()]
+    regions = sorted(list(set(get_all_indonesia_provinces() + db_regions)))
     segments = [r[0] for r in db.session.query(distinct(Prospect.segment)).filter(Prospect.segment.isnot(None)).all()]
 
     return render_template(
@@ -52,7 +59,7 @@ def list_prospects():
 
 @prospect_bp.route("/<int:pid>")
 @login_required
-@roles_required("business_analyst", "marketing")
+@roles_required("admin", "business_analyst", "marketing", "management")
 def detail(pid):
     p = Prospect.query.get_or_404(pid)
     return render_template("prospect/detail.html", p=p)

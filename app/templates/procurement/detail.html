@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+{% block title %}Detail Supplier - {{ supplier.company_name }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <a href="{{ url_for('procurement.index') }}" class="small text-decoration-none text-secondary">
+      <i class="bi bi-arrow-left me-1"></i>Kembali ke Daftar Supplier
+    </a>
+    <h3 class="mt-2 mb-1 fw-bold">{{ supplier.company_name }}</h3>
+    <div class="text-muted">
+      <span class="badge bg-light text-dark border me-1">{{ supplier.product|title }}</span>
+      {% if supplier.material %}<span class="text-secondary small">{{ supplier.material }}</span>{% endif %}
+      {% if supplier.region %}<span class="text-muted small"> · <i class="bi bi-geo-alt"></i>{{ supplier.region }}</span>{% endif %}
+    </div>
+  </div>
+  <div class="d-flex align-items-center gap-2">
+    <span class="badge {% if supplier.fit_score >= 85 %}bg-success{% elif supplier.fit_score >= 65 %}bg-primary{% elif supplier.fit_score >= 50 %}bg-warning text-dark{% else %}bg-secondary{% endif %} fs-6 py-2 px-3">
+      AI Fit: {{ supplier.fit_score }}/100
+    </span>
+    <form method="post" action="{{ url_for('procurement.delete', supplier_id=supplier.id) }}" onsubmit="return confirm('Hapus supplier {{ supplier.company_name }}?');">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="btn btn-outline-danger btn-sm" title="Hapus supplier"><i class="bi bi-trash me-1"></i>Hapus</button>
+    </form>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-8">
+    <!-- Profil & Ringkasan -->
+    <div class="card border-0 shadow-sm mb-3">
+      <div class="card-body">
+        <h5 class="fw-bold mb-3"><i class="bi bi-building text-primary me-2"></i>Profil & Deskripsi Supplier</h5>
+        <p class="text-secondary" style="line-height: 1.6;">{{ supplier.description or 'Deskripsi belum tersedia.' }}</p>
+        
+        <hr class="my-3">
+        
+        <dl class="row mb-0">
+          <dt class="col-sm-3 text-muted">Wilayah / Lokasi</dt>
+          <dd class="col-sm-9">{{ supplier.region or 'Indonesia' }}</dd>
+          
+          <dt class="col-sm-3 text-muted">Material Spesifik</dt>
+          <dd class="col-sm-9">{{ supplier.material or 'Material umum apparel' }}</dd>
+
+          <dt class="col-sm-3 text-muted">Kontak Telepon / WA</dt>
+          <dd class="col-sm-9">
+            {% if supplier.contact_phone %}
+              {% set clean_phone = supplier.contact_phone|replace(' ', '')|replace('-', '')|replace('+', '') %}
+              {% if clean_phone.startswith('0') %}
+                {% set wa_num = '62' ~ clean_phone[1:] %}
+              {% else %}
+                {% set wa_num = clean_phone %}
+              {% endif %}
+              <div class="d-flex align-items-center gap-2">
+                <span class="font-monospace fw-semibold">{{ supplier.contact_phone }}</span>
+                <a href="https://wa.me/{{ wa_num }}" target="_blank" rel="noopener" class="btn btn-sm btn-success rounded-pill px-3 py-1">
+                  <i class="bi bi-whatsapp me-1"></i>Chat WhatsApp
+                </a>
+              </div>
+            {% else %}
+              <span class="text-muted">-</span>
+            {% endif %}
+          </dd>
+
+          <dt class="col-sm-3 text-muted">Email Kontak</dt>
+          <dd class="col-sm-9">
+            {% if supplier.contact_email %}
+              <a href="mailto:{{ supplier.contact_email }}" class="text-decoration-none">{{ supplier.contact_email }}</a>
+            {% else %}
+              <span class="text-muted">-</span>
+            {% endif %}
+          </dd>
+
+          <dt class="col-sm-3 text-muted">Website Resmi</dt>
+          <dd class="col-sm-9">
+            {% if supplier.website %}
+              <a href="{{ supplier.website }}" target="_blank" rel="noopener" class="text-decoration-none">
+                {{ supplier.website }} <i class="bi bi-box-arrow-up-right small ms-1"></i>
+              </a>
+            {% else %}
+              <span class="text-muted">-</span>
+            {% endif %}
+          </dd>
+        </dl>
+      </div>
+    </div>
+
+    <!-- Rekomendasi AI & Next Steps -->
+    <div class="card border-0 shadow-sm">
+      <div class="card-body">
+        <h5 class="fw-bold mb-3"><i class="bi bi-robot text-primary me-2"></i>Evaluasi & Rekomendasi AI</h5>
+        <div class="p-3 bg-light rounded mb-3 border-start border-4 border-primary">
+          <p class="mb-0 fw-semibold text-dark">{{ recommendation.recommendation or 'Supplier ini telah tersimpan dalam database pengadaan Syamanah. Lakukan validasi stok dan harga sebelum bertransaksi.' }}</p>
+        </div>
+
+        <h6 class="fw-bold mb-2">Langkah Tindak Lanjut Procurement:</h6>
+        <ul class="list-group list-group-flush mb-3">
+          {% for step in recommendation.next_steps or [] %}
+          <li class="list-group-item px-0 d-flex align-items-center gap-2">
+            <i class="bi bi-check2-circle text-success fs-5"></i>
+            <span>{{ step }}</span>
+          </li>
+          {% else %}
+          <li class="list-group-item px-0 d-flex align-items-center gap-2">
+            <i class="bi bi-check2-circle text-success fs-5"></i>
+            <span>Validasi ketersediaan katalog dan minimum order quantity (MOQ) rollan.</span>
+          </li>
+          <li class="list-group-item px-0 d-flex align-items-center gap-2">
+            <i class="bi bi-check2-circle text-success fs-5"></i>
+            <span>Minta swatch card atau sample handfeel kain sebelum pemesanan partai besar.</span>
+          </li>
+          <li class="list-group-item px-0 d-flex align-items-center gap-2">
+            <i class="bi bi-check2-circle text-success fs-5"></i>
+            <span>Bandingkan harga per roll / kg serta estimasi biaya ekspedisi kargo.</span>
+          </li>
+          {% endfor %}
+        </ul>
+
+        <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+          <span class="small text-muted">Confidence: <span class="badge bg-light text-dark border text-uppercase">{{ recommendation.confidence or 'medium' }}</span></span>
+          <span class="small text-muted fst-italic">Rekomendasi AI bersifat asistensi keputusan pengadaan.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <!-- Provenance & Audit Card -->
+    <div class="card border-0 shadow-sm mb-3">
+      <div class="card-body">
+        <h5 class="fw-bold mb-3"><i class="bi bi-shield-check text-success me-2"></i>Provenance Sumber</h5>
+        <p class="small text-muted mb-2">Data supplier ini terverifikasi dari sumber web berikut:</p>
+        <a href="{{ supplier.source_url }}" target="_blank" rel="noopener" class="btn btn-outline-primary w-100 mb-3 text-truncate">
+          <i class="bi bi-link-45deg me-1"></i>Buka Sumber URL
+        </a>
+
+        <div class="small">
+          <div class="d-flex justify-content-between py-1 border-bottom">
+            <span class="text-muted">Status Validasi</span>
+            <span class="fw-semibold">
+              {% if supplier.verification_status == 'verified' %}
+                <span class="text-success"><i class="bi bi-check-circle-fill me-1"></i>Verified</span>
+              {% elif supplier.verification_status == 'user_added' %}
+                <span class="text-info"><i class="bi bi-person-fill me-1"></i>User Added</span>
+              {% else %}
+                <span class="text-secondary"><i class="bi bi-globe me-1"></i>Discovered</span>
+              {% endif %}
+            </span>
+          </div>
+          <div class="d-flex justify-content-between py-1 border-bottom">
+            <span class="text-muted">Tanggal Ditambahkan</span>
+            <span class="fw-semibold text-secondary">{{ supplier.created_at.strftime('%d %b %Y, %H:%M') if supplier.created_at else '-' }}</span>
+          </div>
+          <div class="d-flex justify-content-between py-1">
+            <span class="text-muted">ID Record</span>
+            <span class="font-monospace text-muted">#{{ supplier.id }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

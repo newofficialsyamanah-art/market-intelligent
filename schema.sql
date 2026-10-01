@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS users (
     name VARCHAR(150) NOT NULL,
     email VARCHAR(150) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
-    role ENUM('admin','business_analyst','marketing','management') NOT NULL DEFAULT 'business_analyst',
+    role ENUM('admin','business_analyst','marketing','management','procurement') NOT NULL DEFAULT 'business_analyst',
     is_active BOOLEAN DEFAULT TRUE,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
@@ -174,6 +174,27 @@ CREATE TABLE IF NOT EXISTS discovery_sources (
     created_by INT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (created_by) REFERENCES users(id)
+);
+
+CREATE TABLE IF NOT EXISTS procurement_suppliers (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    company_name VARCHAR(255) NOT NULL,
+    product VARCHAR(100) NOT NULL,
+    material VARCHAR(255),
+    region VARCHAR(150),
+    website VARCHAR(500),
+    source_url VARCHAR(500) NOT NULL,
+    contact_email VARCHAR(150),
+    contact_phone VARCHAR(100),
+    description TEXT,
+    fit_score INT DEFAULT 0,
+    recommendation_json LONGTEXT,
+    verification_status VARCHAR(50) DEFAULT 'discovered',
+    created_by INT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (created_by) REFERENCES users(id),
+    KEY idx_procurement_product (product),
+    KEY idx_procurement_fit_score (fit_score)
 );
 
 CREATE TABLE IF NOT EXISTS organizations (

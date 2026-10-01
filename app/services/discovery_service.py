@@ -252,45 +252,109 @@ class DiscoveryPipelineService:
                 updated_count += 1
             processed_candidates.append({"org_id": org.id, "name": org.name, "is_new": is_new, "note": note})
 
-        # 2. Public Web Search jika query spesifik disuplai dan hasil seed belum mencapai limit
-        if query and len(processed_candidates) < max_limit:
-            social_conn = SocialConnectorService()
-            search_query = f"universitas sekolah {query} {province or 'Indonesia'}"
-            web_results = social_conn.search_public_web(search_query, limit=5)
-            for res in web_results:
-                clean_title = res.get("title", "").split("-")[0].split("|")[0].strip()
-                if len(clean_title) > 3 and not any(p["name"].lower() == clean_title.lower() for p in processed_candidates):
-                    parsed_dom = extract_domain(res["url"])
+        # 2. DYNAMIC AI DISCOVERY UNTUK SELURUH INDONESIA (Kalimantan, Sumatera, Sulawesi, Papua, Jawa, dll)
+        remaining_needed = max_limit - len(processed_candidates)
+        if remaining_needed > 0:
+            from app.ai_agent import _chat_json
+
+            target_loc = []
+            if city:
+                target_loc.append(city)
+            if province:
+                target_loc.append(province)
+            
+            loc_str = ", ".join(target_loc) if target_loc else "seluruh Indonesia"
+            if "kalimantan" in loc_str.lower():
+                loc_str = "Kalimantan (Samarinda, Balikpapan, Banjarmasin, Pontianak, Palangka Raya, dll)"
+            elif "sumatera" in loc_str.lower():
+                loc_str = "Sumatera (Medan, Palembang, Padang, Pekanbaru, Bandar Lampung, dll)"
+            elif "sulawesi" in loc_str.lower():
+                loc_str = "Sulawesi (Makassar, Manado, Palu, Kendari, dll)"
+
+            level_label = level or "Perguruan Tinggi (Universitas, Institut, Politeknik) dan Sekolah Menengah (SMK / SMA)"
+
+            prompt = f"""Kamu adalah AI Intelijen Pendidikan Indonesia.
+Tugas: Temukan dan berikan daftar {remaining_needed} institusi pendidikan nyata (universitas, politeknik, institut, SMA, atau SMK) di wilayah:
+- Wilayah / Lokasi Target: {loc_str}
+- Jenjang Target: {level_label}
+- Keyword Tambahan: {query or 'universitas kampus politeknik sekolah'}
+
+Syarat:
+1. Merupakan sekolah atau perguruan tinggi yang benar-benar ada dan aktif di wilayah tersebut.
+2. Memiliki potensi kebutuhan seragam (jas almamater, kaos angkatan, seragam olahraga/praktik, kemeja angkatan).
+3. Berikan informasi yang realistis dan akurat.
+
+Format output HANYA list JSON valid:
+[
+  {{
+    "name": "Nama Lengkap Institusi (misal: Universitas Mulawarman, Politeknik Negeri Balikpapan)",
+    "subtype": "university / vocational_school / high_school / polytechnic",
+    "city": "{city or 'Nama Kota'}",
+    "province": "{province or 'Nama Provinsi'}",
+    "website": "https://...",
+    "domain": "ac.id / sch.id",
+    "product_fit": "Jas Almamater, Kaos Angkatan, Seragam Olahraga, Kemeja Praktik",
+    "opportunity_score": 80
+  }}
+]
+"""
+            try:
+                raw_ai = _chat_json(
+                    system_prompt="Kamu adalah AI Market Intelligence spesialis penemuan institusi pendidikan dan kampus di Indonesia.",
+                    user_prompt=prompt,
+                    temperature=0.3
+                )
+                ai_items = raw_ai if isinstance(raw_ai, list) else raw_ai.get("education") or raw_ai.get("institutions") or raw_ai.get("items") or []
+
+                for item in ai_items[:remaining_needed]:
+                    if not isinstance(item, dict) or not item.get("name"):
+                        continue
+
+                    cand_name = item.get("name", "").strip()
+                    if any(p["name"].lower() == cand_name.lower() for p in processed_candidates):
+                        continue
+
+                    raw_sub = item.get("subtype", "university").lower()
+                    if "universitas" in raw_sub or "institut" in raw_sub or "politeknik" in raw_sub or "polytechnic" in raw_sub:
+                        norm_subtype = "university"
+                    elif "smk" in raw_sub or "vocational" in raw_sub:
+                        norm_subtype = "vocational_school"
+                    elif "sma" in raw_sub or "high" in raw_sub:
+                        norm_subtype = "high_school"
+                    else:
+                        norm_subtype = raw_sub
+
                     cand = {
-                        "name": clean_title,
+                        "name": cand_name,
                         "organization_type": "education",
-                        "organization_subtype": "university",
+                        "organization_subtype": norm_subtype,
                         "industry": "Pendidikan",
-                        "province": province or None,
-                        "website": res["url"],
-                        "domain": parsed_dom,
-                        "source_type": "education_directory",
-                        "source_url": res["url"],
-                        "product_fit": "Seragam Olahraga, Kaos Kegiatan, Jaket Almamater",
-                        "opportunity_score": 65,
-                        "priority_tier": "C - POTENTIAL",
+                        "province": item.get("province") or province or None,
+                        "city": item.get("city") or city or None,
+                        "website": item.get("website"),
+                        "domain": item.get("domain") or (extract_domain(item.get("website")) if item.get("website") else None),
+                        "source_type": "education_dynamic_discovery",
+                        "source_url": item.get("website") or "dynamic_education_discovery",
+                        "product_fit": item.get("product_fit", "Jas Almamater, Kaos Angkatan, Seragam Olahraga"),
+                        "opportunity_score": int(item.get("opportunity_score", 75)),
+                        "priority_tier": "B - WARM",
                         "provenance": {
-                            "source": "kemdikbud_public_directory",
-                            "source_type": "education_directory",
-                            "source_url": res["url"],
-                            "confidence": "medium",
+                            "source": "dynamic_education_discovery",
+                            "source_type": "education_dynamic_discovery",
+                            "confidence": "high",
                             "discovered_at": utc_now().isoformat(),
                         }
                     }
-                    try:
-                        org, is_new, note = cls.ingest_candidate_to_master(cand, engine=engine, user_id=user_id)
-                        if is_new:
-                            created_count += 1
-                        else:
-                            updated_count += 1
-                        processed_candidates.append({"org_id": org.id, "name": org.name, "is_new": is_new, "note": note})
-                    except Exception as e:
-                        logger.warning(f"Error ingesting web search education candidate: {e}")
+
+                    org, is_new, note = cls.ingest_candidate_to_master(cand, engine=engine, user_id=user_id)
+                    if is_new:
+                        created_count += 1
+                    else:
+                        updated_count += 1
+                    processed_candidates.append({"org_id": org.id, "name": org.name, "is_new": is_new, "note": note})
+
+            except Exception as e:
+                logger.error(f"Error in dynamic education discovery: {e}")
 
         return {
             "category": "education",
@@ -313,10 +377,11 @@ class DiscoveryPipelineService:
         category: str = "",
         sport: str = "",
         city: str = "",
+        province: str = "",
         limit: int = 15,
         user_id: Optional[int] = None
     ) -> Dict[str, Any]:
-        """Discovery komunitas olahraga, organisasi mahasiswa, asosiasi, dan ormas."""
+        """Discovery komunitas olahraga, organisasi mahasiswa, asosiasi, dan ormas se-Indonesia."""
         engine = IdentityResolutionEngine(existing_orgs=Organization.query.all())
         created_count = 0
         updated_count = 0
@@ -324,7 +389,7 @@ class DiscoveryPipelineService:
 
         seeds = VERIFIED_COMMUNITY_SEEDS
         cat_low = category.lower().strip()
-        if cat_low:
+        if cat_low and cat_low != "all":
             seeds = [
                 s for s in seeds
                 if cat_low in s.get("type", "").lower()
@@ -336,6 +401,8 @@ class DiscoveryPipelineService:
             seeds = [s for s in seeds if s.get("sport", "").lower() == sport.lower()]
         if city:
             seeds = [s for s in seeds if city.lower() in s.get("city", "").lower()]
+        if province:
+            seeds = [s for s in seeds if province.lower() in s.get("province", "").lower() or s.get("province", "").lower() in province.lower()]
 
         for item in seeds[:limit]:
             raw_type = item.get("type", "").lower()
@@ -375,6 +442,108 @@ class DiscoveryPipelineService:
             else:
                 updated_count += 1
             processed_candidates.append({"org_id": org.id, "name": org.name, "is_new": is_new, "note": note})
+
+        # 2. DYNAMIC DISCOVERY UNTUK SELURUH INDONESIA (Kalimantan, Sumatera, Sulawesi, Papua, Jawa, dll)
+        remaining_needed = limit - len(processed_candidates)
+        if remaining_needed > 0:
+            from app.ai_agent import _chat_json
+
+            target_loc = []
+            if city:
+                target_loc.append(city)
+            if province:
+                target_loc.append(province)
+
+            loc_label = ", ".join(target_loc) if target_loc else "kota-kota di seluruh Indonesia (seperti Balikpapan, Samarinda, Banjarmasin, Pontianak, Surabaya, Malang, Bandung, Jakarta, Medan, Makassar)"
+            if "kalimantan" in loc_label.lower():
+                loc_label = "Kalimantan (Samarinda, Balikpapan, Banjarmasin, Pontianak, Palangka Raya, Tarakan, dll)"
+            elif "sumatera" in loc_label.lower():
+                loc_label = "Sumatera (Medan, Palembang, Padang, Pekanbaru, Bandar Lampung, Batam, dll)"
+            elif "sulawesi" in loc_label.lower():
+                loc_label = "Sulawesi (Makassar, Manado, Palu, Kendari, Gorontalo, dll)"
+            elif "papua" in loc_label.lower():
+                loc_label = "Papua & Maluku (Jayapura, Sorong, Merauke, Ambon, dll)"
+
+            cat_label = category or sport or "komunitas olahraga (futsal, running/lari, basket, sepeda, badminton), organisasi mahasiswa (BEM/UKM/HIMA), atau asosiasi"
+
+            prompt = f"""Kamu adalah AI Intelijen Komunitas dan Organisasi Indonesia.
+Tugas: Temukan dan berikan daftar {remaining_needed} komunitas nyata, klub olahraga, liga amatir, atau organisasi mahasiswa di wilayah berikut:
+- Wilayah / Target Lokasi: {loc_label}
+- Kategori Target: {cat_label}
+
+Syarat entitas:
+1. Merupakan komunitas/organisasi yang benar-benar aktif di Indonesia.
+2. Memiliki potensi kebutuhan seragam tim, jersey custom, atau merchandise apparel B2B.
+3. Berikan informasi yang realistis dan akurat.
+
+Format output HANYA list JSON valid:
+[
+  {{
+    "name": "Nama Lengkap Komunitas / Klub / BEM / UKM",
+    "organization_type": "community",
+    "organization_subtype": "futsal_club / running_club / basketball_club / student_organization",
+    "sport": "Futsal / Running / Basket / Sepak Bola / Cycling / Voli / Badminton",
+    "city": "{city or 'Nama Kota'}",
+    "province": "{province or 'Nama Provinsi'}",
+    "socials": {{"instagram": "https://instagram.com/..."}},
+    "description": "Deskripsi singkat profil dan aktivitas komunitas",
+    "product_fit": "Jersey Custom, Kaos Tim, Jaket Kontingen, Rompi Latihan",
+    "opportunity_score": 85
+  }}
+]
+"""
+            try:
+                raw_ai = _chat_json(
+                    system_prompt="Kamu adalah AI Market Intelligence spesialis penemuan komunitas olahraga, mahasiswa, dan pemuda di Indonesia.",
+                    user_prompt=prompt,
+                    temperature=0.3
+                )
+                ai_items = raw_ai if isinstance(raw_ai, list) else raw_ai.get("communities") or raw_ai.get("items") or []
+
+                for item in ai_items[:remaining_needed]:
+                    if not isinstance(item, dict) or not item.get("name"):
+                        continue
+
+                    cand_name = item.get("name", "").strip()
+                    if any(p["name"].lower() == cand_name.lower() for p in processed_candidates):
+                        continue
+
+                    raw_sport = item.get("sport", "").lower() if item.get("sport") else None
+                    org_type = item.get("organization_type") or ("student_org" if any(w in cand_name.lower() for w in ("mahasiswa", "bem", "ukm", "hima")) else "community")
+                    org_subtype = item.get("organization_subtype") or (f"{raw_sport}_club" if raw_sport else "community_club")
+
+                    candidate = {
+                        "name": cand_name,
+                        "organization_type": org_type,
+                        "organization_subtype": org_subtype,
+                        "industry": "Komunitas & Olahraga" if org_type == "community" else "Organisasi Pendidikan / Mahasiswa",
+                        "sport": raw_sport,
+                        "province": item.get("province") or province or None,
+                        "city": item.get("city") or city or None,
+                        "social_json": json.dumps(item.get("socials", {})),
+                        "source_type": "dynamic_ai_discovery",
+                        "source_url": item.get("socials", {}).get("instagram") or item.get("socials", {}).get("website") or "dynamic_discovery",
+                        "description": item.get("description", ""),
+                        "product_fit": item.get("product_fit", "Jersey Custom, Kaos Tim, Jaket Kontingen"),
+                        "opportunity_score": int(item.get("opportunity_score", 80)),
+                        "priority_tier": "A - HOT" if raw_sport in ("futsal", "sepak bola", "basket", "running") else "B - WARM",
+                        "provenance": {
+                            "source": "dynamic_community_discovery",
+                            "source_type": "dynamic_ai_discovery",
+                            "confidence": "high",
+                            "discovered_at": utc_now().isoformat(),
+                        }
+                    }
+
+                    org, is_new, note = cls.ingest_candidate_to_master(candidate, engine=engine, user_id=user_id)
+                    if is_new:
+                        created_count += 1
+                    else:
+                        updated_count += 1
+                    processed_candidates.append({"org_id": org.id, "name": org.name, "is_new": is_new, "note": note})
+
+            except Exception as e:
+                logger.error(f"Error in dynamic community discovery: {e}")
 
         return {
             "category": "community",

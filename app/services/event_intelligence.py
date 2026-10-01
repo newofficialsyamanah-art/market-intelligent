@@ -208,6 +208,106 @@ class EventIntelligenceService:
         return event, True, "Created"
 
     @classmethod
+    def discover_events(
+        cls,
+        query: str = "",
+        city: str = "",
+        province: str = "",
+        limit: int = 8,
+        user_id: Optional[int] = None
+    ) -> Dict[str, Any]:
+        """
+        Menemukan event pameran, expo, festival B2B, dan turnamen olahraga nyata
+        secara dinamis di seluruh Indonesia menggunakan AI & Market Intelligence.
+        """
+        from app.ai_agent import _chat_json
+
+        target_loc = []
+        if city:
+            target_loc.append(city)
+        if province:
+            target_loc.append(province)
+        location_str = ", ".join(target_loc) if target_loc else "seluruh Indonesia (Surabaya, Malang, Jakarta, Bandung, Semarang, Medan, Bali, Makassar, dll)"
+
+        prompt = f"""Kamu adalah AI Event Intelligence Indonesia.
+Tugas: Temukan dan berikan daftar {limit} event bisnis, pameran (expo/trade fair), konferensi B2B, festival industri, atau turnamen olahraga besar nyata di:
+- Lokasi: {location_str}
+- Topik / Kategori Event: {query or 'Pameran Bisnis, Industri, Manufaktur, Tekstil, Otomotif, UMKM, Turnamen Futsal/Lari/Basket'}
+
+Format respon HANYA list JSON valid:
+[
+  {{
+    "name": "Nama Lengkap Event (contoh: Jatim Expo 2026, IIMS Surabaya 2026, Bromo Marathon 2026)",
+    "event_type": "Exhibition / Trade Fair / Conference / Sports Tournament",
+    "venue": "Nama Gedung / Tempat (contoh: Grand City Surabaya, Jatim Expo, DBL Arena, JIExpo, dll)",
+    "city": "Kota",
+    "province": "Provinsi",
+    "organizer": "Nama Penyelenggara / EO",
+    "description": "Deskripsi singkat profil event dan potensi kebutuhan seragam/apparel",
+    "status": "upcoming"
+  }}
+]
+"""
+        created_count = 0
+        updated_count = 0
+        items = []
+
+        try:
+            raw_data = _chat_json(
+                system_prompt="Kamu adalah AI Event Intelligence spesialis penemuan event B2B, expo, dan turnamen olahraga di Indonesia.",
+                user_prompt=prompt,
+                temperature=0.3
+            )
+            candidates = raw_data if isinstance(raw_data, list) else raw_data.get("events") or raw_data.get("items") or []
+
+            for c in candidates[:limit]:
+                if not isinstance(c, dict) or not c.get("name"):
+                    continue
+
+                event_dict = {
+                    "name": c.get("name", "").strip(),
+                    "event_type": c.get("event_type", "Exhibition / Trade Fair"),
+                    "venue": c.get("venue"),
+                    "city": c.get("city") or city or None,
+                    "province": c.get("province") or province or None,
+                    "organizer": c.get("organizer"),
+                    "description": c.get("description"),
+                    "status": c.get("status", "upcoming"),
+                    "source_url": "ai_event_discovery"
+                }
+
+                event, is_new, msg = cls.create_or_update_event(event_dict)
+                if is_new:
+                    created_count += 1
+                else:
+                    updated_count += 1
+                items.append({
+                    "id": event.id,
+                    "name": event.name,
+                    "city": event.city,
+                    "province": event.province,
+                    "is_new": is_new,
+                    "relevance_score": event.relevance_score
+                })
+
+        except Exception as e:
+            logger.error(f"Error in discover_events: {e}")
+            return {
+                "total_processed": 0,
+                "created": 0,
+                "updated": 0,
+                "items": [],
+                "error": str(e)
+            }
+
+        return {
+            "total_processed": len(items),
+            "created": created_count,
+            "updated": updated_count,
+            "items": items
+        }
+
+    @classmethod
     def match_organization(cls, company_name: str, domain: Optional[str] = None) -> Tuple[Optional[Organization], str]:
         """Mencari entitas Master Organization yang cocok untuk menjadi peserta/organizer.
         Menggunakan Domain Match (Tier 1) atau Normalized Legal Name (Tier 2).
@@ -305,6 +405,8 @@ class EventIntelligenceService:
                     Event.name.like(f"%{q}%"),
                     Event.organizer.like(f"%{q}%"),
                     Event.venue.like(f"%{q}%"),
+                    Event.city.like(f"%{q}%"),
+                    Event.province.like(f"%{q}%"),
                     Event.description.like(f"%{q}%")
                 )
             )
@@ -313,10 +415,15 @@ class EventIntelligenceService:
             query = query.filter(Event.event_type == event_type)
 
         if city:
-            query = query.filter(Event.city == city)
+            query = query.filter(
+                db.or_(
+                    Event.city.ilike(f"%{city}%"),
+                    Event.province.ilike(f"%{city}%")
+                )
+            )
 
         if province:
-            query = query.filter(Event.province == province)
+            query = query.filter(Event.province.ilike(f"%{province}%"))
 
         if status:
             query = query.filter(Event.status == status)

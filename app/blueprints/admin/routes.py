@@ -17,6 +17,7 @@ from app.scheduler import (
 )
 from app.discovery import run_discovery
 from app.services.discovery_service import DiscoveryPipelineService
+from app.services.event_intelligence import EventIntelligenceService
 
 
 def _now():
@@ -460,13 +461,32 @@ def trigger_education_discovery():
 @roles_required("admin", "business_analyst")
 def trigger_community_discovery():
     category = request.form.get("category", "futsal")
-    city = request.form.get("city", "Bandung")
+    city = request.form.get("city", "").strip()
+    province = request.form.get("province", "").strip()
     limit = int(request.form.get("limit", 15))
     try:
-        res = DiscoveryPipelineService.discover_communities(category=category, city=city, limit=limit)
-        flash(f"Discovery Komunitas ({category} - {city}) selesai: {res['total_ingested']} diproses ({res['new_organizations']} organisasi baru).", "success")
+        res = DiscoveryPipelineService.discover_communities(category=category, city=city, province=province, limit=limit)
+        wilayah_label = city or province or "Seluruh Indonesia"
+        flash(f"Discovery Komunitas ({category} - {wilayah_label}) selesai: {res['total_ingested']} diproses ({res['new_organizations']} organisasi baru, {res['matched_organizations']} matched).", "success")
     except Exception as e:
         flash(f"Discovery Komunitas gagal: {e}", "danger")
+    return redirect(url_for("admin.discovery"))
+
+
+@admin_bp.route("/discovery/event/trigger", methods=["POST"])
+@login_required
+@roles_required("admin", "business_analyst")
+def trigger_event_discovery():
+    query = request.form.get("query", "").strip()
+    city = request.form.get("city", "").strip()
+    province = request.form.get("province", "").strip()
+    limit = int(request.form.get("limit", 8))
+    try:
+        res = EventIntelligenceService.discover_events(query=query, city=city, province=province, limit=limit)
+        wilayah_label = city or province or "Seluruh Indonesia"
+        flash(f"Discovery Event ({wilayah_label}) selesai: {res['total_processed']} diproses ({res['created']} event baru, {res['updated']} diperbarui).", "success")
+    except Exception as e:
+        flash(f"Discovery Event gagal: {e}", "danger")
     return redirect(url_for("admin.discovery"))
 
 

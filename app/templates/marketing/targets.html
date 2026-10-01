@@ -26,7 +26,7 @@
       <div class="col-md-3">
         <div class="input-group">
           <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
-          <input type="text" name="q" class="form-control border-start-0" placeholder="Cari nama, domain, kota..." value="{{ filters.q }}">
+          <input type="text" name="q" class="form-control border-start-0" placeholder="Cari nama, kota, provinsi (se-Indonesia)..." value="{{ filters.q }}">
         </div>
       </div>
       <div class="col-md-2">
@@ -117,6 +117,18 @@
           <input class="form-check-input" type="checkbox" name="has_social" value="1" id="fSoc" {% if filters.has_social == '1' %}checked{% endif %}>
           <label class="form-check-label small" for="fSoc">Media Sosial</label>
         </div>
+        <div class="form-check form-check-inline ms-md-3 ps-md-2 border-start">
+          <input class="form-check-input" type="checkbox" name="has_purchasing" value="1" id="fPurchasing" {% if filters.has_purchasing == '1' %}checked{% endif %}>
+          <label class="form-check-label small text-primary fw-semibold" for="fPurchasing"><i class="bi bi-cart-check me-1"></i>Kontak Purchasing</label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="checkbox" name="has_procurement" value="1" id="fProcurement" {% if filters.has_procurement == '1' %}checked{% endif %}>
+          <label class="form-check-label small text-info fw-semibold" for="fProcurement"><i class="bi bi-box-seam me-1"></i>Kontak Procurement</label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="checkbox" name="has_hr" value="1" id="fHR" {% if filters.has_hr == '1' %}checked{% endif %}>
+          <label class="form-check-label small text-success fw-semibold" for="fHR"><i class="bi bi-people me-1"></i>Kontak HR / HRD</label>
+        </div>
       </div>
     </form>
   </div>
@@ -177,24 +189,97 @@
               {% if o.province %}<div class="text-muted small">{{ o.province }}</div>{% endif %}
             </td>
             <td>
-              <div class="d-flex gap-2">
-                {% if o.email %}
-                  <span class="text-info fs-6" title="Email: {{ o.email }}"><i class="bi bi-envelope-fill"></i></span>
-                {% else %}
-                  <span class="text-muted opacity-25 fs-6"><i class="bi bi-envelope"></i></span>
+              <div class="d-flex flex-column gap-1">
+                <div class="d-flex gap-2 align-items-center">
+                  {% if o.email %}
+                    <span class="text-info fs-6" title="Email: {{ o.email }}"><i class="bi bi-envelope-fill"></i></span>
+                  {% else %}
+                    <span class="text-muted opacity-25 fs-6"><i class="bi bi-envelope"></i></span>
+                  {% endif %}
+                  {% if o.phone %}
+                    {% set wa = o.phone|parse_wa(o.name) %}
+                    {% if wa.is_valid_wa %}
+                      <button type="button" class="btn btn-sm btn-success p-0 px-1 rounded-pill d-inline-flex align-items-center gap-1 btn-wa-trigger"
+                              data-bs-toggle="modal" data-bs-target="#modalWhatsAppQuickSend"
+                              data-company="{{ o.name }}"
+                              data-phone="{{ o.phone }}"
+                              data-wanumber="{{ wa.wa_number }}"
+                              data-isvalid="true"
+                              data-type="{{ wa.type }}"
+                              title="{{ wa.tooltip }}">
+                        <i class="bi bi-whatsapp"></i> <span style="font-size: 0.7rem;" class="fw-bold">WA</span>
+                      </button>
+                    {% else %}
+                      <span class="text-secondary fs-6" data-bs-toggle="tooltip" title="{{ wa.tooltip }}"><i class="bi bi-telephone-fill"></i></span>
+                    {% endif %}
+                  {% else %}
+                    <span class="text-muted opacity-25 fs-6"><i class="bi bi-telephone"></i></span>
+                  {% endif %}
+                  {% if o.website %}
+                    <span class="text-primary fs-6" title="Website: {{ o.website }}"><i class="bi bi-globe"></i></span>
+                  {% else %}
+                    <span class="text-muted opacity-25 fs-6"><i class="bi bi-globe"></i></span>
+                  {% endif %}
+                  {% if o.socials %}
+                    <span class="text-danger fs-6" title="Social media terhubung"><i class="bi bi-share-fill"></i></span>
+                  {% endif %}
+                </div>
+
+                <!-- Department Specific Buttons -->
+                {% if o.purchasing_contact and o.purchasing_contact.phone %}
+                  <button type="button" class="btn btn-sm btn-outline-primary py-0 px-1 d-inline-flex align-items-center gap-1 text-start btn-wa-trigger"
+                          style="font-size: 0.72rem;"
+                          data-bs-toggle="modal" data-bs-target="#modalWhatsAppQuickSend"
+                          data-company="{{ o.name }} (Purchasing)"
+                          data-phone="{{ o.purchasing_contact.phone }}"
+                          data-wanumber="{{ o.purchasing_contact.phone }}"
+                          data-isvalid="true"
+                          data-type="mobile"
+                          title="Hubungi Purchasing via WhatsApp">
+                    <i class="bi bi-cart-check"></i> <span class="fw-semibold">Purchasing:</span> {{ o.purchasing_contact.phone }}
+                  </button>
                 {% endif %}
-                {% if o.phone %}
-                  <span class="text-success fs-6" title="Telepon: {{ o.phone }}"><i class="bi bi-telephone-fill"></i></span>
-                {% else %}
-                  <span class="text-muted opacity-25 fs-6"><i class="bi bi-telephone"></i></span>
+
+                {% if o.procurement_contact and o.procurement_contact.phone %}
+                  <button type="button" class="btn btn-sm btn-outline-info py-0 px-1 d-inline-flex align-items-center gap-1 text-start btn-wa-trigger"
+                          style="font-size: 0.72rem;"
+                          data-bs-toggle="modal" data-bs-target="#modalWhatsAppQuickSend"
+                          data-company="{{ o.name }} (Procurement)"
+                          data-phone="{{ o.procurement_contact.phone }}"
+                          data-wanumber="{{ o.procurement_contact.phone }}"
+                          data-isvalid="true"
+                          data-type="mobile"
+                          title="Hubungi Procurement via WhatsApp">
+                    <i class="bi bi-box-seam"></i> <span class="fw-semibold">Procurement:</span> {{ o.procurement_contact.phone }}
+                  </button>
                 {% endif %}
-                {% if o.website %}
-                  <span class="text-primary fs-6" title="Website: {{ o.website }}"><i class="bi bi-globe"></i></span>
-                {% else %}
-                  <span class="text-muted opacity-25 fs-6"><i class="bi bi-globe"></i></span>
+
+                {% if o.hr_contact and o.hr_contact.phone %}
+                  <button type="button" class="btn btn-sm btn-outline-success py-0 px-1 d-inline-flex align-items-center gap-1 text-start btn-wa-trigger"
+                          style="font-size: 0.72rem;"
+                          data-bs-toggle="modal" data-bs-target="#modalWhatsAppQuickSend"
+                          data-company="{{ o.name }} (HRD)"
+                          data-phone="{{ o.hr_contact.phone }}"
+                          data-wanumber="{{ o.hr_contact.phone }}"
+                          data-isvalid="true"
+                          data-type="mobile"
+                          title="Hubungi HRD via WhatsApp">
+                    <i class="bi bi-people"></i> <span class="fw-semibold">HRD:</span> {{ o.hr_contact.phone }}
+                  </button>
                 {% endif %}
-                {% if o.socials %}
-                  <span class="text-danger fs-6" title="Social media terhubung"><i class="bi bi-share-fill"></i></span>
+
+                {% if o.community_pic_contact and o.community_pic_contact.phone %}
+                  <button type="button" class="btn btn-sm btn-outline-warning py-0 px-1 d-inline-flex align-items-center gap-1 text-start btn-wa-trigger text-dark"
+                          style="font-size: 0.72rem;"
+                          data-bs-toggle="modal" data-bs-target="#modalWhatsAppQuickSend"
+                          data-company="{{ o.name }} (Narahubung)"
+                          data-phone="{{ o.community_pic_contact.phone }}"
+                          data-wanumber="{{ o.community_pic_contact.phone }}"
+                          data-isvalid="true"
+                          data-type="mobile"
+                          title="Hubungi Narahubung Komunitas">
+                    <i class="bi bi-chat-dots"></i> <span class="fw-semibold">CP:</span> {{ o.community_pic_contact.phone }}
+                  </button>
                 {% endif %}
               </div>
             </td>

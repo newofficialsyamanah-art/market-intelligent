@@ -74,11 +74,13 @@ def index():
         .filter(Event.city.isnot(None), Event.city != "")
         .distinct().order_by(Event.city).all()
     ]
-    provinces = [
+    from app.utils import get_all_indonesia_provinces
+    db_provinces = [
         r[0] for r in db.session.query(Event.province)
         .filter(Event.province.isnot(None), Event.province != "")
-        .distinct().order_by(Event.province).all()
+        .distinct().all()
     ]
+    provinces = get_all_indonesia_provinces(db_provinces)
 
     # Metrics summary
     total_events = Event.query.count()
@@ -214,6 +216,25 @@ def create_event():
         return redirect(url_for("events.detail", event_id=event.id))
 
     return render_template("events/create.html")
+
+
+@events_bp.route("/discover", methods=["POST"])
+@login_required
+@roles_required("business_analyst", "marketing")
+def discover_events_action():
+    """Trigger dynamic live event discovery across Indonesia."""
+    query = request.form.get("query", "").strip()
+    city = request.form.get("city", "").strip()
+    province = request.form.get("province", "").strip()
+    limit = int(request.form.get("limit", 8))
+    try:
+        res = EventIntelligenceService.discover_events(query=query, city=city, province=province, limit=limit)
+        wilayah_label = city or province or "Seluruh Indonesia"
+        flash(f"Discovery Event ({wilayah_label}) selesai: {res['total_processed']} event diproses ({res['created']} event baru, {res['updated']} diperbarui).", "success")
+        log_activity("discover_events", f"Discovery event {wilayah_label}: {res['created']} baru")
+    except Exception as e:
+        flash(f"Discovery Event gagal: {e}", "danger")
+    return redirect(url_for("events.index"))
 
 
 @events_bp.route("/<int:event_id>/link-participant", methods=["POST"])

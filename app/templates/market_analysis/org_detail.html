@@ -67,12 +67,35 @@
         <dt class="col-sm-4 text-muted">Alamat Lengkap</dt>
         <dd class="col-sm-8">{{ org.address or '-' }}</dd>
 
-        <dt class="col-sm-4 text-muted">Telepon Kantor</dt>
+        <dt class="col-sm-4 text-muted">Telepon / WhatsApp</dt>
         <dd class="col-sm-8">
           {% if org.phone %}
-          <a href="tel:{{ org.phone }}" class="text-decoration-none fw-semibold"><i class="bi bi-telephone me-1 text-success"></i>{{ org.phone }}</a>
+            {% set wa = org.phone|parse_wa(org.name) %}
+            <div class="d-flex flex-wrap align-items-center gap-2">
+              <a href="tel:{{ org.phone }}" class="text-decoration-none fw-semibold">
+                <i class="bi bi-telephone me-1 text-success"></i>{{ org.phone }}
+              </a>
+              {% if wa.is_valid_wa %}
+                <button type="button" class="btn btn-sm btn-success shadow-sm btn-wa-trigger"
+                        data-bs-toggle="modal" data-bs-target="#modalWhatsAppQuickSend"
+                        data-company="{{ org.name }}"
+                        data-phone="{{ org.phone }}"
+                        data-wanumber="{{ wa.wa_number }}"
+                        data-isvalid="true"
+                        data-type="{{ wa.type }}">
+                  <i class="bi bi-whatsapp me-1"></i> Kirim WhatsApp Otomatis
+                </button>
+                <a href="{{ wa.wa_url }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-success" title="Langsung Buka WhatsApp Web">
+                  <i class="bi bi-box-arrow-up-right me-1"></i> Direct WA
+                </a>
+              {% else %}
+                <span class="badge bg-secondary-subtle text-muted border" data-bs-toggle="tooltip" title="{{ wa.tooltip }}">
+                  <i class="bi bi-telephone-x me-1"></i> {{ wa.type_label }} (Bukan WA)
+                </span>
+              {% endif %}
+            </div>
           {% else %}
-          <span class="text-muted">-</span>
+            <span class="text-muted">-</span>
           {% endif %}
         </dd>
 
@@ -135,6 +158,149 @@
         <dt class="col-sm-4 text-muted">Deskripsi Singkat</dt>
         <dd class="col-sm-8 text-secondary">{{ org.description or '-' }}</dd>
       </dl>
+    </div>
+
+    <!-- Department Contacts Card (Purchasing, Procurement, HR) -->
+    <div class="card border-0 shadow-sm p-4 mt-4">
+      <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+        <h5 class="fw-bold mb-0 text-dark">
+          <i class="bi bi-person-lines-fill text-success me-2"></i>Kontak Spesifik Departemen (B2B Leads)
+        </h5>
+        <span class="badge bg-success-subtle text-success border border-success-subtle">
+          <i class="bi bi-check2-all me-1"></i>Verified Sourcing
+        </span>
+      </div>
+
+      {% set dept = org.get_department_contacts() %}
+      {% if dept %}
+        <div class="row g-3">
+          {% if dept.purchasing %}
+          {% set p = dept.purchasing %}
+          <div class="col-12">
+            <div class="p-3 rounded border bg-light">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <div>
+                  <span class="badge bg-primary text-white"><i class="bi bi-cart-check me-1"></i>Purchasing / Bagian Pembelian</span>
+                  <h6 class="fw-bold mt-2 mb-0 text-dark">{{ p.name or 'Tim Purchasing' }}</h6>
+                  <div class="small text-muted">{{ p.title or 'Staff / Manajer Pembelian' }}</div>
+                </div>
+                {% if p.phone %}
+                <button type="button" class="btn btn-sm btn-success shadow-sm btn-wa-trigger"
+                        data-bs-toggle="modal" data-bs-target="#modalWhatsAppQuickSend"
+                        data-company="{{ org.name }} (Purchasing)"
+                        data-phone="{{ p.phone }}"
+                        data-wanumber="{{ p.phone }}"
+                        data-isvalid="true"
+                        data-type="mobile">
+                  <i class="bi bi-whatsapp me-1"></i> WA Purchasing
+                </button>
+                {% endif %}
+              </div>
+              <div class="d-flex flex-wrap gap-3 small text-secondary pt-2 border-top">
+                {% if p.phone %}<span><i class="bi bi-telephone me-1 text-primary"></i>{{ p.raw_phone or p.phone }}</span>{% endif %}
+                {% if p.email %}<span><i class="bi bi-envelope me-1 text-info"></i><a href="mailto:{{ p.email }}" class="text-decoration-none">{{ p.email }}</a></span>{% endif %}
+                {% if p.source %}<span><i class="bi bi-shield-check me-1 text-success"></i>Sumber: {{ p.source }}</span>{% endif %}
+              </div>
+            </div>
+          </div>
+          {% endif %}
+
+          {% if dept.procurement %}
+          {% set pr = dept.procurement %}
+          <div class="col-12">
+            <div class="p-3 rounded border bg-light">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <div>
+                  <span class="badge bg-info text-dark"><i class="bi bi-box-seam me-1"></i>Procurement / Bagian Pengadaan</span>
+                  <h6 class="fw-bold mt-2 mb-0 text-dark">{{ pr.name or 'Tim Procurement' }}</h6>
+                  <div class="small text-muted">{{ pr.title or 'Procurement Specialist' }}</div>
+                </div>
+                {% if pr.phone %}
+                <button type="button" class="btn btn-sm btn-success shadow-sm btn-wa-trigger"
+                        data-bs-toggle="modal" data-bs-target="#modalWhatsAppQuickSend"
+                        data-company="{{ org.name }} (Procurement)"
+                        data-phone="{{ pr.phone }}"
+                        data-wanumber="{{ pr.phone }}"
+                        data-isvalid="true"
+                        data-type="mobile">
+                  <i class="bi bi-whatsapp me-1"></i> WA Procurement
+                </button>
+                {% endif %}
+              </div>
+              <div class="d-flex flex-wrap gap-3 small text-secondary pt-2 border-top">
+                {% if pr.phone %}<span><i class="bi bi-telephone me-1 text-primary"></i>{{ pr.raw_phone or pr.phone }}</span>{% endif %}
+                {% if pr.email %}<span><i class="bi bi-envelope me-1 text-info"></i><a href="mailto:{{ pr.email }}" class="text-decoration-none">{{ pr.email }}</a></span>{% endif %}
+              </div>
+            </div>
+          </div>
+          {% endif %}
+
+          {% if dept.hr %}
+          {% set h = dept.hr %}
+          <div class="col-12">
+            <div class="p-3 rounded border bg-light">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <div>
+                  <span class="badge bg-success text-white"><i class="bi bi-people me-1"></i>Human Resources / HRD</span>
+                  <h6 class="fw-bold mt-2 mb-0 text-dark">{{ h.name or 'Tim HRD & Karir' }}</h6>
+                  <div class="small text-muted">{{ h.title or 'HR Specialist' }}</div>
+                </div>
+                {% if h.phone %}
+                <button type="button" class="btn btn-sm btn-success shadow-sm btn-wa-trigger"
+                        data-bs-toggle="modal" data-bs-target="#modalWhatsAppQuickSend"
+                        data-company="{{ org.name }} (HRD)"
+                        data-phone="{{ h.phone }}"
+                        data-wanumber="{{ h.phone }}"
+                        data-isvalid="true"
+                        data-type="mobile">
+                  <i class="bi bi-whatsapp me-1"></i> WA HRD
+                </button>
+                {% endif %}
+              </div>
+              <div class="d-flex flex-wrap gap-3 small text-secondary pt-2 border-top">
+                {% if h.phone %}<span><i class="bi bi-telephone me-1 text-primary"></i>{{ h.raw_phone or h.phone }}</span>{% endif %}
+                {% if h.email %}<span><i class="bi bi-envelope me-1 text-info"></i><a href="mailto:{{ h.email }}" class="text-decoration-none">{{ h.email }}</a></span>{% endif %}
+              </div>
+            </div>
+          </div>
+          {% endif %}
+
+          {% if dept.pic_komunitas %}
+          {% set k = dept.pic_komunitas %}
+          <div class="col-12">
+            <div class="p-3 rounded border bg-light">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <div>
+                  <span class="badge bg-warning text-dark"><i class="bi bi-chat-dots me-1"></i>Narahubung / PIC Komunitas</span>
+                  <h6 class="fw-bold mt-2 mb-0 text-dark">{{ k.name or 'Narahubung' }}</h6>
+                  <div class="small text-muted">{{ k.title or 'Koordinator Komunitas / Ormawa' }}</div>
+                </div>
+                {% if k.phone %}
+                <button type="button" class="btn btn-sm btn-success shadow-sm btn-wa-trigger"
+                        data-bs-toggle="modal" data-bs-target="#modalWhatsAppQuickSend"
+                        data-company="{{ org.name }} (Narahubung)"
+                        data-phone="{{ k.phone }}"
+                        data-wanumber="{{ k.phone }}"
+                        data-isvalid="true"
+                        data-type="mobile">
+                  <i class="bi bi-whatsapp me-1"></i> WA Narahubung
+                </button>
+                {% endif %}
+              </div>
+              <div class="d-flex flex-wrap gap-3 small text-secondary pt-2 border-top">
+                {% if k.phone %}<span><i class="bi bi-telephone me-1 text-primary"></i>{{ k.raw_phone or k.phone }}</span>{% endif %}
+                {% if k.email %}<span><i class="bi bi-envelope me-1 text-info"></i><a href="mailto:{{ k.email }}" class="text-decoration-none">{{ k.email }}</a></span>{% endif %}
+              </div>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      {% else %}
+        <div class="text-center py-4 bg-light rounded text-muted">
+          <i class="bi bi-telephone-x fs-3 d-block mb-1"></i>
+          Belum ada kontak spesifik departemen untuk organisasi ini. Jalankan scraping kontak departemen untuk melengkapi.
+        </div>
+      {% endif %}
     </div>
   </div>
 

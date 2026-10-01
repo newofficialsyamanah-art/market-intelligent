@@ -1,0 +1,240 @@
+{% extends "base.html" %}
+{% block title %}Procurement Intelligence{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <div>
+    <h3 class="mb-1"><i class="bi bi-box-seam text-primary me-2"></i>Procurement Intelligence</h3>
+    <p class="text-muted mb-0">Intelijen pengadaan bahan baku apparel Syamanah (Jersey, Kemeja, Kaos, Polo, Jaket) dari sumber terverifikasi & web discovery.</p>
+  </div>
+  <div>
+    <button class="btn btn-outline-primary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDirectUrl">
+      <i class="bi bi-plus-circle me-1"></i>Input URL Supplier Manual
+    </button>
+  </div>
+</div>
+
+<!-- Manual Supplier URL Scraper (Collapsible) -->
+<div class="collapse mb-3" id="collapseDirectUrl">
+  <div class="card border-primary border-opacity-25 shadow-sm">
+    <div class="card-body bg-light">
+      <h6 class="fw-bold text-primary mb-2"><i class="bi bi-link-45deg me-1"></i>Scrape & Analisis Website Supplier Tertentu</h6>
+      <p class="small text-muted mb-3">Masukkan link website toko atau pabrik kain (contoh: <code>https://pelitatex.com</code> atau <code>https://knitto.co.id</code>). Sistem akan otomatis membaca katalog, kontak WA/email, dan melakukan evaluasi AI.</p>
+      <form method="post" action="{{ url_for('procurement.add_direct') }}" class="row g-2 align-items-end">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="col-md-5">
+          <label class="form-label small fw-semibold">URL Website Supplier</label>
+          <input name="url" type="url" class="form-control form-control-sm" placeholder="https://supplierkain.com" required>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label small fw-semibold">Produk Utama</label>
+          <select name="product" class="form-select form-select-sm" required>
+            {% for value, label in [("jersey", "Jersey"), ("kemeja", "Kemeja"), ("polo", "Polo"), ("kaos", "Kaos"), ("jaket", "Jaket")] %}
+            <option value="{{ value }}">{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label small fw-semibold">Spesifikasi Material</label>
+          <input name="material" class="form-control form-control-sm" placeholder="Contoh: taslan jn, cotton combed 24s">
+        </div>
+        <div class="col-md-2 d-grid">
+          <button class="btn btn-success btn-sm"><i class="bi bi-download me-1"></i>Scrape & Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Search & Discovery Card -->
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-body">
+    <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
+      <div class="small fw-semibold text-primary d-flex align-items-center gap-1">
+        <i class="bi bi-cpu-fill"></i>
+        <span>AI Smart Pipeline: Perencanaan Target AI &rarr; Search Web Nyata &rarr; Pre-flight Check &rarr; Deep Scraper Kontak WA &rarr; AI Scoring</span>
+      </div>
+      <span class="badge bg-primary-subtle text-primary border border-primary-subtle small">AI Discovery Active</span>
+    </div>
+    <form id="searchForm" method="post" action="{{ url_for('procurement.search') }}" class="row g-2 align-items-end">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="mode" value="ai_pipeline">
+      <div class="col-md-3">
+        <label class="form-label small fw-semibold">Kategori Produk</label>
+        <select name="product" class="form-select" required>
+          {% for value, label in [("jersey", "Jersey"), ("kemeja", "Kemeja"), ("polo", "Polo"), ("kaos", "Kaos"), ("jaket", "Jaket")] %}
+          <option value="{{ value }}" {% if filters.product == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label small fw-semibold">Material yang Dicari</label>
+        <input name="material" class="form-control" value="{{ filters.material }}" placeholder="Contoh: dry fit, oxford, fleece">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label small fw-semibold">Wilayah Supplier</label>
+        <input name="region" class="form-control" value="Indonesia" placeholder="Indonesia / Bandung / Surabaya">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label small fw-semibold">Jumlah Supplier</label>
+        <select name="limit" class="form-select">
+          <option value="10">10 Supplier</option>
+          <option value="20" selected>20 Supplier (Rekomendasi)</option>
+          <option value="30">30 Supplier (Banyak)</option>
+          <option value="50">50 Supplier (Maksimal)</option>
+        </select>
+      </div>
+      <div class="col-md-1 d-grid">
+        <button id="btnSearchSupplier" class="btn btn-primary" title="Jalankan AI Pipeline Search"><i class="bi bi-search"></i></button>
+      </div>
+      <div class="col-12 mt-2 pt-2 border-top">
+        <label class="form-label small fw-semibold text-primary d-flex align-items-center gap-1 mb-1">
+          <i class="bi bi-robot"></i>
+          <span>Prompt / Instruksi Khusus AI</span>
+          <span class="badge bg-secondary-subtle text-secondary fw-normal">Opsional</span>
+        </label>
+        <div class="input-group input-group-sm">
+          <span class="input-group-text bg-light text-muted"><i class="bi bi-chat-left-quote"></i></span>
+          <input name="custom_prompt" class="form-control" placeholder="Contoh: Cari supplier yang punya katalog online lengkap, melayani grosir rollan, dan ada kontak WhatsApp aktif">
+        </div>
+        <div class="form-text text-muted small mt-1">
+          Tuliskan arahan bebas untuk AI: AI akan memakai prompt ini saat merumuskan query pencarian web, menyaring link relevan, dan mengevaluasi Fit Score supplier.
+        </div>
+      </div>
+      <div id="searchLoadingNotice" class="col-12 alert alert-info py-2 px-3 mt-2 mb-0 small d-none align-items-center gap-2">
+        <div class="spinner-border spinner-border-sm text-primary flex-shrink-0" role="status"></div>
+        <div>
+          <strong>AI Pipeline sedang bekerja:</strong> Merancang query, memvalidasi website supplier, mengekstrak WhatsApp/kontak, dan menghitung evaluasi AI (~8-10 detik)...
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Filter Bar -->
+<div class="d-flex justify-content-between align-items-center mb-2">
+  <div class="btn-group btn-group-sm" role="group">
+    <a href="{{ url_for('procurement.index') }}" class="btn {% if not filters.product %}btn-dark{% else %}btn-outline-secondary{% endif %}">Semua ({{ suppliers|length }})</a>
+    {% for p_val in ["jersey", "kemeja", "kaos", "polo", "jaket"] %}
+    <a href="{{ url_for('procurement.index', product=p_val) }}" class="btn {% if filters.product == p_val %}btn-primary{% else %}btn-outline-secondary{% endif %}">{{ p_val|title }}</a>
+    {% endfor %}
+  </div>
+  <span class="text-muted small">Total supplier tersimpan: {{ suppliers|length }}</span>
+</div>
+
+<!-- Results Table Card -->
+<div class="card border-0 shadow-sm">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th style="min-width: 220px;">Supplier / Perusahaan</th>
+          <th>Kategori / Material</th>
+          <th>Kontak & WhatsApp</th>
+          <th>Status</th>
+          <th>AI Fit Score</th>
+          <th class="text-end" style="min-width: 140px;">Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for supplier in suppliers %}
+      <tr>
+        <td>
+          <a class="fw-bold text-decoration-none text-dark" href="{{ url_for('procurement.detail', supplier_id=supplier.id) }}">
+            {{ supplier.company_name }}
+          </a>
+          <div class="small text-muted d-flex align-items-center gap-1 mt-1">
+            <i class="bi bi-geo-alt"></i>{{ supplier.region or 'Indonesia' }}
+          </div>
+        </td>
+        <td>
+          <span class="badge bg-light text-dark border">{{ supplier.product|title }}</span>
+          <div class="small text-muted mt-1" style="max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ supplier.material or '-' }}">
+            {{ supplier.material or 'Material umum' }}
+          </div>
+        </td>
+        <td>
+          {% if supplier.contact_phone %}
+            {% set clean_phone = supplier.contact_phone|replace(' ', '')|replace('-', '')|replace('+', '') %}
+            {% if clean_phone.startswith('0') %}
+              {% set wa_num = '62' ~ clean_phone[1:] %}
+            {% else %}
+              {% set wa_num = clean_phone %}
+            {% endif %}
+            <div class="d-flex align-items-center gap-2">
+              <span class="small font-monospace">{{ supplier.contact_phone }}</span>
+              <a href="https://wa.me/{{ wa_num }}" target="_blank" rel="noopener" class="btn btn-xs btn-outline-success py-0 px-2 rounded-pill" title="Chat WhatsApp">
+                <i class="bi bi-whatsapp me-1"></i>WA
+              </a>
+            </div>
+          {% endif %}
+          {% if supplier.contact_email %}
+            <div class="small text-muted mt-1"><i class="bi bi-envelope me-1"></i>{{ supplier.contact_email }}</div>
+          {% endif %}
+          {% if not supplier.contact_phone and not supplier.contact_email %}
+            <span class="text-muted small">-</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if supplier.verification_status == 'verified' %}
+            <span class="badge bg-success-subtle text-success border border-success-subtle"><i class="bi bi-patch-check-fill me-1"></i>Terverifikasi</span>
+          {% elif supplier.verification_status in ['tavily', 'ai_pipeline'] %}
+            <span class="badge bg-primary-subtle text-primary border border-primary-subtle"><i class="bi bi-cpu-fill me-1"></i>AI Pipeline</span>
+          {% elif supplier.verification_status == 'user_added' %}
+            <span class="badge bg-info-subtle text-info border border-info-subtle"><i class="bi bi-person-check-fill me-1"></i>Manual</span>
+          {% else %}
+            <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle"><i class="bi bi-globe me-1"></i>Discovered</span>
+          {% endif %}
+        </td>
+        <td>
+          <span class="badge {% if supplier.fit_score >= 85 %}bg-success{% elif supplier.fit_score >= 65 %}bg-primary{% elif supplier.fit_score >= 50 %}bg-warning text-dark{% else %}bg-secondary{% endif %} fs-7">
+            {{ supplier.fit_score }}/100
+          </span>
+        </td>
+        <td class="text-end">
+          <div class="btn-group btn-group-sm">
+            <a href="{{ supplier.website or supplier.source_url }}" target="_blank" rel="noopener" class="btn btn-outline-secondary" title="Kunjungi Website">
+              <i class="bi bi-box-arrow-up-right"></i>
+            </a>
+            <a href="{{ url_for('procurement.detail', supplier_id=supplier.id) }}" class="btn btn-outline-primary" title="Lihat Detail & Rekomendasi">
+              <i class="bi bi-eye"></i>
+            </a>
+            <form method="post" action="{{ url_for('procurement.delete', supplier_id=supplier.id) }}" class="d-inline" onsubmit="return confirm('Hapus supplier {{ supplier.company_name }}?');">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="btn btn-outline-danger" title="Hapus"><i class="bi bi-trash"></i></button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      {% else %}
+      <tr>
+        <td colspan="6" class="text-center text-muted py-4">
+          <i class="bi bi-search fs-2 d-block mb-2 text-secondary"></i>
+          Belum ada data supplier yang sesuai filter. Jalankan pencarian supplier di atas.
+        </td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const form = document.getElementById('searchForm');
+  if (form) {
+    form.addEventListener('submit', function() {
+      const btn = document.getElementById('btnSearchSupplier');
+      const notice = document.getElementById('searchLoadingNotice');
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+      }
+      if (notice) {
+        notice.classList.remove('d-none');
+        notice.classList.add('d-flex');
+      }
+    });
+  }
+});
+</script>
+{% endblock %}

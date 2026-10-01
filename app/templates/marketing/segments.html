@@ -115,7 +115,21 @@
                   <span class="text-muted opacity-25 fs-6"><i class="bi bi-envelope"></i></span>
                 {% endif %}
                 {% if o.phone %}
-                  <span class="text-success fs-6" title="Telepon: {{ o.phone }}"><i class="bi bi-telephone-fill"></i></span>
+                  {% set wa = o.phone|parse_wa(o.name) %}
+                  {% if wa.is_valid_wa %}
+                    <button type="button" class="btn btn-sm btn-success p-0 px-1 rounded-pill d-inline-flex align-items-center gap-1 btn-wa-trigger"
+                            data-bs-toggle="modal" data-bs-target="#modalWhatsAppQuickSend"
+                            data-company="{{ o.name }}"
+                            data-phone="{{ o.phone }}"
+                            data-wanumber="{{ wa.wa_number }}"
+                            data-isvalid="true"
+                            data-type="{{ wa.type }}"
+                            title="{{ wa.tooltip }}">
+                      <i class="bi bi-whatsapp"></i> <span style="font-size: 0.7rem;" class="fw-bold">WA</span>
+                    </button>
+                  {% else %}
+                    <span class="text-secondary fs-6" data-bs-toggle="tooltip" title="{{ wa.tooltip }}"><i class="bi bi-telephone-fill"></i></span>
+                  {% endif %}
                 {% else %}
                   <span class="text-muted opacity-25 fs-6"><i class="bi bi-telephone"></i></span>
                 {% endif %}

@@ -17,8 +17,8 @@ with app.app_context():
     
     backup_data = {}
     for table in tables:
-        count = db.session.execute(text(f"SELECT COUNT(*) FROM `{table}`")).scalar()
-        print(f"Table `{table}`: {count} rows")
+        count = db.session.execute(text(f'SELECT COUNT(*) FROM "{table}"')).scalar()
+        print(f"Table {table}: {count} rows")
         # Fetch existing columns
         columns = [col['name'] for col in inspector.get_columns(table)]
         print(f"  Columns: {columns}")

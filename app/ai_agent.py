@@ -11,6 +11,7 @@ Serta dipakai juga oleh Prospect Management (Scoring) & Market Analysis (Rekomen
 
 import json
 import re
+import httpx
 from groq import Groq
 from flask import current_app
 
@@ -19,11 +20,11 @@ def _client():
     api_key = current_app.config.get("GROQ_API_KEY")
     if not api_key:
         raise RuntimeError("GROQ_API_KEY belum diset di file .env")
-    return Groq(api_key=api_key)
+    return Groq(api_key=api_key, http_client=httpx.Client())
 
 
 def _model():
-    return current_app.config.get("GROQ_MODEL", "llama-3.3-70b-versatile")
+    return current_app.config.get("GROQ_MODEL", "qwen/qwen3.8-27b")
 
 
 def _get_task_config(agent_task: str):
@@ -80,7 +81,7 @@ def _extract_json(text: str):
     raise ValueError(f"Tidak dapat mengekstrak JSON dari teks: {text[:200]}")
 
 
-def _chat_json(system_prompt: str, user_prompt: str, temperature: float = 0.2, task_name: str = None):
+def _chat_json(system_prompt: str, user_prompt: str, temperature: float = 0.2, task_name: str = None, max_tokens: int = 700):
     model_name = _model()
     effective_system = system_prompt
 
@@ -92,22 +93,37 @@ def _chat_json(system_prompt: str, user_prompt: str, temperature: float = 0.2, t
             effective_system = custom_prompt
 
     client = _client()
-    resp = client.chat.completions.create(
-        model=model_name,
-        temperature=temperature,
-        messages=[
-            {"role": "system", "content": effective_system + "\nSelalu balas HANYA dengan JSON valid, tanpa penjelasan tambahan."},
-            {"role": "user", "content": user_prompt},
-        ],
-    )
-    content = resp.choices[0].message.content
-    try:
-        return _extract_json(content)
-    except Exception:
-        return {"raw_response": content, "parse_error": True}
+    models_to_try = [model_name]
+    fallback = "openai/gpt-oss-20b" if model_name != "openai/gpt-oss-20b" else "qwen/qwen3.8-27b"
+    if fallback not in models_to_try:
+        models_to_try.append(fallback)
+
+    last_error = None
+    for m in models_to_try:
+        try:
+            resp = client.chat.completions.create(
+                model=m,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                messages=[
+                    {"role": "system", "content": effective_system + "\nSelalu balas HANYA dengan JSON valid, tanpa penjelasan tambahan."},
+                    {"role": "user", "content": user_prompt},
+                ],
+            )
+            content = resp.choices[0].message.content
+            try:
+                return _extract_json(content)
+            except Exception:
+                return {"raw_response": content, "parse_error": True}
+        except Exception as e:
+            last_error = e
+            continue
+
+    if last_error:
+        raise last_error
 
 
-def _chat_text(system_prompt: str, user_prompt: str, temperature: float = 0.4, task_name: str = None):
+def _chat_text(system_prompt: str, user_prompt: str, temperature: float = 0.4, task_name: str = None, max_tokens: int = 700):
     model_name = _model()
     effective_system = system_prompt
 
@@ -119,15 +135,30 @@ def _chat_text(system_prompt: str, user_prompt: str, temperature: float = 0.4, t
             effective_system = custom_prompt
 
     client = _client()
-    resp = client.chat.completions.create(
-        model=model_name,
-        temperature=temperature,
-        messages=[
-            {"role": "system", "content": effective_system},
-            {"role": "user", "content": user_prompt},
-        ],
-    )
-    return resp.choices[0].message.content.strip()
+    models_to_try = [model_name]
+    fallback = "openai/gpt-oss-20b" if model_name != "openai/gpt-oss-20b" else "qwen/qwen3.8-27b"
+    if fallback not in models_to_try:
+        models_to_try.append(fallback)
+
+    last_error = None
+    for m in models_to_try:
+        try:
+            resp = client.chat.completions.create(
+                model=m,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                messages=[
+                    {"role": "system", "content": effective_system},
+                    {"role": "user", "content": user_prompt},
+                ],
+            )
+            return resp.choices[0].message.content.strip()
+        except Exception as e:
+            last_error = e
+            continue
+
+    if last_error:
+        raise last_error
 
 
 # ---------- Skema Standar Prospek ----------
@@ -238,14 +269,15 @@ def score_prospect(prospect: dict):
 # ---------- 6. Market Analysis: Rekomendasi Potensi Produk ----------
 
 def recommend_products(market_summary: dict):
-    """Use case: Rekomendasi Potensi Produk"""
+    """Use case: Rekomendasi Potensi Produk B2B Apparel & Merchandise se-Indonesia"""
     system = (
-        "Kamu adalah AI agent market intelligence. Berdasarkan ringkasan distribusi industri/wilayah/ukuran "
-        "perusahaan dari database prospek, berikan rekomendasi produk/layanan yang berpotensi paling relevan "
-        "untuk dipasarkan, beserta alasannya."
+        "Kamu adalah AI agent market intelligence spesialis B2B apparel, konveksi seragam industri, dan merchandise di Indonesia. "
+        "Berdasarkan ringkasan data pasar (distribusi industri, wilayah se-Indonesia, dan tipe organisasi), "
+        "berikan 4-6 rekomendasi produk B2B apparel bernilai tinggi (misalnya: Wearpack Safety K3 Pabrik, Seragam Kerja Kantor, Jas Almamater Kampus, Jersey Olahraga Custom Tim/Komunitas, Jaket Kontingen Event) "
+        "beserta target segmen pasar, wilayah prioritas, dan alasan strategisnya."
     )
-    user = f"Ringkasan data pasar: {json.dumps(market_summary, ensure_ascii=False)}\n\nBalas JSON: " \
-           '{"recommendations": [{"product_or_service": "...", "target_segment": "...", "reason": "..."}]}'
+    user = f"Ringkasan data pasar Indonesia: {json.dumps(market_summary, ensure_ascii=False)}\n\nBalas JSON dengan format: " \
+           '{"recommendations": [{"product_or_service": "...", "target_segment": "...", "reason": "...", "priority_region": "...", "estimated_opportunity": "Tinggi"}]}'
     return _chat_json(system, user, task_name="recommend_products")
 
 

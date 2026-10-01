@@ -43,6 +43,7 @@ def create_app(config_class=None):
     from app.blueprints.reporting.routes import reporting_bp
     from app.blueprints.admin.routes import admin_bp
     from app.blueprints.events.routes import events_bp
+    from app.blueprints.procurement.routes import procurement_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(data_collection_bp, url_prefix="/data-collection")
@@ -53,13 +54,21 @@ def create_app(config_class=None):
     app.register_blueprint(marketing_bp, url_prefix="/marketing")
     app.register_blueprint(reporting_bp, url_prefix="/reporting")
     app.register_blueprint(admin_bp, url_prefix="/admin")
+    app.register_blueprint(procurement_bp, url_prefix="/procurement")
+
+    from app.utils import parse_whatsapp
+    app.jinja_env.filters["parse_wa"] = parse_whatsapp
+
+    @app.context_processor
+    def inject_helpers():
+        return dict(parse_wa=parse_whatsapp)
 
     @app.route("/")
     @login_required
     def dashboard():
         from app.models import (
             Prospect, RawData, Campaign, Organization, Event,
-            CronJob, DuplicateCandidate, ActivityLog, User, CampaignTarget
+            CronJob, DuplicateCandidate, ActivityLog, User, CampaignTarget, ProcurementSupplier
         )
         from app.scheduler import is_scheduler_running
 
@@ -183,6 +192,12 @@ def create_app(config_class=None):
                 "active_campaigns": active_campaigns,
                 "total_events": total_events,
                 "recent_campaigns": campaigns,
+            }
+        elif user_role == "procurement":
+            role_data = {
+                "supplier_count": ProcurementSupplier.query.count(),
+                "high_fit_suppliers": ProcurementSupplier.query.filter(ProcurementSupplier.fit_score >= 75).count(),
+                "recent_suppliers": ProcurementSupplier.query.order_by(ProcurementSupplier.created_at.desc()).limit(6).all(),
             }
 
         return render_template("dashboard.html", stats=stats, role=user_role, role_data=role_data)

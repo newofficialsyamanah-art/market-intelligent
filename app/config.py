@@ -23,13 +23,16 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
-    GROQ_MODEL = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
+    GROQ_MODEL = os.getenv("GROQ_MODEL", "qwen/qwen3.8-27b")
     SCHEDULER_TIMEZONE = os.getenv("SCHEDULER_TIMEZONE", "UTC")
     SEARCH_PROVIDER = os.getenv("SEARCH_PROVIDER", "duckduckgo")
     DUCKDUCKGO_VERIFY_SSL = os.getenv("DUCKDUCKGO_VERIFY_SSL", "true").lower() == "true"
+    SEARXNG_BASE_URL = os.getenv("SEARXNG_BASE_URL", "").rstrip("/")
+    SEARXNG_TIMEOUT = int(os.getenv("SEARXNG_TIMEOUT", "20"))
     BING_SEARCH_API_KEY = os.getenv("BING_SEARCH_API_KEY", "")
     GOOGLE_SEARCH_API_KEY = os.getenv("GOOGLE_SEARCH_API_KEY", "")
     GOOGLE_SEARCH_ENGINE_ID = os.getenv("GOOGLE_SEARCH_ENGINE_ID", "")
+    TAVILY_API_KEY = os.getenv("TAVILY_API_KEY", "")
 
     UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.dirname(__file__)), "app", "static", "uploads")
     MAX_CONTENT_LENGTH = int(os.getenv("MAX_UPLOAD_MB", 20)) * 1024 * 1024
@@ -42,7 +45,5 @@ class TestConfig(Config):
     WTF_CSRF_ENABLED = False
     TEST_DATABASE_URL = os.getenv("TEST_DATABASE_URL", "")
     DB_NAME = os.getenv("TEST_DB_NAME", "market_intelligence_test")
-    SQLALCHEMY_DATABASE_URI = TEST_DATABASE_URL or (
-        f"mysql+pymysql://{Config.DB_USER}:{Config.DB_PASSWORD}@{Config.DB_HOST}:{Config.DB_PORT}/{DB_NAME}?charset=utf8mb4"
-    )
+    SQLALCHEMY_DATABASE_URI = TEST_DATABASE_URL or os.getenv("DATABASE_URL") or "sqlite:///:memory:"
 

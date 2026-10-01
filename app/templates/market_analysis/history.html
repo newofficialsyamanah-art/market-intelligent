@@ -1,21 +1,90 @@
 {% extends "base.html" %}
-{% block title %}Riwayat Analisis{% endblock %}
+{% block title %}Riwayat AI Recommendation - Market Intelligence{% endblock %}
 {% block content %}
-<h3>Riwayat Rekomendasi & Analisis AI</h3>
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h3 class="mb-0"><i class="bi bi-robot text-primary me-2"></i>Riwayat AI Recommendation</h3>
+    <small class="text-muted">Hasil analisis rekomendasi produk B2B apparel & merchandise se-Indonesia yang digenerate oleh AI Agent.</small>
+  </div>
+  <div>
+    <form method="post" action="{{ url_for('market_analysis.product_recommendation') }}" class="d-inline">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="btn btn-primary btn-sm px-3 fw-semibold">
+        <i class="bi bi-magic me-1"></i> Generate Rekomendasi Baru (AI)
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- Navigation Tabs -->
+<ul class="nav nav-pills mb-4 border-bottom pb-2">
+  <li class="nav-item">
+    <a class="nav-link" href="{{ url_for('market_analysis.index') }}">
+      <i class="bi bi-graph-up me-1"></i> Market & Sektor Analytics
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="{{ url_for('market_analysis.explorer') }}">
+      <i class="bi bi-funnel me-1"></i> Company Intelligence Explorer
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link active" href="{{ url_for('market_analysis.history') }}">
+      <i class="bi bi-clock-history me-1"></i> Riwayat AI Recommendation
+    </a>
+  </li>
+</ul>
+
 {% for a, result in analyses %}
-<div class="card p-3 mb-3">
-  <h6>{{ a.title }} <span class="badge bg-secondary">{{ a.analysis_type }}</span> <small class="text-muted">{{ a.created_at }}</small></h6>
-  {% if result.recommendations %}
-    <ul>
-    {% for r in result.recommendations %}
-      <li><strong>{{ r.product_or_service }}</strong> — target: {{ r.target_segment }}. {{ r.reason }}</li>
-    {% endfor %}
-    </ul>
-  {% else %}
-    <pre class="small bg-light p-2">{{ result | tojson(indent=2) }}</pre>
-  {% endif %}
+<div class="card shadow-sm border-0 mb-4 rounded-3">
+  <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+    <div>
+      <h5 class="mb-0 fw-bold text-dark"><i class="bi bi-lightbulb-fill text-warning me-2"></i>{{ a.title }}</h5>
+      <small class="text-muted">Digenerate pada: {{ a.created_at.strftime('%d %B %Y, %H:%M:%S') if a.created_at else '-' }} WIB</small>
+    </div>
+    <span class="badge bg-primary bg-opacity-10 text-primary border border-primary px-3 py-2 fs-6">
+      <i class="bi bi-check2-circle me-1"></i> {{ a.analysis_type }}
+    </span>
+  </div>
+  <div class="card-body p-4">
+    {% if result.recommendations %}
+      <div class="row g-3">
+      {% for r in result.recommendations %}
+        <div class="col-md-6">
+          <div class="p-3 border rounded-3 h-100 bg-light bg-opacity-50">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <h6 class="fw-bold text-primary mb-0"><i class="bi bi-tag-fill me-1"></i>{{ r.product_or_service }}</h6>
+              {% if r.estimated_opportunity %}
+              <span class="badge bg-success bg-opacity-10 text-success border border-success">{{ r.estimated_opportunity }}</span>
+              {% endif %}
+            </div>
+            <p class="small text-dark mb-2"><strong>Target Segmen:</strong> <span class="badge bg-secondary bg-opacity-10 text-dark border">{{ r.target_segment }}</span></p>
+            {% if r.priority_region %}
+            <p class="small text-dark mb-2"><strong>Wilayah Prioritas:</strong> <span class="badge bg-info bg-opacity-10 text-dark border"><i class="bi bi-geo-alt me-1"></i>{{ r.priority_region }}</span></p>
+            {% endif %}
+            <p class="small text-muted mb-0"><i class="bi bi-info-circle me-1"></i>{{ r.reason }}</p>
+          </div>
+        </div>
+      {% endfor %}
+      </div>
+    {% else %}
+      <pre class="small bg-light p-3 rounded">{{ result | tojson(indent=2) }}</pre>
+    {% endif %}
+  </div>
 </div>
 {% else %}
-<p class="text-muted">Belum ada riwayat analisis.</p>
+<div class="card border-0 shadow-sm text-center py-5">
+  <div class="card-body">
+    <i class="bi bi-clock-history fs-1 text-muted mb-3 d-block"></i>
+    <h5 class="fw-bold">Belum Ada Riwayat Analisis AI</h5>
+    <p class="text-muted small">Klik tombol di bawah untuk menjalankan algoritma rekomendasi potensi produk B2B apparel & merchandise se-Indonesia.</p>
+    <form method="post" action="{{ url_for('market_analysis.product_recommendation') }}" class="d-inline">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="btn btn-primary px-4">
+        <i class="bi bi-magic me-1"></i> Jalankan Rekomendasi Produk Sekarang
+      </button>
+    </form>
+  </div>
+</div>
 {% endfor %}
 {% endblock %}

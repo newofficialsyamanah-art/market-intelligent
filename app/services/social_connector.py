@@ -85,6 +85,33 @@ class SocialConnectorService:
         verify_ssl = current_app.config.get("DUCKDUCKGO_VERIFY_SSL", True)
         results = []
 
+        provider = current_app.config.get("SEARCH_PROVIDER", "duckduckgo").lower()
+        if provider in {"searxng", "searx"}:
+            base_url = current_app.config.get("SEARXNG_BASE_URL", "").rstrip("/")
+            if not base_url:
+                logger.warning("SEARXNG_BASE_URL belum diisi; social discovery tidak dijalankan")
+                return []
+            try:
+                resp = self.session.get(
+                    f"{base_url}/search",
+                    params={"q": query, "format": "json", "categories": "general", "language": "id-ID"},
+                    headers={"Accept": "application/json"},
+                    timeout=self.timeout,
+                )
+                resp.raise_for_status()
+                payload = resp.json()
+                for item in payload.get("results", [])[:limit]:
+                    if item.get("url"):
+                        results.append({
+                            "url": item["url"],
+                            "title": item.get("title", ""),
+                            "snippet": item.get("content", ""),
+                        })
+                return results
+            except Exception as error:
+                logger.warning(f"Error SearXNG search for '{query}': {error}")
+                return []
+
         # Coba DuckDuckGo HTML / Lite endpoint
         for endpoint in ("https://html.duckduckgo.com/html/", "https://lite.duckduckgo.com/lite/"):
             try:
@@ -95,6 +122,10 @@ class SocialConnectorService:
                     timeout=self.timeout
                 )
                 if resp.status_code == 200:
+                    if "internet-positif" in resp.url or "uzone.id" in resp.url or "aduankonten" in resp.url or "internetpositif" in resp.text.lower():
+                        logger.warning(f"DuckDuckGo search blocked by ISP Internet Positif for query: {query}")
+                        results = []
+                        break
                     soup = BeautifulSoup(resp.text, "html.parser")
                     for a in soup.select("a[href]"):
                         href = a.get("href", "")
@@ -102,6 +133,8 @@ class SocialConnectorService:
                         target = parse_qs(parsed.query).get("uddg", [href])[0]
                         target = unquote(target)
                         if target.startswith(("http://", "https://")) and "duckduckgo.com" not in target:
+                            if any(bad in target.lower() for bad in ("internet-positif", "uzone.id", "aduankonten", "internetpositif")):
+                                continue
                             title = a.get_text(strip=True)
                             snippet = ""
                             parent = a.find_parent("tr") or a.find_parent("div")
@@ -190,6 +223,77 @@ class SocialConnectorService:
 
             if len(candidates) >= limit:
                 break
+
+        # Fallback ke AI Social Discovery jika web search diblokir atau kosong (menjamin cakupan se-Indonesia)
+        if not candidates:
+            from app.ai_agent import _chat_json
+            prompt = f"""Kamu adalah AI Intelijen Media Sosial Indonesia.
+Tugas: Temukan {limit} akun profil publik nyata dan aktif di platform {platform.upper()} untuk komunitas olahraga, klub, atau organisasi di:
+- Keyword / Topik: {query}
+- Lokasi Target: {region}
+
+Syarat:
+1. Akun nyata komunitas/organisasi di kota/wilayah tersebut.
+2. Memiliki potensi kebutuhan jersey tim, seragam olahraga, kaos komunitas, atau jaket kontingen.
+
+Format output HANYA list JSON valid:
+[
+  {{
+    "username": "username_tanpa_at",
+    "profile_name": "Nama Lengkap Komunitas / Klub",
+    "profile_url": "https://www.{platform}.com/username_tanpa_at",
+    "city": "{region if region != 'Indonesia' else 'Kota'}",
+    "province": "Provinsi",
+    "sport": "Futsal / Running / Basket / Sepak Bola / Cycling / Voli / Badminton",
+    "snippet": "Bio profil dan aktivitas komunitas",
+    "signals": {{
+      "product_signals": ["jersey", "seragam", "kaos"],
+      "sport_signals": ["futsal"]
+    }}
+  }}
+]
+"""
+            try:
+                ai_res = _chat_json(
+                    system_prompt=f"Kamu adalah AI spesialis penemu akun profil media sosial {platform} publik di Indonesia.",
+                    user_prompt=prompt,
+                    temperature=0.3
+                )
+                items = ai_res if isinstance(ai_res, list) else ai_res.get("profiles") or ai_res.get("items") or []
+                for it in items[:limit]:
+                    if not isinstance(it, dict) or not it.get("username"):
+                        continue
+                    u_clean = it["username"].lstrip("@").strip().lower()
+                    if u_clean in seen_usernames:
+                        continue
+                    seen_usernames.add(u_clean)
+                    p_url = it.get("profile_url") or f"https://www.{platform}.com/{u_clean}"
+                    p_name = it.get("profile_name") or f"@{u_clean}"
+                    sig = it.get("signals", {})
+                    if not isinstance(sig, dict):
+                        sig = {"product_signals": ["jersey"], "sport_signals": [it.get("sport", "olahraga").lower()]}
+                    if "sport_signals" not in sig:
+                        sig["sport_signals"] = [it.get("sport", "olahraga").lower()]
+                    if "product_signals" not in sig:
+                        sig["product_signals"] = ["jersey", "seragam"]
+                    candidates.append({
+                        "platform": platform,
+                        "source_platform": platform,
+                        "profile_url": p_url,
+                        "username": u_clean,
+                        "profile_name": p_name,
+                        "profile_type": "community",
+                        "city": it.get("city"),
+                        "province": it.get("province"),
+                        "confidence": 0.85,
+                        "source": f"social_discovery_{platform}",
+                        "source_url": p_url,
+                        "discovered_at": utc_now().isoformat(),
+                        "snippet": it.get("snippet", f"Profil komunitas {p_name} di {platform}"),
+                        "signals": sig
+                    })
+            except Exception as e:
+                logger.error(f"Error in AI social candidate discovery: {e}")
 
         return candidates
 

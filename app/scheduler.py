@@ -64,6 +64,7 @@ TASK_TYPES = {
     "duplicate_detection",
     "retry_failed_jobs",
     "cache_maintenance",
+    "department_contact_scraping",
     # Legacy compatibility tasks
     "scraping",
     "ai_classification",
@@ -111,10 +112,27 @@ def get_next_run_time(schedule_cron: str) -> Optional[datetime]:
 # =========================================================================
 
 def _task_education_discovery() -> Dict[str, Any]:
+    import random
     from app.services.discovery_service import DiscoveryPipelineService
-    res = DiscoveryPipelineService.discover_education_institutions(limit=15)
+    regions = [
+        {"province": "Kalimantan Timur", "city": "Samarinda"},
+        {"province": "Kalimantan Barat", "city": "Pontianak"},
+        {"province": "Kalimantan Selatan", "city": "Banjarmasin"},
+        {"province": "Sulawesi Selatan", "city": "Makassar"},
+        {"province": "Sulawesi Utara", "city": "Manado"},
+        {"province": "Sumatera Utara", "city": "Medan"},
+        {"province": "Sumatera Selatan", "city": "Palembang"},
+        {"province": "Jawa Timur", "city": "Surabaya"},
+        {"province": "Jawa Barat", "city": "Bandung"},
+        {"province": "Jawa Tengah", "city": "Semarang"},
+        {"province": "Bali", "city": "Denpasar"},
+        {"province": "Papua", "city": "Jayapura"},
+        {"province": "Nusa Tenggara Barat", "city": "Mataram"},
+    ]
+    target = random.choice(regions)
+    res = DiscoveryPipelineService.discover_education_institutions(province=target["province"], city=target["city"], limit=8)
     return {
-        "detail": f"{res['created']} universitas/sekolah baru, {res['updated']} diperbarui",
+        "detail": f"Discovery Pendidikan ({target['city']}, {target['province']}): {res['created']} entitas baru, {res['updated']} diperbarui",
         "processed": res["total_processed"],
         "success": res["total_processed"],
         "failed": 0
@@ -122,10 +140,19 @@ def _task_education_discovery() -> Dict[str, Any]:
 
 
 def _task_community_discovery() -> Dict[str, Any]:
+    import random
     from app.services.discovery_service import DiscoveryPipelineService
-    res = DiscoveryPipelineService.discover_communities(limit=15)
+    cities = [
+        "Samarinda", "Balikpapan", "Pontianak", "Banjarmasin",
+        "Surabaya", "Malang", "Sidoarjo", "Bandung", "Jakarta", "Semarang", "Yogyakarta",
+        "Medan", "Palembang", "Pekanbaru", "Batam", "Makassar", "Manado", "Denpasar", "Mataram", "Jayapura"
+    ]
+    categories = ["futsal", "running", "basketball", "cycling", "badminton", "volleyball", "student_org"]
+    sel_city = random.choice(cities)
+    sel_cat = random.choice(categories)
+    res = DiscoveryPipelineService.discover_communities(category=sel_cat, city=sel_city, limit=10)
     return {
-        "detail": f"{res['created']} komunitas/organisasi baru, {res['updated']} diperbarui",
+        "detail": f"Discovery berkala ({sel_cat} di {sel_city}): {res['created']} komunitas baru, {res['updated']} diperbarui",
         "processed": res["total_processed"],
         "success": res["total_processed"],
         "failed": 0
@@ -133,14 +160,33 @@ def _task_community_discovery() -> Dict[str, Any]:
 
 
 def _task_social_discovery() -> Dict[str, Any]:
+    import random
     from app.services.discovery_service import DiscoveryPipelineService
+    queries = [
+        "komunitas futsal balikpapan",
+        "running club samarinda",
+        "komunitas basket pontianak",
+        "komunitas futsal banjarmasin",
+        "komunitas futsal surabaya",
+        "running club malang",
+        "komunitas basket bandung",
+        "komunitas sepeda semarang",
+        "komunitas futsal medan",
+        "komunitas lari makassar",
+        "komunitas badminton jakarta",
+        "komunitas gowes sidoarjo",
+        "komunitas futsal kediri",
+        "komunitas lari denpasar",
+        "komunitas futsal jayapura",
+    ]
+    query = random.choice(queries)
     res = DiscoveryPipelineService.discover_social_media(
         platform="instagram",
-        query="komunitas futsal bandung",
+        query=query,
         limit=10
     )
     return {
-        "detail": f"Social discovery Instagram: {res['created']} kandidat baru, {res['updated']} diperbarui",
+        "detail": f"Social discovery ({query}): {res['created']} kandidat baru, {res['updated']} diperbarui",
         "processed": res["total_processed"],
         "success": res["total_processed"],
         "failed": 0
@@ -176,16 +222,27 @@ def _task_social_enrichment() -> Dict[str, Any]:
 
 
 def _task_event_refresh() -> Dict[str, Any]:
+    import random
     from app.discovery import run_discovery
+    from app.services.event_intelligence import EventIntelligenceService
     sources = DiscoverySource.query.filter_by(source_kind="event", is_active=True).all()
-    created_total = 0
     for s in sources:
-        run_discovery(s.id)
-        created_total += 1
+        try:
+            run_discovery(s.id)
+        except Exception:
+            pass
+
+    target_cities = [
+        "Samarinda", "Balikpapan", "Banjarmasin", "Pontianak",
+        "Surabaya", "Malang", "Jakarta", "Bandung", "Semarang",
+        "Medan", "Palembang", "Pekanbaru", "Makassar", "Manado", "Denpasar", "Jayapura"
+    ]
+    target_city = random.choice(target_cities)
+    res = EventIntelligenceService.discover_events(query="expo pameran dan turnamen", city=target_city, limit=6)
     return {
-        "detail": f"{len(sources)} sumber event diproses",
-        "processed": len(sources),
-        "success": len(sources),
+        "detail": f"Event refresh ({target_city}): {res['created']} event baru, {res['updated']} diperbarui dari {res['total_processed']} target",
+        "processed": res["total_processed"],
+        "success": res["total_processed"],
         "failed": 0
     }
 
@@ -395,6 +452,15 @@ def _run_task(task_type: str) -> Dict[str, Any]:
         return _task_retry_failed_jobs()
     if task_type == "cache_maintenance":
         return _task_cache_maintenance()
+    if task_type == "department_contact_scraping":
+        from app.services.department_contact_scraper import run_full_department_scraping_batch
+        res = run_full_department_scraping_batch(limit_orgs=250, sync_prospects=True)
+        return {
+            "detail": f"Scraping kontak: {res['purchasing_contacts_found']} purchasing, {res['hr_contacts_found']} HR, {res['panitia_event_found']} panitia event ({res['orgs_enriched']} orgs)",
+            "processed": res["orgs_processed"],
+            "success": res["orgs_enriched"],
+            "failed": 0
+        }
     # Legacy
     if task_type == "scraping":
         return _scrape_sources()

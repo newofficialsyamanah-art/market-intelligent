@@ -152,14 +152,14 @@ def explorer():
         .limit(100)
         .all()
     ]
-    all_provinces = [
+    from app.utils import get_all_indonesia_provinces
+    db_provinces = [
         r[0] for r in db.session.query(Organization.province)
         .filter(Organization.province.isnot(None), Organization.province != "", Organization.province != "nan")
         .distinct()
-        .order_by(Organization.province)
-        .limit(100)
         .all()
     ]
+    all_provinces = get_all_indonesia_provinces(db_provinces)
 
     return render_template(
         "market_analysis/explorer.html",
@@ -214,27 +214,49 @@ def org_detail(org_id: int):
 
 @market_analysis_bp.route("/product-recommendation", methods=["POST"])
 @login_required
-@roles_required("business_analyst")
+@roles_required("business_analyst", "management", "marketing", "admin")
 def product_recommendation():
+    org_provinces = dict(
+        db.session.query(Organization.province, func.count(Organization.id))
+        .filter(Organization.province.isnot(None), Organization.province != "", Organization.province != "nan")
+        .group_by(Organization.province)
+        .order_by(func.count(Organization.id).desc())
+        .limit(10)
+        .all()
+    )
+    org_industries = dict(
+        db.session.query(Organization.industry, func.count(Organization.id))
+        .filter(Organization.industry.isnot(None), Organization.industry != "")
+        .group_by(Organization.industry)
+        .order_by(func.count(Organization.id).desc())
+        .limit(10)
+        .all()
+    )
+    org_types = dict(
+        db.session.query(Organization.organization_type, func.count(Organization.id))
+        .filter(Organization.organization_type.isnot(None), Organization.organization_type != "")
+        .group_by(Organization.organization_type)
+        .all()
+    )
     summary = {
-        "industry_distribution": _distribution("industry"),
-        "region_distribution": _distribution("region"),
-        "company_size_distribution": _distribution("company_size"),
+        "master_organizations_count": Organization.query.count(),
+        "provinces_distribution": org_provinces,
+        "industry_distribution": org_industries,
+        "organization_types": org_types,
         "total_prospects": Prospect.query.count(),
-        "total_organizations": Organization.query.count(),
     }
     try:
         result = ai_agent.recommend_products(summary)
         analysis = MarketAnalysis(
             analysis_type="product_recommendation",
-            title="Rekomendasi Potensi Produk",
+            title="Rekomendasi Potensi Produk B2B Apparel & Merchandise",
             result_json=json.dumps(result),
             created_by=current_user.id,
         )
         db.session.add(analysis)
         db.session.commit()
-        log_activity("product_recommendation", "Generate rekomendasi produk AI")
-        flash("Rekomendasi produk berhasil dibuat oleh AI.", "success")
+        log_activity("product_recommendation", "Generate rekomendasi produk AI se-Indonesia")
+        flash("Rekomendasi produk pasar se-Indonesia berhasil dibuat oleh AI.", "success")
     except Exception as e:
         flash(f"Gagal membuat rekomendasi: {e}", "danger")
     return redirect(url_for("market_analysis.history"))

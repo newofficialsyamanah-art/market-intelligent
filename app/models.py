@@ -17,7 +17,7 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(150), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
     role = db.Column(
-        db.Enum("admin", "business_analyst", "marketing", "management", name="role_enum"),
+        db.Enum("admin", "business_analyst", "marketing", "management", "procurement", name="role_enum"),
         default="business_analyst",
     )
     is_active_flag = db.Column("is_active", db.Boolean, default=True)
@@ -245,6 +245,27 @@ class DiscoverySource(db.Model):
     created_at = db.Column(db.DateTime, default=utc_now)
 
 
+class ProcurementSupplier(db.Model):
+    """Kandidat pemasok bahan apparel dengan provenance hasil pencarian web."""
+    __tablename__ = "procurement_suppliers"
+
+    id = db.Column(db.Integer, primary_key=True)
+    company_name = db.Column(db.String(255), nullable=False)
+    product = db.Column(db.String(100), nullable=False)
+    material = db.Column(db.String(255))
+    region = db.Column(db.String(150))
+    website = db.Column(db.String(500))
+    source_url = db.Column(db.String(500), nullable=False)
+    contact_email = db.Column(db.String(150))
+    contact_phone = db.Column(db.String(100))
+    description = db.Column(db.Text)
+    fit_score = db.Column(db.Integer, default=0)
+    recommendation_json = db.Column(db.Text)
+    verification_status = db.Column(db.String(50), default="discovered")
+    created_by = db.Column(db.Integer, db.ForeignKey("users.id"))
+    created_at = db.Column(db.DateTime, default=utc_now)
+
+
 class Organization(db.Model):
     """
     MASTER ENTITY:
@@ -282,10 +303,37 @@ class Organization(db.Model):
     provenance_json = db.Column(db.Text, nullable=True)
     data_freshness = db.Column(db.DateTime, default=utc_now)
     last_seen = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
+    department_contacts_json = db.Column(db.Text, nullable=True)
     created_at = db.Column(db.DateTime, default=utc_now)
 
     participations = db.relationship("EventParticipant", back_populates="organization", cascade="all, delete-orphan")
     campaign_targets = db.relationship("CampaignTarget", back_populates="organization", cascade="all, delete-orphan")
+
+    def get_department_contacts(self) -> dict:
+        import json
+        if not self.department_contacts_json:
+            return {}
+        try:
+            val = json.loads(self.department_contacts_json)
+            return val if isinstance(val, dict) else {}
+        except Exception:
+            return {}
+
+    @property
+    def purchasing_contact(self) -> dict:
+        return self.get_department_contacts().get("purchasing") or {}
+
+    @property
+    def procurement_contact(self) -> dict:
+        return self.get_department_contacts().get("procurement") or {}
+
+    @property
+    def hr_contact(self) -> dict:
+        return self.get_department_contacts().get("hr") or {}
+
+    @property
+    def community_pic_contact(self) -> dict:
+        return self.get_department_contacts().get("pic_komunitas") or {}
 
     def get_ai_scoring(self) -> dict:
         import json
@@ -353,11 +401,27 @@ class Event(db.Model):
     relevance_notes = db.Column(db.Text, nullable=True)
     relevance_score = db.Column(db.Integer, default=0)
     verification_status = db.Column(db.String(50), default="discovered")
+    department_contacts_json = db.Column(db.Text, nullable=True)
     last_seen = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
     created_at = db.Column(db.DateTime, default=utc_now)
 
     organizer_org = db.relationship("Organization", foreign_keys=[organizer_id])
     participants = db.relationship("EventParticipant", back_populates="event", cascade="all, delete-orphan")
+
+    def get_department_contacts(self) -> dict:
+        import json
+        if not self.department_contacts_json:
+            return {}
+        try:
+            val = json.loads(self.department_contacts_json)
+            return val if isinstance(val, dict) else {}
+        except Exception:
+            return {}
+
+    @property
+    def panitia_contact(self) -> dict:
+        contacts = self.get_department_contacts()
+        return contacts.get("panitia") or contacts.get("sponsorship") or contacts.get("sekretariat") or {}
 
 
 class EventParticipant(db.Model):

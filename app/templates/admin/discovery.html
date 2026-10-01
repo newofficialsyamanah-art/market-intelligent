@@ -8,86 +8,145 @@
   </div>
 </div>
 
-<!-- Quick Trigger Automation Discovery Cards -->
+<!-- Quick Trigger Automation Discovery Cards (Dinamis Seluruh Indonesia) -->
 <div class="row g-3 mb-4">
   <!-- 1. Education Discovery Card -->
-  <div class="col-md-4">
+  <div class="col-lg-3 col-md-6">
     <div class="card h-100 shadow-sm border-0">
       <div class="card-header bg-primary text-white py-2">
-        <h6 class="mb-0"><i class="bi bi-mortarboard me-1"></i> Discovery Institusi Pendidikan</h6>
+        <h6 class="mb-0"><i class="bi bi-mortarboard me-1"></i> 1. Institusi Pendidikan</h6>
       </div>
       <div class="card-body">
-        <p class="small text-muted mb-2">Cari sekolah (PAUD - SMK) dan perguruan tinggi (Universitas, Institut, Politeknik) di Indonesia.</p>
+        <p class="small text-muted mb-2">Cari sekolah (PAUD - SMK) dan perguruan tinggi (Universitas, Institut, Politeknik) se-Indonesia.</p>
         <form method="post" action="{{ url_for('admin.trigger_education_discovery') }}">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <div class="mb-2">
             <label class="form-label small mb-1">Provinsi</label>
-            <input type="text" name="province" class="form-control form-control-sm" value="Jawa Barat" required>
+            <input type="text" name="province" id="inputEduProv" class="form-control form-control-sm" placeholder="Contoh: Kalimantan Timur / Jawa Timur" value="Kalimantan Timur">
           </div>
           <div class="mb-2">
-            <label class="form-label small mb-1">Kota / Kabupaten</label>
-            <input type="text" name="city" class="form-control form-control-sm" value="Bandung" required>
+            <label class="form-label small mb-1">Kota / Kabupaten (Opsional)</label>
+            <input type="text" name="city" id="inputEduCity" class="form-control form-control-sm" placeholder="Contoh: Samarinda / Balikpapan" value="Samarinda">
+            <div class="mt-1 d-flex flex-wrap gap-1">
+              <span class="badge bg-light text-dark border pointer small py-1" style="cursor: pointer;" onclick="document.getElementById('inputEduProv').value='Kalimantan Timur';document.getElementById('inputEduCity').value='Samarinda'">Kaltim (Samarinda)</span>
+              <span class="badge bg-light text-dark border pointer small py-1" style="cursor: pointer;" onclick="document.getElementById('inputEduProv').value='Kalimantan Timur';document.getElementById('inputEduCity').value='Balikpapan'">Balikpapan</span>
+              <span class="badge bg-light text-dark border pointer small py-1" style="cursor: pointer;" onclick="document.getElementById('inputEduProv').value='Kalimantan Barat';document.getElementById('inputEduCity').value='Pontianak'">Kalbar (Pontianak)</span>
+              <span class="badge bg-light text-dark border pointer small py-1" style="cursor: pointer;" onclick="document.getElementById('inputEduProv').value='Kalimantan Selatan';document.getElementById('inputEduCity').value='Banjarmasin'">Kalsel (Banjarmasin)</span>
+              <span class="badge bg-light text-dark border pointer small py-1" style="cursor: pointer;" onclick="document.getElementById('inputEduProv').value='Jawa Timur';document.getElementById('inputEduCity').value='Surabaya'">Surabaya</span>
+              <span class="badge bg-light text-dark border pointer small py-1" style="cursor: pointer;" onclick="document.getElementById('inputEduProv').value='Sulawesi Selatan';document.getElementById('inputEduCity').value='Makassar'">Makassar</span>
+              <span class="badge bg-light text-dark border pointer small py-1" style="cursor: pointer;" onclick="document.getElementById('inputEduProv').value='Sumatera Utara';document.getElementById('inputEduCity').value='Medan'">Medan</span>
+            </div>
           </div>
           <div class="mb-3">
-            <label class="form-label small mb-1">Batas Institusi per Jenjang</label>
+            <label class="form-label small mb-1">Batas per Jenjang</label>
             <input type="number" name="limit" class="form-control form-control-sm" value="5" min="1" max="50">
           </div>
-          <button type="submit" class="btn btn-sm btn-primary w-100"><i class="bi bi-play-circle me-1"></i> Jalankan Discovery Pendidikan</button>
+          <button type="submit" class="btn btn-sm btn-primary w-100"><i class="bi bi-play-circle me-1"></i> Cari Sekolah / Kampus</button>
         </form>
       </div>
     </div>
   </div>
 
-  <!-- 2. Community Discovery Card -->
-  <div class="col-md-4">
+  <!-- 2. Community Discovery Card (Dinamis Se-Indonesia) -->
+  <div class="col-lg-3 col-md-6">
     <div class="card h-100 shadow-sm border-0">
       <div class="card-header bg-success text-white py-2">
-        <h6 class="mb-0"><i class="bi bi-people me-1"></i> Discovery Komunitas & Mahasiswa</h6>
+        <h6 class="mb-0"><i class="bi bi-people me-1"></i> 2. Komunitas & Olahraga</h6>
       </div>
       <div class="card-body">
-        <p class="small text-muted mb-2">Cari klub olahraga (futsal, basket, sepak bola, running), BEM, HIMA, dan UKM kampus.</p>
+        <p class="small text-muted mb-2">Discovery dinamis klub olahraga (futsal, running, basket, sepeda) dan BEM/UKM kampus se-Indonesia.</p>
         <form method="post" action="{{ url_for('admin.trigger_community_discovery') }}">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <div class="mb-2">
-            <label class="form-label small mb-1">Kategori Komunitas</label>
+            <label class="form-label small mb-1">Kategori Target</label>
             <select name="category" class="form-select form-select-sm">
               <option value="futsal">Klub / Komunitas Futsal</option>
-              <option value="football">Klub / Komunitas Sepak Bola</option>
-              <option value="basketball">Klub / Komunitas Basket</option>
               <option value="running">Komunitas Lari / Running Club</option>
-              <option value="volleyball">Komunitas Bola Voli</option>
+              <option value="basketball">Klub / Komunitas Basket</option>
+              <option value="football">Klub Sepak Bola / Tarkam</option>
               <option value="cycling">Komunitas Sepeda / Cycling</option>
-              <option value="esports">Komunitas Gaming / Esports</option>
-              <option value="student_org">Organisasi Mahasiswa (BEM / UKM / HIMA)</option>
-              <option value="association">Asosiasi / Komunitas Profesi</option>
+              <option value="volleyball">Komunitas Bola Voli</option>
+              <option value="badminton">Klub Badminton / Bulutangkis</option>
+              <option value="student_org">Organisasi Mahasiswa (BEM / UKM)</option>
+              <option value="all">Semua Komunitas Olahraga</option>
             </select>
           </div>
           <div class="mb-2">
             <label class="form-label small mb-1">Kota / Wilayah Target</label>
-            <input type="text" name="city" class="form-control form-control-sm" value="Bandung" required>
+            <input type="text" name="city" id="inputCommCity" class="form-control form-control-sm" placeholder="Contoh: Balikpapan, Samarinda, atau kosongkan" value="Balikpapan">
+            <div class="mt-1 d-flex flex-wrap gap-1">
+              <span class="badge bg-light text-dark border pointer small py-1" style="cursor: pointer;" onclick="document.getElementById('inputCommCity').value='Kalimantan'">Kalimantan</span>
+              <span class="badge bg-light text-dark border pointer small py-1" style="cursor: pointer;" onclick="document.getElementById('inputCommCity').value='Balikpapan'">Balikpapan</span>
+              <span class="badge bg-light text-dark border pointer small py-1" style="cursor: pointer;" onclick="document.getElementById('inputCommCity').value='Samarinda'">Samarinda</span>
+              <span class="badge bg-light text-dark border pointer small py-1" style="cursor: pointer;" onclick="document.getElementById('inputCommCity').value='Pontianak'">Pontianak</span>
+              <span class="badge bg-light text-dark border pointer small py-1" style="cursor: pointer;" onclick="document.getElementById('inputCommCity').value='Banjarmasin'">Banjarmasin</span>
+              <span class="badge bg-light text-dark border pointer small py-1" style="cursor: pointer;" onclick="document.getElementById('inputCommCity').value='Surabaya'">Surabaya</span>
+              <span class="badge bg-light text-dark border pointer small py-1" style="cursor: pointer;" onclick="document.getElementById('inputCommCity').value='Makassar'">Makassar</span>
+              <span class="badge bg-light text-dark border pointer small py-1" style="cursor: pointer;" onclick="document.getElementById('inputCommCity').value='Medan'">Medan</span>
+              <span class="badge bg-light text-dark border pointer small py-1" style="cursor: pointer;" onclick="document.getElementById('inputCommCity').value=''">Se-Indonesia</span>
+            </div>
           </div>
           <div class="mb-3">
             <label class="form-label small mb-1">Maksimal Entri</label>
             <input type="number" name="limit" class="form-control form-control-sm" value="10" min="1" max="50">
           </div>
-          <button type="submit" class="btn btn-sm btn-success w-100"><i class="bi bi-play-circle me-1"></i> Jalankan Discovery Komunitas</button>
+          <button type="submit" class="btn btn-sm btn-success w-100"><i class="bi bi-play-circle me-1"></i> Cari Komunitas Dinamis</button>
         </form>
       </div>
     </div>
   </div>
 
-  <!-- 3. Social Media Discovery Card -->
-  <div class="col-md-4">
+  <!-- 3. Event & Expo Discovery Card (Dinamis Se-Indonesia) -->
+  <div class="col-lg-3 col-md-6">
     <div class="card h-100 shadow-sm border-0">
-      <div class="card-header bg-dark text-white py-2">
-        <h6 class="mb-0"><i class="bi bi-share me-1"></i> Social Discovery Publik</h6>
+      <div class="card-header bg-info text-white py-2">
+        <h6 class="mb-0"><i class="bi bi-calendar-event me-1"></i> 3. Discovery Event & Expo</h6>
       </div>
       <div class="card-body">
-        <p class="small text-muted mb-2">Discovery profil organisasi publik di Instagram, TikTok, Facebook, dan LinkedIn secara legitimate.</p>
+        <p class="small text-muted mb-2">Cari event pameran B2B, expo industri/tekstil, festival, dan turnamen olahraga nyata se-Indonesia.</p>
+        <form method="post" action="{{ url_for('admin.trigger_event_discovery') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <div class="mb-2">
+            <label class="form-label small mb-1">Topik / Kategori Event</label>
+            <input type="text" name="query" class="form-control form-control-sm" placeholder="Contoh: Expo Industri, Pameran UMKM, Turnamen Lari" value="Pameran Bisnis dan Turnamen Olahraga">
+          </div>
+          <div class="mb-2">
+            <label class="form-label small mb-1">Wilayah / Kota Event</label>
+            <input type="text" name="city" id="inputEventCity" class="form-control form-control-sm" placeholder="Contoh: Balikpapan, Samarinda, atau kosongkan" value="Kalimantan">
+            <div class="mt-1 d-flex flex-wrap gap-1">
+              <span class="badge bg-light text-dark border pointer small py-1" style="cursor: pointer;" onclick="document.getElementById('inputEventCity').value='Kalimantan'">Kalimantan</span>
+              <span class="badge bg-light text-dark border pointer small py-1" style="cursor: pointer;" onclick="document.getElementById('inputEventCity').value='Samarinda'">Samarinda</span>
+              <span class="badge bg-light text-dark border pointer small py-1" style="cursor: pointer;" onclick="document.getElementById('inputEventCity').value='Balikpapan'">Balikpapan</span>
+              <span class="badge bg-light text-dark border pointer small py-1" style="cursor: pointer;" onclick="document.getElementById('inputEventCity').value='Pontianak'">Pontianak</span>
+              <span class="badge bg-light text-dark border pointer small py-1" style="cursor: pointer;" onclick="document.getElementById('inputEventCity').value='Banjarmasin'">Banjarmasin</span>
+              <span class="badge bg-light text-dark border pointer small py-1" style="cursor: pointer;" onclick="document.getElementById('inputEventCity').value='Surabaya'">Surabaya</span>
+              <span class="badge bg-light text-dark border pointer small py-1" style="cursor: pointer;" onclick="document.getElementById('inputEventCity').value='Makassar'">Makassar</span>
+              <span class="badge bg-light text-dark border pointer small py-1" style="cursor: pointer;" onclick="document.getElementById('inputEventCity').value='Medan'">Medan</span>
+              <span class="badge bg-light text-dark border pointer small py-1" style="cursor: pointer;" onclick="document.getElementById('inputEventCity').value=''">Se-Indonesia</span>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small mb-1">Maksimal Event</label>
+            <input type="number" name="limit" class="form-control form-control-sm" value="6" min="1" max="30">
+          </div>
+          <button type="submit" class="btn btn-sm btn-info text-white w-100"><i class="bi bi-play-circle me-1"></i> Cari Event Baru</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Social Media Discovery Card -->
+  <div class="col-lg-3 col-md-6">
+    <div class="card h-100 shadow-sm border-0">
+      <div class="card-header bg-dark text-white py-2">
+        <h6 class="mb-0"><i class="bi bi-share me-1"></i> 4. Social Media Discovery</h6>
+      </div>
+      <div class="card-body">
+        <p class="small text-muted mb-2">Discovery profil Instagram, TikTok, Facebook publik se-Indonesia.</p>
         <form method="post" action="{{ url_for('admin.trigger_social_discovery') }}">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <div class="mb-2">
-            <label class="form-label small mb-1">Platform Media Sosial</label>
+            <label class="form-label small mb-1">Platform</label>
             <select name="platform" class="form-select form-select-sm">
               <option value="instagram">Instagram</option>
               <option value="tiktok">TikTok</option>
@@ -97,13 +156,22 @@
           </div>
           <div class="mb-2">
             <label class="form-label small mb-1">Keyword Pencarian</label>
-            <input type="text" name="keyword" class="form-control form-control-sm" value="jersey futsal bandung" required>
+            <input type="text" name="keyword" id="inputSocKeyword" class="form-control form-control-sm" placeholder="Contoh: jersey futsal balikpapan" value="komunitas futsal balikpapan" required>
+            <div class="mt-1 d-flex flex-wrap gap-1">
+              <span class="badge bg-light text-dark border pointer small py-1" style="cursor: pointer;" onclick="document.getElementById('inputSocKeyword').value='komunitas futsal balikpapan'">Balikpapan</span>
+              <span class="badge bg-light text-dark border pointer small py-1" style="cursor: pointer;" onclick="document.getElementById('inputSocKeyword').value='running club samarinda'">Samarinda</span>
+              <span class="badge bg-light text-dark border pointer small py-1" style="cursor: pointer;" onclick="document.getElementById('inputSocKeyword').value='komunitas basket pontianak'">Pontianak</span>
+              <span class="badge bg-light text-dark border pointer small py-1" style="cursor: pointer;" onclick="document.getElementById('inputSocKeyword').value='komunitas lari makassar'">Makassar</span>
+              <span class="badge bg-light text-dark border pointer small py-1" style="cursor: pointer;" onclick="document.getElementById('inputSocKeyword').value='komunitas futsal medan'">Medan</span>
+              <span class="badge bg-light text-dark border pointer small py-1" style="cursor: pointer;" onclick="document.getElementById('inputSocKeyword').value='komunitas futsal surabaya'">Surabaya</span>
+              <span class="badge bg-light text-dark border pointer small py-1" style="cursor: pointer;" onclick="document.getElementById('inputSocKeyword').value='running club malang'">Malang</span>
+            </div>
           </div>
           <div class="mb-3">
-            <label class="form-label small mb-1">Batas Kandidat</label>
+            <label class="form-label small mb-1">Batas Profil</label>
             <input type="number" name="limit" class="form-control form-control-sm" value="10" min="1" max="50">
           </div>
-          <button type="submit" class="btn btn-sm btn-dark w-100"><i class="bi bi-play-circle me-1"></i> Jalankan Social Discovery</button>
+          <button type="submit" class="btn btn-sm btn-dark w-100"><i class="bi bi-play-circle me-1"></i> Cari di Media Sosial</button>
         </form>
       </div>
     </div>

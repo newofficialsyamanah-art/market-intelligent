@@ -36,10 +36,10 @@
 <div class="card border-0 shadow-sm p-3 mb-4">
   <form method="get" action="{{ url_for('market_analysis.explorer') }}" class="row g-2 align-items-end">
     <div class="col-md-3 col-sm-6">
-      <label class="form-label small fw-semibold">Pencarian Nama / Domain / Kota</label>
+      <label class="form-label small fw-semibold">Pencarian Nama / Kota / Provinsi</label>
       <div class="input-group input-group-sm">
         <span class="input-group-text"><i class="bi bi-search"></i></span>
-        <input type="text" name="q" class="form-control" placeholder="Cari perusahaan..." value="{{ filters.q }}">
+        <input type="text" name="q" class="form-control" placeholder="Cari nama, kota, provinsi (se-Indonesia)..." value="{{ filters.q }}">
       </div>
     </div>
 
@@ -175,7 +175,25 @@
           <td>
             <div class="d-flex gap-1">
               {% if org.phone %}
-              <span class="badge bg-success-subtle text-success" title="Telepon: {{ org.phone }}"><i class="bi bi-telephone-fill"></i></span>
+                {% set wa = org.phone|parse_wa(org.name) %}
+                {% if wa.is_valid_wa %}
+                  <button type="button" class="btn btn-sm btn-success py-0 px-2 rounded-pill d-inline-flex align-items-center gap-1 shadow-sm btn-wa-trigger"
+                          data-bs-toggle="modal" data-bs-target="#modalWhatsAppQuickSend"
+                          data-company="{{ org.name }}"
+                          data-phone="{{ org.phone }}"
+                          data-wanumber="{{ wa.wa_number }}"
+                          data-isvalid="true"
+                          data-type="{{ wa.type }}"
+                          title="{{ wa.tooltip }}">
+                    <i class="bi bi-whatsapp"></i> <span style="font-size: 0.72rem;" class="fw-bold">WA</span>
+                  </button>
+                {% else %}
+                  <a href="tel:{{ org.phone }}" class="badge bg-secondary-subtle text-muted text-decoration-none border d-inline-flex align-items-center"
+                     data-bs-toggle="tooltip"
+                     title="{{ wa.tooltip }}">
+                    <i class="bi bi-telephone-fill me-1"></i><span style="font-size: 0.7rem;">Kantor</span>
+                  </a>
+                {% endif %}
               {% endif %}
               {% if org.email %}
               <span class="badge bg-info-subtle text-info" title="Email: {{ org.email }}"><i class="bi bi-envelope-fill"></i></span>

@@ -312,6 +312,8 @@ def search_master_organizations(
                 Organization.normalized_name.ilike(like_expr),
                 Organization.domain.ilike(like_expr),
                 Organization.city.ilike(like_expr),
+                Organization.province.ilike(like_expr),
+                Organization.address.ilike(like_expr),
                 Organization.phone.ilike(like_expr),
                 Organization.email.ilike(like_expr),
             )
@@ -321,7 +323,7 @@ def search_master_organizations(
         query = query.filter(Organization.industry.ilike(f"%{industry}%"))
 
     if province:
-        query = query.filter(Organization.province == province)
+        query = query.filter(Organization.province.ilike(f"%{province}%"))
 
     if priority_tier:
         if priority_tier in ("A", "Tier A", "A - HOT"):

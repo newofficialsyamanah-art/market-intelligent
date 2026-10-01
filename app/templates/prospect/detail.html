@@ -20,9 +20,34 @@
         <tr><th style="width:180px;">Industri</th><td>{{ p.industry or '-' }}</td></tr>
         <tr><th>Wilayah</th><td>{{ p.region or '-' }}</td></tr>
         <tr><th>Ukuran Perusahaan</th><td>{{ p.company_size or '-' }}</td></tr>
-        <tr><th>Website</th><td>{{ p.website or '-' }}</td></tr>
-        <tr><th>Kontak</th><td>{{ p.contact_name or '-' }} / {{ p.contact_email or '-' }} / {{ p.contact_phone or '-' }}</td></tr>
-        <tr><th>Deskripsi</th><td>{{ p.description or '-' }}</td></tr>
+        <tr>
+          <th>Kontak</th>
+          <td>
+            {{ p.contact_name or '-' }} / {{ p.contact_email or '-' }} /
+            {% if p.contact_phone %}
+              {% set wa = p.contact_phone|parse_wa(p.company_name) %}
+              <span class="fw-semibold">{{ p.contact_phone }}</span>
+              {% if wa.is_valid_wa %}
+                <button type="button" class="btn btn-sm btn-success py-0 px-2 rounded-pill ms-2 btn-wa-trigger"
+                        data-bs-toggle="modal" data-bs-target="#modalWhatsAppQuickSend"
+                        data-company="{{ p.company_name }}"
+                        data-phone="{{ p.contact_phone }}"
+                        data-wanumber="{{ wa.wa_number }}"
+                        data-isvalid="true"
+                        data-type="{{ wa.type }}"
+                        title="{{ wa.tooltip }}">
+                  <i class="bi bi-whatsapp me-1"></i>Kirim WhatsApp
+                </button>
+              {% else %}
+                <span class="badge bg-secondary-subtle text-muted ms-2" data-bs-toggle="tooltip" title="{{ wa.tooltip }}">
+                  <i class="bi bi-telephone-fill me-1"></i>{{ wa.type_label }}
+                </span>
+              {% endif %}
+            {% else %}
+              -
+            {% endif %}
+          </td>
+        </tr>
         <tr><th>Status</th><td>{{ p.status }}</td></tr>
       </table>
     </div>
