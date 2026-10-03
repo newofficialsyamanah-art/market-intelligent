@@ -199,8 +199,70 @@ def create_app(config_class=None):
                 "high_fit_suppliers": ProcurementSupplier.query.filter(ProcurementSupplier.fit_score >= 75).count(),
                 "recent_suppliers": ProcurementSupplier.query.order_by(ProcurementSupplier.created_at.desc()).limit(6).all(),
             }
+        elif user_role == "supplier":
+            my_suppliers = ProcurementSupplier.query.filter_by(created_by=current_user.id).all() if current_user.is_authenticated else []
+            role_data = {
+                "my_supplier_count": len(my_suppliers),
+                "total_suppliers": ProcurementSupplier.query.count(),
+                "my_suppliers": my_suppliers,
+            }
 
-        return render_template("dashboard.html", stats=stats, role=user_role, role_data=role_data)
+        # Ringkasan Kategori Lintas Modul untuk Dashboard Utama
+        org_type_tuples = db.session.query(Organization.organization_type, db.func.count(Organization.id)).group_by(Organization.organization_type).all()
+        org_types_map = {str(k).lower(): v for k, v in org_type_tuples if k}
+        
+        corp_sum = org_types_map.get("perusahaan", 0) + org_types_map.get("corporate", 0) + org_types_map.get("company", 0)
+        comm_sum = org_types_map.get("community", 0) + org_types_map.get("komunitas olahraga", 0) + org_types_map.get("sports_club", 0)
+        edu_sum = org_types_map.get("education", 0) + org_types_map.get("school", 0) + org_types_map.get("university", 0)
+        mahasiswa_sum = org_types_map.get("student_organization", 0) + org_types_map.get("student_org", 0)
+        other_sum = max(0, stats["total_organizations"] - corp_sum - comm_sum - edu_sum - mahasiswa_sum)
+
+        supplier_prod_tuples = db.session.query(ProcurementSupplier.product, db.func.count(ProcurementSupplier.id)).group_by(ProcurementSupplier.product).all()
+        supplier_prods_map = {str(k).lower(): v for k, v in supplier_prod_tuples if k}
+
+        tier_tuples = db.session.query(Organization.priority_tier, db.func.count(Organization.id)).group_by(Organization.priority_tier).all()
+        tier_map = {str(k): v for k, v in tier_tuples if k}
+
+        category_summaries = {
+            "organizations": {
+                "perusahaan": corp_sum,
+                "komunitas": comm_sum,
+                "pendidikan": edu_sum,
+                "mahasiswa": mahasiswa_sum,
+                "lainnya": other_sum,
+                "total": stats["total_organizations"]
+            },
+            "tiers": {
+                "hot": tier_map.get("A - HOT", 0),
+                "warm": tier_map.get("B - WARM", 0),
+                "potential": tier_map.get("C - POTENTIAL", 0),
+                "low": tier_map.get("D - LOW", 0)
+            },
+            "suppliers": {
+                "raw_material": supplier_prods_map.get("raw material", 0) + supplier_prods_map.get("jersey", 0) + supplier_prods_map.get("kaos", 0) + supplier_prods_map.get("polo", 0) + supplier_prods_map.get("kemeja", 0) + supplier_prods_map.get("jaket", 0),
+                "distributor": supplier_prods_map.get("distributor", 0),
+                "elektrikal": supplier_prods_map.get("elektrikal", 0),
+                "services": supplier_prods_map.get("services", 0),
+                "pharmaceutical": supplier_prods_map.get("pharmaceutical", 0),
+                "local": supplier_prods_map.get("local", 0),
+                "hardware": supplier_prods_map.get("hardware", 0),
+                "software": supplier_prods_map.get("software", 0),
+                "total": sum(supplier_prods_map.values())
+            },
+            "events": {
+                "total": Event.query.count(),
+                "upcoming": Event.query.filter_by(status="upcoming").count(),
+                "high_relevance": Event.query.filter(Event.relevance_score >= 60).count()
+            }
+        }
+
+        return render_template(
+            "dashboard.html",
+            stats=stats,
+            role=user_role,
+            role_data=role_data,
+            category_summaries=category_summaries
+        )
 
     try:
         with app.app_context():

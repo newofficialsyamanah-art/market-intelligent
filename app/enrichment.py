@@ -459,6 +459,22 @@ def save_enriched_to_db_in_batches(
                     candidates_flagged += 1
 
             # 3. Sinkronisasikan ke compatibility layer: Prospect (menjaga backward compatibility modul lama)
+            # Query prospect yang sudah ada di database untuk organisasi dalam chunk ini (mencegah duplikasi global)
+            target_org_ids = [org.id for org, _ in pending_prospects if org and org.id]
+            target_org_names = [org.name.strip().lower() for org, _ in pending_prospects if org and org.name]
+            if target_org_ids or target_org_names:
+                filters = []
+                if target_org_ids:
+                    filters.append(Prospect.organization_id.in_(target_org_ids))
+                if target_org_names:
+                    filters.append(db.func.lower(Prospect.company_name).in_(target_org_names))
+                db_prospects = Prospect.query.filter(db.or_(*filters)).all()
+                for p in db_prospects:
+                    if p.organization_id:
+                        existing_prospects_by_org[p.organization_id] = p
+                    if p.company_name:
+                        existing_prospects_by_name[p.company_name.strip().lower()] = p
+
             new_prospects = []
             for target_org, inc_data in pending_prospects:
                 existing_p = (

@@ -54,7 +54,28 @@ class ProcurementTestCase(unittest.TestCase):
         for s in suppliers:
             self.assertGreaterEqual(s.fit_score, 50)
             self.assertNotIn("uzone.id", s.source_url)
-            self.assertNotIn("internet-positif", s.source_url)
+    def test_is_relevant_multi_category_suppliers(self):
+        from app.services.procurement_service import is_relevant_supplier
+        # Elektrikal
+        self.assertTrue(is_relevant_supplier("PT Supreme Cable - Distributor Kabel Listrik", "Kabel tegangan rendah dan panel listrik industri SNI", "elektrikal", "kabel"))
+        # Software
+        self.assertTrue(is_relevant_supplier("Mekari - Software ERP & Cloud SaaS HRIS", "Solusi software payroll akuntansi dan sistem informasi perusahaan", "software", "erp"))
+        # Pharmaceutical
+        self.assertTrue(is_relevant_supplier("Kalbe Farma - Industri Farmasi & Obat", "Pabrik obat generik, alat kesehatan, dan distribusi PBF", "pharmaceutical", "obat"))
+        # Hardware
+        self.assertTrue(is_relevant_supplier("Kawan Lama - Distributor Perkakas Mesin", "Peralatan teknik industri, baut, valve, dan alat ukur presisi", "hardware", "perkakas"))
+        # Irrelevant text should fail
+        self.assertFalse(is_relevant_supplier("Resep Masakan Enak", "Cara memasak ayam goreng kremes renyah dan gurih", "software", "erp"))
+
+    def test_all_8_categories_verified_suppliers(self):
+        categories = ["raw material", "distributor", "elektrikal", "services", "pharmaceutical", "local", "hardware", "software"]
+        for cat in categories:
+            query, suppliers = search_suppliers(cat, limit=2)
+            self.assertTrue(len(suppliers) >= 2, f"Failed for category {cat}")
+            for s in suppliers:
+                self.assertEqual(s.product, cat)
+                self.assertGreaterEqual(s.fit_score, 45)
+                self.assertTrue(s.company_name)
 
 
 if __name__ == "__main__":

@@ -215,12 +215,16 @@ def scrape_url():
         flash("URL tidak valid atau mengarah ke alamat jaringan lokal/privat yang tidak diizinkan.", "danger")
         return redirect(url_for("data_collection.index"))
 
-    source = DataSource(name=url, source_type="url", created_by=current_user.id)
-    db.session.add(source)
-    db.session.flush()
+    source = DataSource.query.filter_by(name=url, source_type="url").first()
+    if not source:
+        source = DataSource(name=url, source_type="url", created_by=current_user.id)
+        db.session.add(source)
+        db.session.flush()
 
-    raw = RawData(source_id=source.id, source_type="url", original_name=url,
-                   status="new", created_by=current_user.id)
+    raw = RawData.query.filter_by(source_id=source.id, source_type="url").first()
+    if not raw:
+        raw = RawData(source_id=source.id, source_type="url", original_name=url,
+                       status="new", created_by=current_user.id)
     try:
         resp = requests.get(url, timeout=15, headers={"User-Agent": "Mozilla/5.0"})
         resp.raise_for_status()

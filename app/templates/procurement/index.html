@@ -3,8 +3,8 @@
 {% block content %}
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
   <div>
-    <h3 class="mb-1"><i class="bi bi-box-seam text-primary me-2"></i>Procurement Intelligence</h3>
-    <p class="text-muted mb-0">Intelijen pengadaan bahan baku apparel Syamanah (Jersey, Kemeja, Kaos, Polo, Jaket) dari sumber terverifikasi & web discovery.</p>
+    <h3 class="mb-1"><i class="bi bi-box-seam text-primary me-2"></i>Procurement & Supplier Intelligence</h3>
+    <p class="text-muted mb-0">Intelijen pengadaan & sourcing B2B lintas kategori (Raw Material, Distributor, Elektrikal, Services, Pharmaceutical, Local, Hardware, Software) dari web discovery & AI.</p>
   </div>
   <div>
     <button class="btn btn-outline-primary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDirectUrl">
@@ -17,25 +17,25 @@
 <div class="collapse mb-3" id="collapseDirectUrl">
   <div class="card border-primary border-opacity-25 shadow-sm">
     <div class="card-body bg-light">
-      <h6 class="fw-bold text-primary mb-2"><i class="bi bi-link-45deg me-1"></i>Scrape & Analisis Website Supplier Tertentu</h6>
-      <p class="small text-muted mb-3">Masukkan link website toko atau pabrik kain (contoh: <code>https://pelitatex.com</code> atau <code>https://knitto.co.id</code>). Sistem akan otomatis membaca katalog, kontak WA/email, dan melakukan evaluasi AI.</p>
+      <h6 class="fw-bold text-primary mb-2"><i class="bi bi-link-45deg me-1"></i>Scrape & Analisis Website Vendor / Supplier Tertentu</h6>
+      <p class="small text-muted mb-3">Masukkan link website perusahaan atau vendor B2B (contoh: <code>https://kawanlama.com</code>, <code>https://sucaco.com</code>, atau <code>https://mekari.com</code>). Sistem akan otomatis membaca profil, katalog produk/layanan, kontak WA/email, dan melakukan evaluasi AI.</p>
       <form method="post" action="{{ url_for('procurement.add_direct') }}" class="row g-2 align-items-end">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="col-md-5">
-          <label class="form-label small fw-semibold">URL Website Supplier</label>
-          <input name="url" type="url" class="form-control form-control-sm" placeholder="https://supplierkain.com" required>
+          <label class="form-label small fw-semibold">URL Website Supplier / Vendor</label>
+          <input name="url" type="url" class="form-control form-control-sm" placeholder="https://perusahaan-vendor.com" required>
         </div>
         <div class="col-md-2">
-          <label class="form-label small fw-semibold">Produk Utama</label>
+          <label class="form-label small fw-semibold">Kategori Supplier</label>
           <select name="product" class="form-select form-select-sm" required>
-            {% for value, label in [("jersey", "Jersey"), ("kemeja", "Kemeja"), ("polo", "Polo"), ("kaos", "Kaos"), ("jaket", "Jaket")] %}
-            <option value="{{ value }}">{{ label }}</option>
+            {% for cat in category_list %}
+            <option value="{{ cat.key }}">{{ cat.label }}</option>
             {% endfor %}
           </select>
         </div>
         <div class="col-md-3">
-          <label class="form-label small fw-semibold">Spesifikasi Material</label>
-          <input name="material" class="form-control form-control-sm" placeholder="Contoh: taslan jn, cotton combed 24s">
+          <label class="form-label small fw-semibold">Spesifikasi Material / Produk / Jasa</label>
+          <input name="material" class="form-control form-control-sm" placeholder="Contoh: Kabel Listrik, ERP SaaS, Perkakas Teknik">
         </div>
         <div class="col-md-2 d-grid">
           <button class="btn btn-success btn-sm"><i class="bi bi-download me-1"></i>Scrape & Simpan</button>
@@ -51,7 +51,7 @@
     <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
       <div class="small fw-semibold text-primary d-flex align-items-center gap-1">
         <i class="bi bi-cpu-fill"></i>
-        <span>AI Smart Pipeline: Perencanaan Target AI &rarr; Search Web Nyata &rarr; Pre-flight Check &rarr; Deep Scraper Kontak WA &rarr; AI Scoring</span>
+        <span>AI Smart Pipeline: Perencanaan Target AI &rarr; Search Web Nyata &rarr; Pre-flight Check &rarr; Deep Scraper Kontak WA &rarr; AI Scoring B2B</span>
       </div>
       <span class="badge bg-primary-subtle text-primary border border-primary-subtle small">AI Discovery Active</span>
     </div>
@@ -59,20 +59,20 @@
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <input type="hidden" name="mode" value="ai_pipeline">
       <div class="col-md-3">
-        <label class="form-label small fw-semibold">Kategori Produk</label>
+        <label class="form-label small fw-semibold">Kategori Supplier</label>
         <select name="product" class="form-select" required>
-          {% for value, label in [("jersey", "Jersey"), ("kemeja", "Kemeja"), ("polo", "Polo"), ("kaos", "Kaos"), ("jaket", "Jaket")] %}
-          <option value="{{ value }}" {% if filters.product == value %}selected{% endif %}>{{ label }}</option>
+          {% for cat in category_list %}
+          <option value="{{ cat.key }}" {% if filters.product == cat.key %}selected{% endif %}>{{ cat.label }} ({{ cat.desc }})</option>
           {% endfor %}
         </select>
       </div>
       <div class="col-md-3">
-        <label class="form-label small fw-semibold">Material yang Dicari</label>
-        <input name="material" class="form-control" value="{{ filters.material }}" placeholder="Contoh: dry fit, oxford, fleece">
+        <label class="form-label small fw-semibold">Spesifikasi Material / Produk / Jasa</label>
+        <input name="material" class="form-control" value="{{ filters.material }}" placeholder="Contoh: kabel, baut, resin, ERP, alkes">
       </div>
       <div class="col-md-3">
         <label class="form-label small fw-semibold">Wilayah Supplier</label>
-        <input name="region" class="form-control" value="Indonesia" placeholder="Indonesia / Bandung / Surabaya">
+        <input name="region" class="form-control" value="Indonesia" placeholder="Indonesia / Jakarta / Surabaya / Bandung">
       </div>
       <div class="col-md-2">
         <label class="form-label small fw-semibold">Jumlah Supplier</label>
@@ -80,7 +80,7 @@
           <option value="10">10 Supplier</option>
           <option value="20" selected>20 Supplier (Rekomendasi)</option>
           <option value="30">30 Supplier (Banyak)</option>
-          <option value="50">50 Supplier (Maksimal)</option>
+          <option value="50">50 Supplier (Besar)</option>
         </select>
       </div>
       <div class="col-md-1 d-grid">
@@ -94,7 +94,7 @@
         </label>
         <div class="input-group input-group-sm">
           <span class="input-group-text bg-light text-muted"><i class="bi bi-chat-left-quote"></i></span>
-          <input name="custom_prompt" class="form-control" placeholder="Contoh: Cari supplier yang punya katalog online lengkap, melayani grosir rollan, dan ada kontak WhatsApp aktif">
+          <input name="custom_prompt" class="form-control" placeholder="Contoh: Cari supplier distributor resmi dengan legalitas PT/CV, ada sertifikasi SNI/ISO, dan kontak WhatsApp aktif">
         </div>
         <div class="form-text text-muted small mt-1">
           Tuliskan arahan bebas untuk AI: AI akan memakai prompt ini saat merumuskan query pencarian web, menyaring link relevan, dan mengevaluasi Fit Score supplier.
@@ -110,15 +110,22 @@
   </div>
 </div>
 
-<!-- Filter Bar -->
-<div class="d-flex justify-content-between align-items-center mb-2">
-  <div class="btn-group btn-group-sm" role="group">
-    <a href="{{ url_for('procurement.index') }}" class="btn {% if not filters.product %}btn-dark{% else %}btn-outline-secondary{% endif %}">Semua ({{ suppliers|length }})</a>
-    {% for p_val in ["jersey", "kemeja", "kaos", "polo", "jaket"] %}
-    <a href="{{ url_for('procurement.index', product=p_val) }}" class="btn {% if filters.product == p_val %}btn-primary{% else %}btn-outline-secondary{% endif %}">{{ p_val|title }}</a>
-    {% endfor %}
+<!-- Category Summary & Filter Cards (8 Kategori B2B) -->
+<div class="row g-2 mb-3">
+  <div class="col-lg-auto col-md-3 col-6" style="min-width: 130px; flex: 1;">
+    <a href="{{ url_for('procurement.index') }}" class="card text-decoration-none border shadow-sm p-2 text-center h-100 {% if not filters.product %}border-primary bg-primary-subtle text-primary{% else %}bg-white text-dark{% endif %}">
+      <div class="small text-muted fw-semibold">Semua Kategori</div>
+      <div class="fs-5 fw-bold">{{ total_suppliers }} <small class="fw-normal fs-6">Vendor</small></div>
+    </a>
   </div>
-  <span class="text-muted small">Total supplier tersimpan: {{ suppliers|length }}</span>
+  {% for cat in category_list %}
+  <div class="col-lg-auto col-md-3 col-6" style="min-width: 130px; flex: 1;">
+    <a href="{{ url_for('procurement.index', product=cat.key) }}" class="card text-decoration-none border shadow-sm p-2 text-center h-100 {% if filters.product == cat.key %}border-primary bg-primary-subtle text-primary{% else %}bg-white text-dark{% endif %}">
+      <div class="small text-muted fw-semibold text-truncate" title="{{ cat.desc }}"><i class="bi {{ cat.icon }} me-1"></i>{{ cat.label }}</div>
+      <div class="fs-5 fw-bold">{{ category_counts.get(cat.key, 0) }} <small class="fw-normal fs-6">Supplier</small></div>
+    </a>
+  </div>
+  {% endfor %}
 </div>
 
 <!-- Results Table Card -->

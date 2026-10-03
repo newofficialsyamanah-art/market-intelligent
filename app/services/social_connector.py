@@ -82,6 +82,15 @@ class SocialConnectorService:
 
     def search_public_web(self, query: str, limit: int = 10) -> List[Dict[str, str]]:
         """Mencari URL publik yang relevan via mesin pencari tanpa bypass/scraping privat."""
+        # Tier 1: Tavily AI Search (Plan 1 - Bebas Blokir ISP & Cepat)
+        try:
+            from app.discovery import _tavily_search
+            tavily_urls = _tavily_search(query, max_results=limit)
+            if tavily_urls:
+                return [{"url": u, "title": u, "snippet": u} for u in tavily_urls[:limit]]
+        except Exception:
+            pass
+
         verify_ssl = current_app.config.get("DUCKDUCKGO_VERIFY_SSL", True)
         results = []
 

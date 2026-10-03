@@ -285,6 +285,7 @@ def search_master_organizations(
     q: str = "",
     industry: str = "",
     province: str = "",
+    sport: str = "",
     priority_tier: str = "",
     min_score: Optional[int] = None,
     has_contact: bool = False,
@@ -316,6 +317,16 @@ def search_master_organizations(
                 Organization.address.ilike(like_expr),
                 Organization.phone.ilike(like_expr),
                 Organization.email.ilike(like_expr),
+            )
+        )
+
+    if sport:
+        sport_expr = f"%{sport}%"
+        query = query.filter(
+            or_(
+                Organization.sport.ilike(sport_expr),
+                Organization.organization_subtype.ilike(sport_expr),
+                Organization.name.ilike(sport_expr),
             )
         )
 

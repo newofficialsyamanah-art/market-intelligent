@@ -130,7 +130,7 @@ def _task_education_discovery() -> Dict[str, Any]:
         {"province": "Nusa Tenggara Barat", "city": "Mataram"},
     ]
     target = random.choice(regions)
-    res = DiscoveryPipelineService.discover_education_institutions(province=target["province"], city=target["city"], limit=8)
+    res = DiscoveryPipelineService.discover_education_institutions(province=target["province"], city=target["city"], limit=30)
     return {
         "detail": f"Discovery Pendidikan ({target['city']}, {target['province']}): {res['created']} entitas baru, {res['updated']} diperbarui",
         "processed": res["total_processed"],
@@ -150,7 +150,7 @@ def _task_community_discovery() -> Dict[str, Any]:
     categories = ["futsal", "running", "basketball", "cycling", "badminton", "volleyball", "student_org"]
     sel_city = random.choice(cities)
     sel_cat = random.choice(categories)
-    res = DiscoveryPipelineService.discover_communities(category=sel_cat, city=sel_city, limit=10)
+    res = DiscoveryPipelineService.discover_communities(category=sel_cat, city=sel_city, limit=30)
     return {
         "detail": f"Discovery berkala ({sel_cat} di {sel_city}): {res['created']} komunitas baru, {res['updated']} diperbarui",
         "processed": res["total_processed"],
@@ -183,7 +183,7 @@ def _task_social_discovery() -> Dict[str, Any]:
     res = DiscoveryPipelineService.discover_social_media(
         platform="instagram",
         query=query,
-        limit=10
+        limit=25
     )
     return {
         "detail": f"Social discovery ({query}): {res['created']} kandidat baru, {res['updated']} diperbarui",
@@ -199,7 +199,7 @@ def _task_social_enrichment() -> Dict[str, Any]:
     # Cari organisasi master yang belum memiliki media sosial
     orgs = Organization.query.filter(
         db.or_(Organization.social_json.is_(None), Organization.social_json == "", Organization.social_json == "{}")
-    ).order_by(Organization.opportunity_score.desc()).limit(10).all()
+    ).order_by(Organization.opportunity_score.desc()).limit(25).all()
 
     enriched_count = 0
     for org in orgs:
@@ -238,7 +238,7 @@ def _task_event_refresh() -> Dict[str, Any]:
         "Medan", "Palembang", "Pekanbaru", "Makassar", "Manado", "Denpasar", "Jayapura"
     ]
     target_city = random.choice(target_cities)
-    res = EventIntelligenceService.discover_events(query="expo pameran dan turnamen", city=target_city, limit=6)
+    res = EventIntelligenceService.discover_events(query="expo pameran dan turnamen", city=target_city, limit=20)
     return {
         "detail": f"Event refresh ({target_city}): {res['created']} event baru, {res['updated']} diperbarui dari {res['total_processed']} target",
         "processed": res["total_processed"],

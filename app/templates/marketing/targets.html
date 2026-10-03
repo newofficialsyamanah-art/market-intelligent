@@ -66,12 +66,17 @@
         <button type="submit" class="btn btn-primary w-100" title="Cari Akun"><i class="bi bi-filter"></i></button>
       </div>
 
-      <!-- Second Filter Row: Location, Employee Size, Event Relevance -->
+      <!-- Second Filter Row: Location, Sport, Employee Size, Event Relevance -->
       <div class="col-md-2">
         <input type="text" name="city" class="form-control" placeholder="Filter Kota..." value="{{ filters.city }}">
       </div>
       <div class="col-md-2">
-        <input type="text" name="product_fit" class="form-control" placeholder="Product Fit Apparel..." value="{{ filters.product_fit }}">
+        <select name="sport" class="form-select">
+          <option value="">Semua Cabang Olahraga</option>
+          {% for sp in all_sports %}
+          <option value="{{ sp }}" {% if filters.sport == sp %}selected{% endif %}>{{ sp }}</option>
+          {% endfor %}
+        </select>
       </div>
       <div class="col-md-2">
         <input type="text" name="employee_size" class="form-control" placeholder="Skala Karyawan..." value="{{ filters.employee_size }}">
@@ -162,9 +167,14 @@
           <tr>
             <td>
               <div class="fw-bold text-dark fs-6">{{ o.name }}</div>
-              {% if o.domain %}
-                <span class="text-muted small"><i class="bi bi-globe2 me-1"></i>{{ o.domain }}</span>
-              {% endif %}
+              <div class="d-flex flex-wrap gap-1 align-items-center mt-1">
+                {% if o.sport %}
+                  <span class="badge bg-warning-subtle text-dark border"><i class="bi bi-trophy me-1"></i>{{ o.sport }}</span>
+                {% endif %}
+                {% if o.domain %}
+                  <span class="text-muted small"><i class="bi bi-globe2 me-1"></i>{{ o.domain }}</span>
+                {% endif %}
+              </div>
             </td>
             <td>
               <span class="badge bg-light text-dark border">{{ o.industry or 'Umum' }}</span>

@@ -111,6 +111,7 @@ def explorer():
     q = request.args.get("q", "").strip()
     industry = request.args.get("industry", "").strip()
     province = request.args.get("province", "").strip()
+    sport = request.args.get("sport", "").strip()
     priority_tier = request.args.get("priority_tier", "").strip()
     min_score_raw = request.args.get("min_score", "").strip()
     has_contact = request.args.get("has_contact") == "1"
@@ -129,6 +130,7 @@ def explorer():
         q=q,
         industry=industry,
         province=province,
+        sport=sport,
         priority_tier=priority_tier,
         min_score=min_score,
         has_contact=has_contact,
@@ -152,6 +154,7 @@ def explorer():
         .limit(100)
         .all()
     ]
+    all_sports = ["Futsal", "Sepak Bola", "Basket", "Running", "Badminton", "Voli", "Sepeda", "Esports", "Tenis"]
     from app.utils import get_all_indonesia_provinces
     db_provinces = [
         r[0] for r in db.session.query(Organization.province)
@@ -161,16 +164,27 @@ def explorer():
     ]
     all_provinces = get_all_indonesia_provinces(db_provinces)
 
+    category_summary = {
+        "perusahaan": Organization.query.filter(Organization.organization_type.in_(["Perusahaan", "corporate", "company"])).count(),
+        "komunitas": Organization.query.filter(Organization.organization_type.in_(["community", "Komunitas Olahraga", "sports_club"])).count(),
+        "pendidikan": Organization.query.filter(Organization.organization_type.in_(["education", "school", "university"])).count(),
+        "mahasiswa": Organization.query.filter(Organization.organization_type.in_(["student_organization", "student_org"])).count(),
+        "tier_hot": Organization.query.filter(Organization.priority_tier == "A - HOT").count(),
+        "tier_warm": Organization.query.filter(Organization.priority_tier == "B - WARM").count(),
+    }
+
     return render_template(
         "market_analysis/explorer.html",
         items=items,
         total_count=total_count,
         total_pages=total_pages,
         current_page=page,
+        category_summary=category_summary,
         filters={
             "q": q,
             "industry": industry,
             "province": province,
+            "sport": sport,
             "priority_tier": priority_tier,
             "min_score": min_score_raw,
             "has_contact": "1" if has_contact else "",
@@ -183,6 +197,7 @@ def explorer():
             "review_status": review_status,
         },
         all_industries=all_industries,
+        all_sports=all_sports,
         all_provinces=all_provinces,
     )
 

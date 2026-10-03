@@ -1,7 +1,9 @@
 import base64
 import json
+import os
 import re
 import socket
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from urllib.parse import parse_qs, quote_plus, unquote, urljoin, urlparse
 
@@ -143,11 +145,108 @@ def _ddg_api_results(query, verify_ssl):
         return []
 
 
+def _tavily_search(query, max_results=20):
+    """Pencarian Tier 1 menggunakan Tavily AI Search (bebas blokir ISP, bersih & cepat)."""
+    api_key = None
+    try:
+        if current_app:
+            api_key = current_app.config.get("TAVILY_API_KEY")
+    except Exception:
+        pass
+    if not api_key:
+        api_key = os.getenv("TAVILY_API_KEY")
+    if not api_key:
+        return []
+
+    try:
+        payload = {
+            "api_key": api_key,
+            "query": query,
+            "search_depth": "basic",
+            "max_results": min(max_results, 20),
+            "include_raw_content": False,
+            "include_images": False,
+        }
+        res = requests.post("https://api.tavily.com/search", json=payload, timeout=8.0)
+        if res.status_code == 200:
+            data = res.json()
+            urls = []
+            for item in data.get("results", []):
+                u = item.get("url", "")
+                if u and u.startswith("http") and not any(bad in u.lower() for bad in CAPTIVE_DOMAINS):
+                    urls.append(u)
+            return list(dict.fromkeys(urls))
+    except Exception:
+        pass
+    return []
+
+
+def parallel_tavily_search_snippets(queries, max_per_query=20):
+    """Menjalankan beberapa query variasi secara simultan via Tavily AI Search.
+    Mengembalikan list of dict: [{'title': ..., 'url': ..., 'content': ...}]
+    """
+    api_key = None
+    try:
+        if current_app:
+            api_key = current_app.config.get("TAVILY_API_KEY")
+    except Exception:
+        pass
+    if not api_key:
+        api_key = os.getenv("TAVILY_API_KEY")
+    if not api_key or not queries:
+        return []
+
+    def _fetch_one(q):
+        try:
+            r = requests.post(
+                "https://api.tavily.com/search",
+                json={
+                    "api_key": api_key,
+                    "query": q,
+                    "search_depth": "basic",
+                    "max_results": min(max_per_query, 20),
+                    "include_raw_content": False,
+                    "include_images": False,
+                },
+                timeout=8.0,
+            )
+            if r.status_code == 200:
+                return r.json().get("results", [])
+        except Exception:
+            pass
+        return []
+
+    raw_results = []
+    with ThreadPoolExecutor(max_workers=min(len(queries), 8)) as executor:
+        futures = [executor.submit(_fetch_one, q) for q in queries]
+        for f in as_completed(futures):
+            raw_results.extend(f.result())
+
+    seen = set()
+    cleaned = []
+    for item in raw_results:
+        u = item.get("url", "").rstrip("/")
+        if not u or u in seen:
+            continue
+        host = urlparse(u).netloc.lower()
+        if any(bad in host or bad in u.lower() for bad in CAPTIVE_DOMAINS):
+            continue
+        seen.add(u)
+        cleaned.append(item)
+    return cleaned
+
+
 def _search(query):
-    provider = current_app.config.get("SEARCH_PROVIDER", "duckduckgo").lower()
+    # Tier 1: Coba Tavily AI Search terlebih dahulu jika API key tersedia
+    tavily_urls = _tavily_search(query, max_results=20)
+    if tavily_urls:
+        return tavily_urls[:15]
+
+    # Tier 2: Fallback ke Plan 2 (DuckDuckGo DoH + Bing Fallback)
+    provider = current_app.config.get("SEARCH_PROVIDER", "duckduckgo").lower() if current_app else "duckduckgo"
     if provider in {"duckduckgo", "ddg"}:
         results = []
-        verify_ssl = current_app.config.get("DUCKDUCKGO_VERIFY_SSL", True)
+        verify_ssl = current_app.config.get("DUCKDUCKGO_VERIFY_SSL", True) if current_app else True
 
         # 1. Coba DuckDuckGo POST dengan timeout ketat 3 detik
         try:
@@ -371,9 +470,20 @@ def _score(text, kind):
 def _upsert_organization(url, source, data=None, page_data=None):
     data = data or {}
     page_data = page_data or {}
+    org_name = _first(data, "name", "legalName")
     existing = Organization.query.filter_by(source_url=url).first()
-    organization = existing or Organization(source_url=url, name="Unnamed organization", organization_type=source.category or "organization")
-    organization.name = _first(data, "name", "legalName") or organization.name
+    if not existing and org_name:
+        from app.services.dedup_engine import normalize_company_name
+        norm = normalize_company_name(org_name)
+        filters = [db.func.lower(Organization.name) == org_name.strip().lower()]
+        if norm:
+            filters.append(Organization.normalized_name == norm)
+        existing = Organization.query.filter(db.or_(*filters)).first()
+
+    organization = existing or Organization(source_url=url, name=org_name or "Unnamed organization", organization_type=source.category or "organization")
+    organization.name = org_name or organization.name
+    if not organization.source_url:
+        organization.source_url = url
     organization.organization_type = source.category or organization.organization_type
     organization.address = _first(data, "address", "streetAddress") or organization.address
     organization.city = _first(data, "addressLocality") or organization.city
@@ -392,9 +502,15 @@ def _upsert_organization(url, source, data=None, page_data=None):
 def _upsert_event(url, source, data=None, page_data=None):
     data = data or {}
     page_data = page_data or {}
+    ev_name = _first(data, "name")
     existing = Event.query.filter_by(source_url=url).first()
-    event = existing or Event(source_url=url, name="Unnamed event")
-    event.name = _first(data, "name") or event.name
+    if not existing and ev_name:
+        existing = Event.query.filter(db.func.lower(Event.name) == ev_name.strip().lower()).first()
+
+    event = existing or Event(source_url=url, name=ev_name or "Unnamed event")
+    event.name = ev_name or event.name
+    if not event.source_url:
+        event.source_url = url
     event.event_type = source.category or event.event_type
     event.organizer = _first(data, "organizer") or event.organizer
     event.venue = _first(data, "location", "name") or event.venue

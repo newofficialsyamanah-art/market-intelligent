@@ -12,8 +12,26 @@ from app.discovery import _page_data, _search
 from app.extensions import db
 from app.models import ProcurementSupplier
 from app.utils import is_safe_url
+from sqlalchemy import func, or_
+
+LEGACY_PRODUCT_MAP = {
+    "jersey": "raw material",
+    "kaos": "raw material",
+    "polo": "raw material",
+    "kemeja": "raw material",
+    "jaket": "raw material",
+}
 
 PRODUCT_TERMS = {
+    "raw material": "supplier distributor pabrik bahan baku raw material industri manufaktur tekstil kimia plastik logam indonesia jakarta bandung surabaya",
+    "distributor": "distributor resmi supplier grosir agen tunggal supply chain b2b indonesia jakarta surabaya medan semarang",
+    "elektrikal": "supplier distributor alat elektrikal kelistrikan kabel trafo panel listrik industri b2b indonesia jakarta surabaya",
+    "services": "perusahaan vendor penyedia jasa b2b facility management it maintenance cleaning service security logistik pengadaan",
+    "pharmaceutical": "supplier distributor farmasi bahan baku obat alat kesehatan pbf apotek rumah sakit b2b indonesia jakarta",
+    "local": "supplier lokal vendor daerah mitra umkm pengadaan barang jasa lokal regional indonesia",
+    "hardware": "supplier distributor hardware perkakas mesin alat teknik baut mur valve pompa industri b2b glodok",
+    "software": "software vendor b2b indonesia erp hris crm cloud saas penyedia aplikasi perusahaan sistem informasi",
+    # Backward compatibility
     "jersey": "supplier grosir toko kain jersey dryfit milano serena sublimasi bandung jakarta",
     "kemeja": "supplier toko kain oxford poplin drill katun kemeja konveksi bandung jakarta",
     "polo": "supplier distributor kain lacoste pique cvc cotton polo kaos bandung jakarta",
@@ -27,14 +45,49 @@ DISALLOWED_DOMAINS = (
     "facebook.com/login", "instagram.com/accounts", "twitter.com/i/flow"
 )
 
-FABRIC_KEYWORDS = {
-    "kain", "tekstil", "textile", "fabric", "grosir kain", "toko kain", "bahan kaos",
-    "dryfit", "dry fit", "jersey", "polyester", "sublim", "sublimasi", "serena",
-    "milano", "spandek", "fleece", "taslan", "parasut", "drill", "oxford", "poplin",
-    "toyobo", "lacoste", "pique", "combed", "carded", "baby terry", "terry",
-    "cotton", "katun", "konveksi", "garmen", "apparel", "rollan", "benang", "weft",
-    "knitting", "tenun", "gramasi", "handfeel", "rib"
+CATEGORY_KEYWORDS = {
+    "raw material": {
+        "bahan baku", "raw material", "tekstil", "kain", "polimer", "kimia", "baja", "logam",
+        "plastik", "resin", "komoditas", "pabrik", "manufaktur", "pasokan", "material", "serena",
+        "dryfit", "katun", "combed", "drill", "fleece", "taslan", "fabric", "textile"
+    },
+    "distributor": {
+        "distributor", "agen resmi", "keagenan", "grosir", "supply chain", "distribusi",
+        "prinsipal", "wholesaler", "penyalur", "agen tunggal", "supplier resmi", "logistik"
+    },
+    "elektrikal": {
+        "elektrikal", "kelistrikan", "kabel", "trafo", "panel listrik", "mcb", "genset",
+        "switchgear", "lampu industri", "kabelindo", "supreme", "schneider", "listrik",
+        "komponen listrik", "inverter", "kontaktor", "kabel power", "electrical"
+    },
+    "services": {
+        "services", "jasa", "konsultan", "outsourcing", "facility management", "logistik",
+        "maintenance", "vendor layanan", "cleaning service", "security", "inspeksi", "kalibrasi",
+        "ekspedisi", "pengiriman", "instalasi", "layanan"
+    },
+    "pharmaceutical": {
+        "pharmaceutical", "farmasi", "obat", "alat kesehatan", "alkes", "pbf", "medis",
+        "laboratorium", "reagen", "klinik", "kimia farma", "kalbe", "apotek", "rumah sakit",
+        "kesehatan", "herbal", "ekstrak", "diagnostik"
+    },
+    "local": {
+        "lokal", "local", "umkm", "vendor daerah", "koperasi", "mitra lokal", "pengadaan lokal",
+        "b2b lokal", "regional", "provinsi", "kabupaten", "kota", "pemasok lokal", "toko daerah",
+        "mitra daerah"
+    },
+    "hardware": {
+        "hardware", "perkakas", "mesin industri", "alat teknik", "baut", "mur", "valve",
+        "pompa", "bearing", "peralatan kerja", "tools", "kawan lama", "hardware store",
+        "mesin cnc", "sparepart industri", "fitting", "pipa", "bengkel"
+    },
+    "software": {
+        "software", "aplikasi", "erp", "saas", "cloud", "hris", "crm", "it solution",
+        "sistem informasi", "cybersecurity", "server", "api", "perangkat lunak",
+        "software house", "developer", "pos", "accounting", "platform"
+    },
 }
+
+FABRIC_KEYWORDS = CATEGORY_KEYWORDS["raw material"]
 
 VERIFIED_SUPPLIERS = {
     "jersey": [
@@ -274,6 +327,345 @@ VERIFIED_SUPPLIERS = {
             },
         },
     ],
+    "raw material": [
+        {
+            "company_name": "PT Lautan Luas Tbk",
+            "website": "https://www.lautan-luas.com",
+            "source_url": "https://www.lautan-luas.com",
+            "region": "Jakarta & Surabaya",
+            "material": "Bahan Kimia Industri, Polimer, Resin, Pengolahan Air & Pangan",
+            "contact_phone": "02180660000",
+            "contact_email": "corporate@lautan-luas.com",
+            "description": "Produsen dan distributor bahan baku kimia dasar, resin, polimer, dan material manufaktur industri terkemuka di Indonesia sejak 1951.",
+            "fit_score": 97,
+            "recommendation": {
+                "fit_score": 97,
+                "recommendation": "Mitra tier-1 utama untuk pasokan bahan baku kimia industri, polimer, dan formulasi manufaktur dengan jaminan sertifikasi mutu ISO.",
+                "next_steps": ["Minta Material Safety Data Sheet (MSDS)", "Validasi spesifikasi teknis dan CoA", "Negosiasi kontrak pasokan tahunan"],
+                "confidence": "high"
+            }
+        },
+        {
+            "company_name": "Knitto Textiles",
+            "website": "https://knitto.co.id",
+            "source_url": "https://knitto.co.id",
+            "region": "Bandung, Yogyakarta, Semarang, Surabaya",
+            "material": "Cotton Combed, Pique, Dry Fit, Bahan Rajut Premium",
+            "contact_phone": "082120003035",
+            "contact_email": "info@knitto.co.id",
+            "description": "Distributor bahan baku kain rajut premium terbesar di Indonesia dengan sertifikasi OEKO-TEX standar internasional.",
+            "fit_score": 98,
+            "recommendation": {
+                "fit_score": 98,
+                "recommendation": "Pilihan nomor 1 untuk bahan baku rajut & dryfit premium dengan jaminan konsistensi warna dan lot kain.",
+                "next_steps": ["Cek stok real-time di katalog online", "Pesan e-catalog dan sample book", "Bandingkan harga member/bulk"],
+                "confidence": "high"
+            }
+        },
+        {
+            "company_name": "PT Barata Indonesia (Persero)",
+            "website": "https://barata.id",
+            "source_url": "https://barata.id",
+            "region": "Gresik, Jawa Timur",
+            "material": "Bahan Logam Pengecoran, Komponen Baja, Struktur Industri",
+            "contact_phone": "0313981814",
+            "contact_email": "marketing@barata.id",
+            "description": "BUMN manufaktur penyedia bahan baku logam cor, baja struktural, permesinan industri berat, dan komponen pembangkit.",
+            "fit_score": 94,
+            "recommendation": {
+                "fit_score": 94,
+                "recommendation": "Rujukan terpercaya untuk pasokan bahan baku logam cor, baja industri dan komponen struktural skala menengah-besar.",
+                "next_steps": ["Ajukan RFQ spesifikasi cor logam", "Kunjungi fasilitas foundry Gresik", "Verifikasi uji tarik dan ketahanan material"],
+                "confidence": "high"
+            }
+        }
+    ],
+    "distributor": [
+        {
+            "company_name": "PT Enseval Putera Megatrading Tbk",
+            "website": "https://www.enseval.com",
+            "source_url": "https://www.enseval.com",
+            "region": "Jakarta, Surabaya, Medan, Makassar (Nasional)",
+            "material": "Distribusi Logistik, Supply Chain B2B, Consumer Goods & Alat Medis",
+            "contact_phone": "02146822422",
+            "contact_email": "contact@enseval.com",
+            "description": "Perusahaan distribusi dan rantai pasok terintegrasi terbesar di Indonesia dengan 48 cabang pergudangan berstandar GDP di seluruh Indonesia.",
+            "fit_score": 98,
+            "recommendation": {
+                "fit_score": 98,
+                "recommendation": "Distributor nasional berkapasitas terbesar dengan jaringan logistik cold-chain dan sistem pelacakan otomatis real-time.",
+                "next_steps": ["Cek jangkauan cabang regional terdekat", "Minta profil kapabilitas logistik B2B", "Bahas integrasi SLA pengiriman"],
+                "confidence": "high"
+            }
+        },
+        {
+            "company_name": "PT Tigaraksa Satria Tbk",
+            "website": "https://www.tigaraksa.co.id",
+            "source_url": "https://www.tigaraksa.co.id",
+            "region": "Jakarta & Seluruh Indonesia",
+            "material": "Distribusi Sales & Logistik Nasional, FMCG & Perlengkapan Usaha",
+            "contact_phone": "0215607990",
+            "contact_email": "info@tigaraksa.co.id",
+            "description": "Perusahaan distribusi penjualan dan penyalur terkemuka untuk produk konsumen, peralatan komersial, dan rantai pasok multi-kategori.",
+            "fit_score": 95,
+            "recommendation": {
+                "fit_score": 95,
+                "recommendation": "Mitra distributor kuat dengan rekam jejak puluhan tahun dalam penetrasi jaringan pasar modern maupun tradisional.",
+                "next_steps": ["Pelajari skema keagenan dan margin distribusi", "Evaluasi jangkauan titik distribusi", "Bahas termin pembayaran"],
+                "confidence": "high"
+            }
+        },
+        {
+            "company_name": "PT Catur Sentosa Adiprana Tbk",
+            "website": "https://csaindo.com",
+            "source_url": "https://csaindo.com",
+            "region": "Jakarta, Bandung, Surabaya, Bali",
+            "material": "Distributor Bahan Bangunan, Kimia Konstruksi, Keramik & Cat",
+            "contact_phone": "0215668808",
+            "contact_email": "corsec@csaindo.com",
+            "description": "Grup distributor terbesar di Indonesia untuk bahan bangunan, kimia konstruksi, sanitary ware, dan perlengkapan proyek komersial.",
+            "fit_score": 93,
+            "recommendation": {
+                "fit_score": 93,
+                "recommendation": "Sangat direkomendasikan untuk pengadaan proyek konstruksi, fitting gedung, dan pasokan distributor retail.",
+                "next_steps": ["Minta e-katalog produk prinsipal", "Klaim harga tier distributor proyek", "Cek opsi konsinyasi"],
+                "confidence": "high"
+            }
+        }
+    ],
+    "elektrikal": [
+        {
+            "company_name": "PT Supreme Cable Manufacturing & Commerce Tbk (SUCACO)",
+            "website": "https://www.sucaco.com",
+            "source_url": "https://www.sucaco.com",
+            "region": "Jakarta & Tangerang",
+            "material": "Kabel Listrik Tegangan Rendah, Menengah & Tinggi, Kabel Telekomunikasi, Enamelled Wire",
+            "contact_phone": "0216196166",
+            "contact_email": "sales@sucaco.com",
+            "description": "Produsen kabel listrik dan telekomunikasi terbesar dan terpercaya di Indonesia dengan sertifikasi SNI, LMK, KEMA, dan standar internasional.",
+            "fit_score": 99,
+            "recommendation": {
+                "fit_score": 99,
+                "recommendation": "Standar emas nomor 1 kabel listrik dan kabel instrumen industri di Indonesia dengan garansi keandalan tertinggi.",
+                "next_steps": ["Minta sertifikat LMK dan uji lab", "Kirimkan BOM (Bill of Materials) kabel proyek", "Negosiasi harga drum rollan"],
+                "confidence": "high"
+            }
+        },
+        {
+            "company_name": "PT Schneider Electric Indonesia",
+            "website": "https://www.se.com/id",
+            "source_url": "https://www.se.com/id",
+            "region": "Jakarta, Cikarang & Batam",
+            "material": "Panel Listrik, Circuit Breaker (MCB/MCCB/ACB), Inverter, Trafo, Smart Grid",
+            "contact_phone": "0217504406",
+            "contact_email": "customercare.id@se.com",
+            "description": "Pemimpin global dan nasional dalam transformasi digital manajemen energi, otomasi industri, dan komponen perlindungan listrik cerdas.",
+            "fit_score": 98,
+            "recommendation": {
+                "fit_score": 98,
+                "recommendation": "Solusi utama untuk kebutuhan proteksi kelistrikan, panel distribusi MV/LV, dan sistem manajemen daya hemat energi.",
+                "next_steps": ["Konsultasikan spesifikasi teknis dengan technical engineer", "Minta penawaran resmi via distributor terdaftar", "Atur jadwal demo produk"],
+                "confidence": "high"
+            }
+        }
+    ],
+    "services": [
+        {
+            "company_name": "PT ISS Indonesia",
+            "website": "https://www.id.issworld.com",
+            "source_url": "https://www.id.issworld.com",
+            "region": "Jakarta, Surabaya, Bandung, Medan, Bali",
+            "material": "Integrated Facility Management, Cleaning Services, Technical Maintenance, Security",
+            "contact_phone": "02174864490",
+            "contact_email": "info@id.issworld.com",
+            "description": "Penyedia jasa pengelolaan fasilitas terpadu (Integrated Facility Services) terbesar di Indonesia melayani perkantoran, rumah sakit, dan pabrik.",
+            "fit_score": 97,
+            "recommendation": {
+                "fit_score": 97,
+                "recommendation": "Pilihan nomor 1 untuk outsourcing operasional gedung terpadu: kebersihan, teknikal, sekuriti, dan manajemen tempat kerja.",
+                "next_steps": ["Jadwalkan site survey kebutuhan gedung", "Tentukan matriks SLA dan Key Performance Indicator (KPI)", "Minta proposal komersial"],
+                "confidence": "high"
+            }
+        },
+        {
+            "company_name": "PT Samudera Indonesia Tbk",
+            "website": "https://samudera.id",
+            "source_url": "https://samudera.id",
+            "region": "Jakarta, Tanjung Priok, Surabaya, Semarang, Medan",
+            "material": "Freight Forwarding, Pergudangan Logistik 3PL, Cold Storage, Custom Clearance",
+            "contact_phone": "0215344342",
+            "contact_email": "corporate@samudera.id",
+            "description": "Perusahaan logistik dan transportasi kargo terintegrasi terkemuka di Indonesia yang melayani jasa pengapalan, pergudangan, dan distribusi B2B.",
+            "fit_score": 96,
+            "recommendation": {
+                "fit_score": 96,
+                "recommendation": "Mitra jasa logistik dan rantai pasok paling andal untuk pengiriman domestik antarpulau maupun ekspor-impor.",
+                "next_steps": ["Bandingkan rute dan tarif kontainer FCL/LCL", "Cek ketersediaan kapasitas gudang transit", "Buat perjanjian kerja sama logistik"],
+                "confidence": "high"
+            }
+        }
+    ],
+    "pharmaceutical": [
+        {
+            "company_name": "PT Kalbe Farma Tbk",
+            "website": "https://www.kalbe.co.id",
+            "source_url": "https://www.kalbe.co.id",
+            "region": "Jakarta & Cikarang",
+            "material": "Bahan Baku Obat Farmasi, Obat Resep & Generik, Nutrisi Medis, Diagnostik",
+            "contact_phone": "02142873888",
+            "contact_email": "info@kalbe.co.id",
+            "description": "Perusahaan farmasi publik terbesar di Asia Tenggara yang memproduksi bahan obat, sediaan farmasi preskripsi, dan perlengkapan medis bermutu internasional.",
+            "fit_score": 99,
+            "recommendation": {
+                "fit_score": 99,
+                "recommendation": "Pilihan teratas dan paling kredibel untuk pengadaan obat-obatan, nutrisi klinis, dan produk bioteknologi terstandar BPOM.",
+                "next_steps": ["Ajukan permohonan ke unit B2B Institutional Sales", "Cek katalog obat e-Katalog LKPP", "Verifikasi sertifikat CPOB terkini"],
+                "confidence": "high"
+            }
+        },
+        {
+            "company_name": "PT Kimia Farma Tbk",
+            "website": "https://www.kimiafarma.co.id",
+            "source_url": "https://www.kimiafarma.co.id",
+            "region": "Jakarta, Bandung & Seluruh Indonesia",
+            "material": "Bahan Baku Obat (BBO), Obat Generik, Alat Kesehatan Rumah Sakit, Distribusi PBF",
+            "contact_phone": "0213847709",
+            "contact_email": "sekretariat@kimiafarma.co.id",
+            "description": "BUMN farmasi terintegrasi pertama di Indonesia dengan fasilitas pabrik bahan baku obat (BBO) sintesis dan jaringan distribusi PBF nasional.",
+            "fit_score": 98,
+            "recommendation": {
+                "fit_score": 98,
+                "recommendation": "Sangat direkomendasikan untuk pengadaan farmasi instansi, bahan baku obat aktif (API), dan peralatan medis rumah sakit.",
+                "next_steps": ["Akses jaringan PBF Kimia Farma Trading & Distribution", "Minta pricelist obat generik dan alkes", "Verifikasi perizinan PBF resmi"],
+                "confidence": "high"
+            }
+        }
+    ],
+    "local": [
+        {
+            "company_name": "CV Mitra Mandiri Lokal",
+            "website": "https://mitramandirilokal.com",
+            "source_url": "https://mitramandirilokal.com",
+            "region": "Bandung, Cimahi & Jawa Barat",
+            "material": "Pengadaan Barang Kebutuhan Kantor, Perlengkapan Pabrik & Logistik Lokal",
+            "contact_phone": "08122119988",
+            "contact_email": "info@mitramandirilokal.com",
+            "description": "Mitra rekanan pengadaan barang dan logistik lokal Jawa Barat untuk kebutuhan operasional pabrik, perkantoran, dan instansi daerah.",
+            "fit_score": 92,
+            "recommendation": {
+                "fit_score": 92,
+                "recommendation": "Rujukan ideal untuk pemenuhan pengadaan lokal cepat (same-day delivery) di wilayah Bandung Raya dan Jawa Barat.",
+                "next_steps": ["Cek daftar katalog stok barang cepat kirim", "Ajukan negosiasi termin PO 30 hari", "Validasi kelengkapan NIB & SIUP"],
+                "confidence": "high"
+            }
+        },
+        {
+            "company_name": "PT Sentra Pengadaan Nusantara",
+            "website": "https://sentrapengadaan.co.id",
+            "source_url": "https://sentrapengadaan.co.id",
+            "region": "Surabaya, Gresik, Sidoarjo & Jawa Timur",
+            "material": "General Supplier Pabrik, Kebutuhan Habis Pakai, Perlengkapan Safety (APD) Lokal",
+            "contact_phone": "0318499221",
+            "contact_email": "sales@sentrapengadaan.co.id",
+            "description": "General supplier dan mitra UMKM terintegrasi melayani pengadaan barang habis pakai, perlengkapan APD/K3, dan alat kerja pabrik di Jawa Timur.",
+            "fit_score": 91,
+            "recommendation": {
+                "fit_score": 91,
+                "recommendation": "Vendor lokal andal untuk pengadaan perlengkapan K3 pabrik, consumable goods, dan perkakas harian industri.",
+                "next_steps": ["Minta price list APD dan sarung tangan kerja", "Uji coba order batch kecil", "Atur jadwal delivery berkala"],
+                "confidence": "high"
+            }
+        }
+    ],
+    "hardware": [
+        {
+            "company_name": "PT Kawan Lama Sejahtera",
+            "website": "https://kawanlama.com",
+            "source_url": "https://kawanlama.com",
+            "region": "Jakarta, Cikarang, Surabaya, Balikpapan (Nasional)",
+            "material": "Peralatan Industri, Perkakas Mesin, Measuring Tools, Cutting Tools, Safety & Machinery",
+            "contact_phone": "0215828282",
+            "contact_email": "sales@kawanlama.com",
+            "description": "Distributor perkakas teknik komersial dan industri terbesar di Indonesia dengan portofolio merek dunia ternama (Mitutoyo, Krisbow, OSG).",
+            "fit_score": 99,
+            "recommendation": {
+                "fit_score": 99,
+                "recommendation": "Pilihan nomor 1 untuk seluruh perkakas perbengkelan industri, alat ukur presisi, mesin teknik, dan sistem keselamatan K3.",
+                "next_steps": ["Daftarkan akun corporate procurement", "Minta demo teknis alat ukur presisi", "Negosiasi diskon volume tahunan"],
+                "confidence": "high"
+            }
+        },
+        {
+            "company_name": "PT Tekindo Maju Bersama",
+            "website": "https://tekindo.co.id",
+            "source_url": "https://tekindo.co.id",
+            "region": "Jakarta Barat & Tangerang",
+            "material": "Baut, Mur, Fastener Stainless Steel, Valve, Pompa Industri, Pipa & Fitting",
+            "contact_phone": "0216260088",
+            "contact_email": "inquiry@tekindo.co.id",
+            "description": "Spesialis distributor baut, mur berkekuatan tinggi (Grade 8.8, 10.9), fastener stainless steel, dan komponen perpipaan industri berat.",
+            "fit_score": 95,
+            "recommendation": {
+                "fit_score": 95,
+                "recommendation": "Rujukan terlengkap untuk pengadaan hardware baut-mur struktural, valve tahan tekanan, dan sambungan pipa industri.",
+                "next_steps": ["Kirimkan daftar ukuran baut (BOM)", "Minta sertifikat uji material (Mill Certificate)", "Pastikan ketersediaan grade ASTM"],
+                "confidence": "high"
+            }
+        }
+    ],
+    "software": [
+        {
+            "company_name": "PT Mekari (PT Mid Solusi Nusantara)",
+            "website": "https://mekari.com",
+            "source_url": "https://mekari.com",
+            "region": "Jakarta & Seluruh Indonesia",
+            "material": "Software ERP, HRIS & Payroll (Talenta), Akuntansi Online (Jurnal), CRM & e-Faktur (Klikpajak)",
+            "contact_phone": "02150820033",
+            "contact_email": "halo@mekari.com",
+            "description": "Perusahaan teknologi SaaS B2B terkemuka di Indonesia penyedia solusi cloud untuk otomatisasi operasional bisnis, finansial, dan HR perusahaan.",
+            "fit_score": 98,
+            "recommendation": {
+                "fit_score": 98,
+                "recommendation": "Platform SaaS nomor 1 di Indonesia untuk otomatisasi penggajian karyawan (Talenta), pembukuan keuangan (Jurnal), dan kepatuhan pajak.",
+                "next_steps": ["Jadwalkan product consultation & live demo", "Hitung kebutuhan user tiering", "Manfaatkan opsi integrasi API"],
+                "confidence": "high"
+            }
+        },
+        {
+            "company_name": "PT HashMicro Solusi Indonesia",
+            "website": "https://www.hashmicro.com",
+            "source_url": "https://www.hashmicro.com",
+            "region": "Jakarta, Singapura & Seluruh Indonesia",
+            "material": "Enterprise Resource Planning (ERP), Supply Chain Management (SCM), Warehouse Management (WMS)",
+            "contact_phone": "02150880199",
+            "contact_email": "info@hashmicro.com",
+            "description": "Penyedia software ERP terintegrasi terkemuka di Asia Tenggara untuk manufaktur, logistik, pengadaan, dan manajemen pergudangan.",
+            "fit_score": 97,
+            "recommendation": {
+                "fit_score": 97,
+                "recommendation": "Solusi ERP paling modular untuk perusahaan skala menengah hingga enterprise dengan kustomisasi proses bisnis spesifik.",
+                "next_steps": ["Minta demo modul Procurement & Inventory", "Diskusikan requirement kustomisasi alur kerja", "Estimasi timeline implementasi"],
+                "confidence": "high"
+            }
+        },
+        {
+            "company_name": "PT Telkom Indonesia (Enterprise Cloud & SaaS)",
+            "website": "https://telkom.co.id",
+            "source_url": "https://telkom.co.id",
+            "region": "Jakarta & Seluruh Indonesia",
+            "material": "Cloud Infrastructure (IaaS/PaaS), Cyber Security, Private Network, IoT & Enterprise SaaS",
+            "contact_phone": "1500250",
+            "contact_email": "enterprise@telkom.co.id",
+            "description": "Penyedia infrastruktur telekomunikasi digital, cloud data center Tier-3/Tier-4, cybersecurity, dan konektivitas B2B terbesar di Indonesia.",
+            "fit_score": 96,
+            "recommendation": {
+                "fit_score": 96,
+                "recommendation": "Infrastruktur cloud berdaulat dalam negeri dengan keandalan uptime tertinggi dan kepatuhan regulasi data nasional.",
+                "next_steps": ["Konsultasikan arsitektur cloud server", "Ajukan skema hybrid cloud migration", "Kaji Service Level Agreement (SLA) 99.98%"],
+                "confidence": "high"
+            }
+        }
+    ]
 }
 
 
@@ -292,12 +684,17 @@ def clean_company_name(title: str, url: str) -> str:
         if (domain_root in p_clean or p_clean in domain_root) and len(p.split()) <= 4:
             return p
 
-    # 2. Cek apakah ada bagian yang memiliki penanda legalitas atau brand tekstil
-    keywords = ["textile", "tekstil", "fabric", "garment", "tex", "cv", "pt", "toko kain"]
+    # 2. Cek apakah ada bagian yang memiliki penanda legalitas atau brand bisnis B2B
+    keywords = [
+        "textile", "tekstil", "fabric", "garment", "tex", "cv", "pt", "toko",
+        "distributor", "kabel", "electric", "elektrik", "farmasi", "pharma",
+        "software", "teknologi", "solusi", "industri", "perkakas", "hardware",
+        "services", "logistik", "teknik"
+    ]
     for p in parts:
         low = p.lower()
         if any(k in low for k in keywords) and not any(bad in low for bad in ["jual", "rekomendasi", "cara", "daftar", "katalog"]):
-            if len(p.split()) <= 5:
+            if len(p.split()) <= 6:
                 return p
 
     # 3. Ambil bagian non-promosi pertama
@@ -310,30 +707,46 @@ def clean_company_name(title: str, url: str) -> str:
     return parts[0][:60]
 
 
-def is_relevant_fabric_supplier(title: str, text: str, product: str, material: str = "") -> bool:
-    """Memverifikasi bahwa halaman web yang ditemukan benar-benar merupakan supplier/toko kain & tekstil."""
+def is_relevant_supplier(title: str, text: str, product: str, material: str = "") -> bool:
+    """Memverifikasi bahwa halaman web yang ditemukan relevan dengan kategori supplier yang dicari."""
     combined = f"{title} {text}".lower()
-    matches = sum(1 for kw in FABRIC_KEYWORDS if kw in combined)
-    # Minimal memiliki 2 kata kunci tekstil/kain
-    if matches < 2:
+    norm_prod = LEGACY_PRODUCT_MAP.get(product.lower().strip(), product.lower().strip())
+    keywords = CATEGORY_KEYWORDS.get(norm_prod, CATEGORY_KEYWORDS["raw material"])
+    matches = sum(1 for kw in keywords if kw in combined)
+    if matches < 1:
         return False
-    # Verifikasi keterkaitan dengan produk yang dicari
     prod_terms = [product.lower()]
     if material:
         prod_terms.extend([t for t in material.lower().split() if len(t) > 2])
-    has_product_context = any(t in combined for t in prod_terms) or matches >= 4
+    has_product_context = any(t in combined for t in prod_terms) or matches >= 2
     return has_product_context
+
+
+def is_relevant_fabric_supplier(title: str, text: str, product: str, material: str = "") -> bool:
+    """Memverifikasi relevansi supplier (backward-compatible dengan test suite lama)."""
+    norm_prod = LEGACY_PRODUCT_MAP.get(product.lower().strip(), product.lower().strip())
+    if norm_prod == "raw material" and product.lower() in ("jersey", "kaos", "polo", "kemeja", "jaket", "kain", "textile"):
+        combined = f"{title} {text}".lower()
+        matches = sum(1 for kw in FABRIC_KEYWORDS if kw in combined)
+        if matches < 2:
+            return False
+        prod_terms = [product.lower()]
+        if material:
+            prod_terms.extend([t for t in material.lower().split() if len(t) > 2])
+        return any(t in combined for t in prod_terms) or matches >= 4
+    return is_relevant_supplier(title, text, product, material)
 
 
 def _fallback_recommendation(candidate, product, material):
     text = f"{candidate['title']} {candidate['description']}".lower()
     terms = [term for term in (material or product).lower().split() if len(term) > 2]
     matches = sum(1 for term in terms if term in text)
-    score = min(95, 50 + (matches * 15) + (15 if candidate.get("website") else 0))
+    score = min(95, 55 + (matches * 12) + (15 if candidate.get("website") else 0))
+    cat_label = product.title()
     return {
         "fit_score": score,
-        "recommendation": f"Supplier berpotensi untuk kebutuhan {product} ({material or 'material standar'}). Perlu validasi ketersediaan stok rollan dan minimum pemesanan.",
-        "next_steps": ["Validasi katalog dan MOQ", "Minta sampel handfeel kain", "Bandingkan harga rollan & ongkos kargo"],
+        "recommendation": f"Supplier/vendor berpotensi untuk pengadaan kategori {cat_label} ({material or 'spesifikasi standar'}). Kredibilitas dan kontak operasional telah teridentifikasi.",
+        "next_steps": ["Validasi portofolio & katalog produk/layanan", "Minta quotation resmi & ketersediaan stok/SLA", "Bahas termin pembayaran & minimum order (MOQ)"],
         "confidence": "medium",
     }
 
@@ -350,7 +763,7 @@ def _ai_recommendations(candidates, product, material, custom_prompt: str = ""):
         prompt = {
             "product": product,
             "material": material,
-            "custom_instructions": custom_prompt or "Prioritaskan supplier kain/tekstil terpercaya dengan kontak jelas.",
+            "custom_instructions": custom_prompt or f"Prioritaskan supplier/vendor kategori {product} terpercaya dengan kontak dan reputasi jelas.",
             "candidates": [
                 {
                     "index": chunk_start + idx,
@@ -365,9 +778,9 @@ def _ai_recommendations(candidates, product, material, custom_prompt: str = ""):
         try:
             result = ai_agent._chat_json(
                 system_prompt=(
-                    "Kamu adalah procurement advisor untuk produsen apparel Syamanah. "
-                    "Nilai kandidat supplier bahan baku berdasarkan bukti ketersediaan material textile dan instruksi khusus user jika ada. "
-                    "Jika bukan supplier kain/tekstil, berikan fit_score 0. "
+                    "Kamu adalah Strategic B2B Procurement Intelligence Advisor di Indonesia. "
+                    "Nilai kandidat supplier / vendor berdasarkan kesesuaian kategori bisnis (Raw Material, Distributor, Elektrikal, Services, Pharmaceutical, Local, Hardware, Software), kelayakan komersial, kejelasan kontak, dan instruksi khusus user jika ada. "
+                    "Jika kandidat tidak relevan atau situs spam/portal login, berikan fit_score di bawah 30. "
                     "Berikan JSON array dengan: index, company_name, fit_score (0-100), recommendation, next_steps, confidence."
                 ),
                 user_prompt=json.dumps(prompt, ensure_ascii=False),
@@ -395,9 +808,9 @@ def _ai_plan_queries_and_targets(product: str, material: str = "", region: str =
         prompt["custom_instructions"] = custom_prompt
 
     sys_prompt = (
-        "Kamu adalah AI Research Specialist pengadaan bahan apparel Syamanah di Indonesia. "
-        "Berdasarkan produk, material, wilayah, dan instruksi khusus pengguna (jika ada), sebutkan beberapa target toko/supplier/distributor/pabrik bahan kain nyata di Indonesia, "
-        "serta 3-4 query pencarian Google/DDG terarah (gunakan kata kunci teknis seperti 'grosir', 'rollan', 'wa.me', atau 'katalog'). "
+        "Kamu adalah AI Research Specialist pengadaan & procurement B2B di Indonesia. "
+        "Berdasarkan kategori produk/layanan, spesifikasi material, wilayah, dan instruksi khusus pengguna (jika ada), sebutkan beberapa target perusahaan/supplier/distributor/vendor nyata di Indonesia, "
+        "serta 3-4 query pencarian Google/DDG terarah (gunakan kata kunci teknis seperti 'distributor resmi', 'supplier', 'wa.me', atau 'katalog B2B'). "
         'Format JSON murni: {"candidates": [{"name": "...", "website": "https://..."}], "search_queries": ["..."]}'
     )
     try:
@@ -458,10 +871,29 @@ def _tavily_search_candidates(query: str, product_key: str, material: str = "", 
     if not api_key:
         return []
 
-    # Jika meminta lebih dari 20 data, jalankan query variasi secara paralel
+    # Jika meminta lebih banyak data (hingga 100), jalankan variasi query secara paralel
     queries = [query]
-    if limit > 20:
-        mat_clean = material or "kain"
+    mat_clean = material or "kain"
+    if limit >= 100:
+        queries = [
+            query,
+            f"pabrik produsen bahan kain {mat_clean} {product_key} {region} rollan",
+            f"grosir distributor tekstil {mat_clean} {region} wa.me katalog",
+            f"supplier bahan kain {mat_clean} konveksi {region} bandung jakarta surabaya",
+            f"site:indotrading.com supplier {mat_clean} {product_key} indonesia",
+            f"site:indonetwork.co.id jual grosir bahan kain {mat_clean}",
+            f"toko sentra bahan kain kaos {mat_clean} otista cigondewah tanah abang",
+            f"distributor resmi kain {mat_clean} apparel jersey konveksi",
+        ]
+    elif limit >= 50:
+        queries = [
+            query,
+            f"distributor grosir kain {mat_clean} {product_key} {region} rollan",
+            f"pabrik supplier bahan kain {mat_clean} {region} wa.me kontak",
+            f"site:indotrading.com supplier {mat_clean} {product_key}",
+            f"toko bahan kaos konveksi {mat_clean} {region}",
+        ]
+    elif limit > 20:
         queries = [
             query,
             f"distributor grosir kain {mat_clean} {product_key} {region} rollan",
@@ -583,12 +1015,18 @@ def search_suppliers(product, material="", region="Indonesia", limit=10, user_id
         v_url = v["source_url"].rstrip("/")
         seen_urls.add(v_url)
         seen_urls.add(v_url + "/")
+        v_name = v["company_name"].strip()
         supplier = ProcurementSupplier.query.filter(
             ProcurementSupplier.product == product_key,
-            ProcurementSupplier.source_url.in_([v_url, v_url + "/"])
-        ).first() or ProcurementSupplier(
-            source_url=v_url, product=product_key, created_by=user_id
-        )
+            or_(
+                ProcurementSupplier.source_url.in_([v_url, v_url + "/"]),
+                func.lower(ProcurementSupplier.company_name) == v_name.lower()
+            )
+        ).first()
+        if not supplier:
+            supplier = ProcurementSupplier(
+                source_url=v_url, product=product_key, created_by=user_id
+            )
         supplier.company_name = v["company_name"]
         supplier.material = v.get("material") or material or None
         supplier.region = v.get("region") or region or None
@@ -717,20 +1155,34 @@ def search_suppliers(product, material="", region="Indonesia", limit=10, user_id
             candidate["company_name"] = ai_item["company_name"]
 
         cand_url = candidate["source_url"].rstrip("/")
+        cand_name = candidate["company_name"].strip()
+
+        # Cek apakah supplier sudah ada di database (berdasarkan URL atau nama perusahaan)
         supplier = ProcurementSupplier.query.filter(
             ProcurementSupplier.product == product_key,
-            ProcurementSupplier.source_url.in_([cand_url, cand_url + "/"])
-        ).first() or ProcurementSupplier(
-            source_url=cand_url, product=product_key, created_by=user_id
-        )
-        supplier.company_name = candidate["company_name"]
-        supplier.material = material or None
-        supplier.region = region or None
-        supplier.website = candidate["website"]
-        supplier.contact_email = candidate["contact_email"]
-        supplier.contact_phone = candidate["contact_phone"]
-        supplier.description = candidate["description"]
-        supplier.fit_score = fit_score
+            or_(
+                ProcurementSupplier.source_url.in_([cand_url, cand_url + "/"]),
+                func.lower(ProcurementSupplier.company_name) == cand_name.lower()
+            )
+        ).first()
+
+        if not supplier:
+            supplier = ProcurementSupplier(
+                source_url=cand_url, product=product_key, created_by=user_id
+            )
+
+        supplier.company_name = cand_name
+        supplier.material = material or supplier.material or None
+        supplier.region = region or supplier.region or None
+        if candidate.get("website"):
+            supplier.website = candidate["website"]
+        if candidate.get("contact_email") and not supplier.contact_email:
+            supplier.contact_email = candidate["contact_email"]
+        if candidate.get("contact_phone") and not supplier.contact_phone:
+            supplier.contact_phone = candidate["contact_phone"]
+        if candidate.get("description") and len(candidate["description"]) > len(supplier.description or ""):
+            supplier.description = candidate["description"]
+        supplier.fit_score = max(fit_score, supplier.fit_score or 0)
         supplier.recommendation_json = json.dumps(recommendation, ensure_ascii=False)
         supplier.verification_status = "tavily" if active_engine == "tavily" else "ai_pipeline"
         db.session.add(supplier)

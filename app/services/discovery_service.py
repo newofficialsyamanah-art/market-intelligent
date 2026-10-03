@@ -130,20 +130,44 @@ class DiscoveryPipelineService:
                 engine.index_organization(master_org)
             decision_note = f"Auto-merged with existing Organization #{master_org.id}"
         else:
-            # Buat entitas Master Organization baru
-            master_org = create_organization_from_source(candidate_data)
-            master_org.sport = candidate_data.get("sport")
-            master_org.organization_subtype = candidate_data.get("organization_subtype")
-            db.session.add(master_org)
-            db.session.flush()
-            engine.index_organization(master_org)
-            is_new = True
-            decision_note = f"Created new Master Organization #{master_org.id}"
+            # Fallback validasi database langsung: cek normalized_name atau lower(name) untuk mencegah duplikasi
+            from app.services.dedup_engine import normalize_company_name
+            from sqlalchemy import func
+            norm_name = normalize_company_name(raw_name)
+            filters = [func.lower(Organization.name) == raw_name.lower()]
+            if norm_name:
+                filters.append(Organization.normalized_name == norm_name)
+            db_existing = Organization.query.filter(db.or_(*filters)).first()
 
-        # 2. Sinkronisasikan ke Transitional Prospect Layer
-        existing_p = Prospect.query.filter_by(organization_id=master_org.id).first()
-        if not existing_p:
-            existing_p = Prospect.query.filter_by(company_name=master_org.name).first()
+            if db_existing:
+                master_org = db_existing
+                is_mod, _ = safe_merge_organization(master_org, candidate_data, match_res)
+                if candidate_data.get("sport") and not master_org.sport:
+                    master_org.sport = candidate_data["sport"]
+                if candidate_data.get("organization_subtype") and not master_org.organization_subtype:
+                    master_org.organization_subtype = candidate_data["organization_subtype"]
+                if is_mod:
+                    engine.index_organization(master_org)
+                decision_note = f"Auto-merged with existing Organization #{master_org.id} (DB validation fallback)"
+            else:
+                # Buat entitas Master Organization baru
+                master_org = create_organization_from_source(candidate_data)
+                master_org.sport = candidate_data.get("sport")
+                master_org.organization_subtype = candidate_data.get("organization_subtype")
+                db.session.add(master_org)
+                db.session.flush()
+                engine.index_organization(master_org)
+                is_new = True
+                decision_note = f"Created new Master Organization #{master_org.id}"
+
+        # 2. Sinkronisasikan ke Transitional Prospect Layer (Cek global agar tidak menduplikasi)
+        from sqlalchemy import func
+        existing_p = Prospect.query.filter(
+            db.or_(
+                Prospect.organization_id == master_org.id,
+                func.lower(Prospect.company_name) == master_org.name.strip().lower()
+            )
+        ).first()
 
         region_str = f"{master_org.city or ''}, {master_org.province or ''}".strip(", ") or None
         if not existing_p:

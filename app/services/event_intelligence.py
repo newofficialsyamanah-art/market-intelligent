@@ -11,6 +11,7 @@ from datetime import datetime, timezone, date
 from urllib.parse import urlparse
 from typing import Dict, Any, List, Optional, Tuple
 
+from app.discovery import parallel_tavily_search_snippets, _search
 from app.extensions import db
 from app.models import Event, EventParticipant, Organization, DuplicateCandidate, utc_now
 from app.services.dedup_engine import (
@@ -213,12 +214,12 @@ class EventIntelligenceService:
         query: str = "",
         city: str = "",
         province: str = "",
-        limit: int = 8,
+        limit: int = 20,
         user_id: Optional[int] = None
     ) -> Dict[str, Any]:
         """
         Menemukan event pameran, expo, festival B2B, dan turnamen olahraga nyata
-        secara dinamis di seluruh Indonesia menggunakan AI & Market Intelligence.
+        secara dinamis di seluruh Indonesia menggunakan Tavily AI Search + Groq Extraction.
         """
         from app.ai_agent import _chat_json
 
@@ -227,78 +228,143 @@ class EventIntelligenceService:
             target_loc.append(city)
         if province:
             target_loc.append(province)
-        location_str = ", ".join(target_loc) if target_loc else "seluruh Indonesia (Surabaya, Malang, Jakarta, Bandung, Semarang, Medan, Bali, Makassar, dll)"
+        location_str = ", ".join(target_loc) if target_loc else "Indonesia (Jakarta, Surabaya, Bandung, Semarang, Medan, Bali, Malang)"
 
-        prompt = f"""Kamu adalah AI Event Intelligence Indonesia.
-Tugas: Temukan dan berikan daftar {limit} event bisnis, pameran (expo/trade fair), konferensi B2B, festival industri, atau turnamen olahraga besar nyata di:
-- Lokasi: {location_str}
-- Topik / Kategori Event: {query or 'Pameran Bisnis, Industri, Manufaktur, Tekstil, Otomotif, UMKM, Turnamen Futsal/Lari/Basket'}
+        # 1. Bangun variasi query pencarian targeted (Tavily Multi-Query)
+        cat_str = query or "pameran industri expo bisnis turnamen olahraga"
+        search_queries = [
+            f"jadwal event pameran {cat_str} {location_str} 2026",
+            f"expo trade fair festival industri b2b {location_str} 2026",
+            f"turnamen event kompetisi lari futsal basket marathon {location_str} 2026",
+            f"site:jadwalevent.web.id {cat_str} {location_str}",
+            f"kalender pameran dan konferensi asosiasi industri {location_str} 2026",
+        ]
+        if limit >= 50:
+            search_queries.extend([
+                f"job fair career expo kampus universitas {location_str} 2026",
+                f"festival otomotif properti kuliner b2b {location_str} 2026",
+                f"pameran manufaktur tekstil umkm packaging {location_str} 2026",
+            ])
 
-Format respon HANYA list JSON valid:
-[
-  {{
-    "name": "Nama Lengkap Event (contoh: Jatim Expo 2026, IIMS Surabaya 2026, Bromo Marathon 2026)",
-    "event_type": "Exhibition / Trade Fair / Conference / Sports Tournament",
-    "venue": "Nama Gedung / Tempat (contoh: Grand City Surabaya, Jatim Expo, DBL Arena, JIExpo, dll)",
-    "city": "Kota",
-    "province": "Provinsi",
-    "organizer": "Nama Penyelenggara / EO",
-    "description": "Deskripsi singkat profil event dan potensi kebutuhan seragam/apparel",
-    "status": "upcoming"
-  }}
-]
-"""
+        # 2. Ambil live web snippets via Tavily (Tier 1) atau Fallback Search (Tier 2)
+        snippets = parallel_tavily_search_snippets(search_queries, max_per_query=20)
+        if not snippets:
+            fallback_urls = []
+            for q in search_queries[:3]:
+                try:
+                    fallback_urls.extend(_search(q))
+                except Exception:
+                    pass
+            snippets = [{"title": u, "url": u, "content": u} for u in fallback_urls[:limit]]
+
         created_count = 0
         updated_count = 0
         items = []
 
-        try:
-            raw_data = _chat_json(
-                system_prompt="Kamu adalah AI Event Intelligence spesialis penemuan event B2B, expo, dan turnamen olahraga di Indonesia.",
-                user_prompt=prompt,
-                temperature=0.3
-            )
-            candidates = raw_data if isinstance(raw_data, list) else raw_data.get("events") or raw_data.get("items") or []
+        # 3. AI Extraction dalam chunks (12-15 snippets per prompt agar tidak kena token limit)
+        chunk_size = 12
+        all_event_candidates = []
+        for i in range(0, len(snippets), chunk_size):
+            chunk = snippets[i:i + chunk_size]
+            prompt = f"""Kamu adalah AI Event Intelligence spesialis penemuan event B2B, expo, dan turnamen olahraga di Indonesia.
+Berdasarkan data pencarian web berikut, ekstrak daftar event/pameran/expo/turnamen nyata di Indonesia:
 
-            for c in candidates[:limit]:
-                if not isinstance(c, dict) or not c.get("name"):
-                    continue
+DATA WEB:
+{json.dumps([{'title': s.get('title'), 'url': s.get('url'), 'content': (s.get('content') or '')[:450]} for s in chunk], ensure_ascii=False)}
 
-                event_dict = {
-                    "name": c.get("name", "").strip(),
-                    "event_type": c.get("event_type", "Exhibition / Trade Fair"),
-                    "venue": c.get("venue"),
-                    "city": c.get("city") or city or None,
-                    "province": c.get("province") or province or None,
-                    "organizer": c.get("organizer"),
-                    "description": c.get("description"),
-                    "status": c.get("status", "upcoming"),
-                    "source_url": "ai_event_discovery"
-                }
+Kriteria:
+- Target lokasi: {location_str}
+- Kategori: {query or 'Semua event B2B / olahraga'}
 
-                event, is_new, msg = cls.create_or_update_event(event_dict)
-                if is_new:
-                    created_count += 1
-                else:
-                    updated_count += 1
-                items.append({
-                    "id": event.id,
-                    "name": event.name,
-                    "city": event.city,
-                    "province": event.province,
-                    "is_new": is_new,
-                    "relevance_score": event.relevance_score
-                })
+Kembalikan format HANYA JSON array:
+[
+  {{
+    "name": "Nama Resmi Event (contoh: Jatim Fair 2026, IIMS Surabaya 2026, UI Career Expo)",
+    "event_type": "Exhibition / Trade Fair / Conference / Sports Tournament / Career Fair",
+    "venue": "Nama Gedung / Tempat",
+    "city": "Kota",
+    "province": "Provinsi",
+    "organizer": "Nama Penyelenggara / EO / Institusi",
+    "website": "URL website resmi jika ada",
+    "source_url": "URL sumber dari data web",
+    "description": "Deskripsi singkat profil event dan potensi kebutuhan seragam/apparel/merchandise",
+    "status": "upcoming"
+  }}
+]
+"""
+            try:
+                raw_data = _chat_json(
+                    system_prompt="Kamu adalah AI Event Intelligence yang mengekstrak event B2B dan olahraga nyata di Indonesia dari hasil web search.",
+                    user_prompt=prompt,
+                    temperature=0.2
+                )
+                cands = raw_data if isinstance(raw_data, list) else raw_data.get("events") or raw_data.get("items") or []
+                if isinstance(cands, list):
+                    all_event_candidates.extend(cands)
+            except Exception as e:
+                logger.error(f"Error in event AI chunk extraction: {e}")
 
-        except Exception as e:
-            logger.error(f"Error in discover_events: {e}")
-            return {
-                "total_processed": 0,
-                "created": 0,
-                "updated": 0,
-                "items": [],
-                "error": str(e)
+        # Jika snippets Tavily kosong atau AI gagal mengekstrak, fallback ke AI generation langsung
+        if not all_event_candidates:
+            fallback_prompt = f"""Kamu adalah AI Event Intelligence Indonesia.
+Berikan daftar {min(limit, 20)} event bisnis, pameran (expo/trade fair), konferensi B2B, festival industri, atau turnamen olahraga nyata di:
+- Lokasi: {location_str}
+- Kategori: {query or 'Pameran Bisnis, Industri, Manufaktur, Tekstil, Otomotif, UMKM, Turnamen Futsal/Lari'}
+
+Format respon HANYA list JSON valid:
+[
+  {{
+    "name": "Nama Resmi Event",
+    "event_type": "Exhibition / Trade Fair / Sports Tournament",
+    "venue": "Nama Gedung / Tempat",
+    "city": "Kota",
+    "province": "Provinsi",
+    "organizer": "Nama Penyelenggara",
+    "description": "Deskripsi profil event dan kebutuhan seragam/apparel",
+    "status": "upcoming"
+  }}
+]"""
+            try:
+                raw_fb = _chat_json(
+                    system_prompt="Kamu adalah AI Event Intelligence spesialis event B2B di Indonesia.",
+                    user_prompt=fallback_prompt,
+                    temperature=0.3
+                )
+                all_event_candidates = raw_fb if isinstance(raw_fb, list) else raw_fb.get("events") or []
+            except Exception:
+                pass
+
+        # 4. Simpan ke database dengan deduplikasi teruji
+        for c in all_event_candidates[:limit]:
+            if not isinstance(c, dict) or not c.get("name"):
+                continue
+
+            event_dict = {
+                "name": c.get("name", "").strip(),
+                "event_type": c.get("event_type", "Exhibition / Trade Fair"),
+                "venue": c.get("venue"),
+                "city": c.get("city") or city or None,
+                "province": c.get("province") or province or None,
+                "organizer": c.get("organizer"),
+                "website": c.get("website"),
+                "description": c.get("description"),
+                "status": c.get("status", "upcoming"),
+                "source_url": c.get("source_url") or "tavily_event_discovery"
             }
+
+            event, is_new, msg = cls.create_or_update_event(event_dict)
+            if is_new:
+                created_count += 1
+            else:
+                updated_count += 1
+            items.append({
+                "id": event.id,
+                "name": event.name,
+                "city": event.city,
+                "province": event.province,
+                "is_new": is_new,
+                "relevance_score": event.relevance_score
+            })
 
         return {
             "total_processed": len(items),
@@ -387,6 +453,7 @@ Format respon HANYA list JSON valid:
         relevance: str = "",
         city: str = "",
         province: str = "",
+        sport: str = "",
         status: str = "",
         organizer: str = "",
         start_date_from: Optional[datetime] = None,
@@ -408,6 +475,17 @@ Format respon HANYA list JSON valid:
                     Event.city.like(f"%{q}%"),
                     Event.province.like(f"%{q}%"),
                     Event.description.like(f"%{q}%")
+                )
+            )
+
+        if sport:
+            sport_clean = sport.strip().lower()
+            query = query.filter(
+                db.or_(
+                    Event.name.ilike(f"%{sport_clean}%"),
+                    Event.event_type.ilike(f"%{sport_clean}%"),
+                    Event.description.ilike(f"%{sport_clean}%"),
+                    Event.relevance_notes.ilike(f"%{sport_clean}%")
                 )
             )
 

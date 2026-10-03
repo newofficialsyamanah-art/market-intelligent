@@ -17,7 +17,7 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(150), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
     role = db.Column(
-        db.Enum("admin", "business_analyst", "marketing", "management", "procurement", name="role_enum"),
+        db.Enum("admin", "business_analyst", "marketing", "management", "procurement", "supplier", name="role_enum"),
         default="business_analyst",
     )
     is_active_flag = db.Column("is_active", db.Boolean, default=True)
@@ -93,6 +93,10 @@ class Prospect(db.Model):
     created_by = db.Column(db.Integer, db.ForeignKey("users.id"))
     created_at = db.Column(db.DateTime, default=utc_now)
     updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
+
+    __table_args__ = (
+        db.UniqueConstraint("organization_id", name="uq_prospects_organization_id"),
+    )
 
     organization = db.relationship("Organization", backref=db.backref("prospects_legacy", lazy="dynamic"))
 
@@ -246,7 +250,7 @@ class DiscoverySource(db.Model):
 
 
 class ProcurementSupplier(db.Model):
-    """Kandidat pemasok bahan apparel dengan provenance hasil pencarian web."""
+    """Kandidat pemasok & rekanan B2B lintas kategori (Raw Material, Distributor, Elektrikal, Services, Pharmaceutical, Local, Hardware, Software)."""
     __tablename__ = "procurement_suppliers"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -264,6 +268,10 @@ class ProcurementSupplier(db.Model):
     verification_status = db.Column(db.String(50), default="discovered")
     created_by = db.Column(db.Integer, db.ForeignKey("users.id"))
     created_at = db.Column(db.DateTime, default=utc_now)
+
+    __table_args__ = (
+        db.UniqueConstraint("product", "source_url", name="uq_procurement_suppliers_product_url"),
+    )
 
 
 class Organization(db.Model):

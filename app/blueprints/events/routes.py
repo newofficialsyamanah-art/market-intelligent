@@ -23,6 +23,7 @@ def index():
     q = request.args.get("q", "").strip()
     event_type = request.args.get("event_type", "").strip()
     relevance = request.args.get("relevance", "").strip()
+    sport = request.args.get("sport", "").strip()
     city = request.args.get("city", "").strip()
     province = request.args.get("province", "").strip()
     status = request.args.get("status", "").strip()
@@ -53,6 +54,7 @@ def index():
         relevance=relevance,
         city=city,
         province=province,
+        sport=sport,
         status=status,
         organizer=organizer,
         start_date_from=start_date_from,
@@ -82,10 +84,16 @@ def index():
     ]
     provinces = get_all_indonesia_provinces(db_provinces)
 
-    # Metrics summary
+    # Metrics summary & category breakdown
     total_events = Event.query.count()
     high_rel_count = Event.query.filter(Event.relevance_score >= 80).count()
     total_participants = EventParticipant.query.count()
+    category_summary = {
+        "expo_b2b": Event.query.filter(db.or_(Event.event_type.ilike("%expo%"), Event.event_type.ilike("%exhibition%"), Event.event_type.ilike("%trade%"))).count(),
+        "tournament": Event.query.filter(db.or_(Event.event_type.ilike("%sport%"), Event.event_type.ilike("%tournament%"))).count(),
+        "career_fair": Event.query.filter(Event.event_type.ilike("%fair%")).count(),
+        "conference": Event.query.filter(Event.event_type.ilike("%conference%")).count(),
+    }
 
     return render_template(
         "events/index.html",
@@ -93,10 +101,12 @@ def index():
         total_count=total_count,
         total_pages=total_pages,
         current_page=page,
+        category_summary=category_summary,
         filters={
             "q": q,
             "event_type": event_type,
             "relevance": relevance,
+            "sport": sport,
             "city": city,
             "province": province,
             "status": status,
@@ -107,6 +117,7 @@ def index():
             "start_date_to": start_date_to_raw,
         },
         event_types=event_types,
+        all_sports=["Futsal", "Sepak Bola", "Basket", "Running", "Badminton", "Voli", "Sepeda", "Esports", "Tenis"],
         cities=cities,
         provinces=provinces,
         total_events=total_events,
@@ -224,17 +235,28 @@ def create_event():
 def discover_events_action():
     """Trigger dynamic live event discovery across Indonesia."""
     query = request.form.get("query", "").strip()
+    sport = request.form.get("sport", "").strip()
     city = request.form.get("city", "").strip()
     province = request.form.get("province", "").strip()
     limit = int(request.form.get("limit", 8))
+
+    if sport:
+        if query:
+            query = f"Turnamen {sport} {query}"
+        else:
+            query = f"Turnamen {sport} kejuaraan kompetisi"
+
     try:
         res = EventIntelligenceService.discover_events(query=query, city=city, province=province, limit=limit)
         wilayah_label = city or province or "Seluruh Indonesia"
+        if sport:
+            wilayah_label += f" [Olahraga: {sport}]"
         flash(f"Discovery Event ({wilayah_label}) selesai: {res['total_processed']} event diproses ({res['created']} event baru, {res['updated']} diperbarui).", "success")
         log_activity("discover_events", f"Discovery event {wilayah_label}: {res['created']} baru")
     except Exception as e:
         flash(f"Discovery Event gagal: {e}", "danger")
     return redirect(url_for("events.index"))
+
 
 
 @events_bp.route("/<int:event_id>/link-participant", methods=["POST"])

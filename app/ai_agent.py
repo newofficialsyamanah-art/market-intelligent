@@ -73,6 +73,14 @@ def _extract_json(text: str):
         except Exception:
             pass
 
+    # 3b. Recovery jika JSON array terpotong di akhir (truncated response)
+    if first_bracket != -1 and (last_bracket == -1 or last_bracket < first_bracket):
+        if last_brace != -1 and last_brace > first_bracket:
+            try:
+                return json.loads(clean[first_bracket:last_brace + 1] + "]")
+            except Exception:
+                pass
+
     # 4. Fallback regex
     match = re.search(r"(\[.*\]|\{.*\})", clean, flags=re.DOTALL)
     if match:
@@ -81,7 +89,7 @@ def _extract_json(text: str):
     raise ValueError(f"Tidak dapat mengekstrak JSON dari teks: {text[:200]}")
 
 
-def _chat_json(system_prompt: str, user_prompt: str, temperature: float = 0.2, task_name: str = None, max_tokens: int = 700):
+def _chat_json(system_prompt: str, user_prompt: str, temperature: float = 0.2, task_name: str = None, max_tokens: int = 2500):
     model_name = _model()
     effective_system = system_prompt
 
@@ -123,7 +131,7 @@ def _chat_json(system_prompt: str, user_prompt: str, temperature: float = 0.2, t
         raise last_error
 
 
-def _chat_text(system_prompt: str, user_prompt: str, temperature: float = 0.4, task_name: str = None, max_tokens: int = 700):
+def _chat_text(system_prompt: str, user_prompt: str, temperature: float = 0.4, task_name: str = None, max_tokens: int = 2500):
     model_name = _model()
     effective_system = system_prompt
 

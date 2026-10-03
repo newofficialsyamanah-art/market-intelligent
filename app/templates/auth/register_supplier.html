@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}Registrasi Rekanan Supplier - Market Intelligence System{% endblock %}
+{% block content %}
+<div class="row justify-content-center my-4">
+  <div class="col-lg-6 col-md-8">
+    <div class="card shadow-sm border-0">
+      <div class="card-header bg-primary text-white py-3">
+        <h5 class="mb-0"><i class="bi bi-box-seam me-2"></i>Registrasi Rekanan Supplier & Vendor B2B</h5>
+        <small class="text-white-50">Daftarkan badan usaha, distributor, atau penyedia layanan Anda ke dalam sistem procurement Market Intelligence.</small>
+      </div>
+      <div class="card-body p-4">
+        <form method="post" action="{{ url_for('auth.register_supplier') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          
+          <h6 class="fw-bold text-muted text-uppercase small mb-3 border-bottom pb-2">Informasi Akun PIC</h6>
+          <div class="row g-2 mb-3">
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold">Nama Lengkap / PIC <span class="text-danger">*</span></label>
+              <input type="text" name="name" class="form-control form-control-sm" placeholder="Contoh: Hendra Wijaya" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold">Nomor WhatsApp / Telepon <span class="text-danger">*</span></label>
+              <input type="text" name="phone" class="form-control form-control-sm" placeholder="Contoh: 081234567890" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold">Email Login <span class="text-danger">*</span></label>
+              <input type="email" name="email" class="form-control form-control-sm" placeholder="pic@perusahaan.com" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold">Password <span class="text-danger">*</span></label>
+              <input type="password" name="password" class="form-control form-control-sm" placeholder="Minimal 6 karakter" required>
+            </div>
+          </div>
+
+          <h6 class="fw-bold text-muted text-uppercase small mb-3 border-bottom pb-2">Profil Usaha / Vendor Supplier B2B</h6>
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Nama Perusahaan / Distributor / Toko <span class="text-danger">*</span></label>
+            <input type="text" name="company_name" class="form-control form-control-sm" placeholder="Contoh: PT Kencana Hardware Mandiri" required>
+          </div>
+
+          <div class="row g-2 mb-3">
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold">Kategori Bidang Usaha <span class="text-danger">*</span></label>
+              <select name="product" class="form-select form-select-sm" required>
+                <option value="raw material" selected>Raw Material (Bahan Baku, Kimia, Logam, Tekstil)</option>
+                <option value="distributor">Distributor (Distributor Resmi & Supply Chain B2B)</option>
+                <option value="elektrikal">Elektrikal (Kelistrikan, Kabel, Trafo, Panel Listrik)</option>
+                <option value="services">Services (Jasa B2B, Maintenance, Facility Mgmt, Logistik)</option>
+                <option value="pharmaceutical">Pharmaceutical (Farmasi, Medis, Obat & Alkes)</option>
+                <option value="local">Local Supplier (Pemasok Lokal, Daerah & Mitra UMKM)</option>
+                <option value="hardware">Hardware (Perkakas Teknik, Mesin Industri, Valve, Pompa)</option>
+                <option value="software">Software (Software B2B, ERP, SaaS, Cloud & Solusi IT)</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold">Kota / Wilayah Operasional</label>
+              <input type="text" name="region" class="form-control form-control-sm" placeholder="Contoh: Jakarta / Bandung / Surabaya">
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Spesifikasi Produk / Layanan / Katalog Utama</label>
+            <input type="text" name="material" class="form-control form-control-sm" placeholder="Contoh: Kabel Listrik Tegangan Rendah / Software ERP & HRIS / Mesin Las Inverter">
+            <div class="form-text small">Sebutkan lini produk utama, merek prinsipal, atau spesifikasi teknis yang Anda sediakan.</div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Website / Katalog Online / Company Profile (Opsional)</label>
+            <input type="url" name="website" class="form-control form-control-sm" placeholder="https://perusahaan.com">
+          </div>
+
+          <div class="alert alert-info py-2 small mb-3">
+            <i class="bi bi-info-circle me-1"></i> Akun yang didaftarkan melalui form ini otomatis memperoleh peran <strong>Rekanan Supplier (Role: Supplier)</strong> dan langsung terindeks di sistem pengadaan B2B.
+          </div>
+
+          <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+            <i class="bi bi-check2-circle me-1"></i> Daftar Sebagai Rekanan Supplier
+          </button>
+        </form>
+
+        <div class="text-center mt-3 small">
+          Sudah memiliki akun? <a href="{{ url_for('auth.login') }}" class="text-decoration-none">Silakan Login di sini</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

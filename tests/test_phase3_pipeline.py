@@ -72,6 +72,7 @@ class TestPhase3Pipeline(unittest.TestCase):
             Organization.query.filter(Organization.id.in_(self.cleanup_org_ids)).delete(synchronize_session=False)
 
         if self.data_source and self.data_source.id:
+            Organization.query.filter(Organization.source_id == self.data_source.id).delete(synchronize_session=False)
             ds = db.session.get(DataSource, self.data_source.id)
             if ds:
                 db.session.delete(ds)
