@@ -201,10 +201,17 @@ def create_app(config_class=None):
             }
         elif user_role == "supplier":
             my_suppliers = ProcurementSupplier.query.filter_by(created_by=current_user.id).all() if current_user.is_authenticated else []
+            primary_supplier = my_suppliers[0] if my_suppliers else None
             role_data = {
                 "my_supplier_count": len(my_suppliers),
-                "total_suppliers": ProcurementSupplier.query.count(),
                 "my_suppliers": my_suppliers,
+                "primary_supplier": primary_supplier,
+                "catalog_count": 8,
+                "active_rfq_count": 3,
+                "active_po_count": 2,
+                "completed_po_count": 14,
+                "performance_score": "98.4%",
+                "rating": "4.9 / 5.0",
             }
 
         # Ringkasan Kategori Lintas Modul untuk Dashboard Utama

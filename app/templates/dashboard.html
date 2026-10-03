@@ -34,7 +34,7 @@
 <!-- ========================================================================= -->
 <!-- RINGKASAN DATA LINTAS KATEGORI (Cross-Module Category Intelligence) -->
 <!-- ========================================================================= -->
-{% if category_summaries %}
+{% if category_summaries and role != 'supplier' %}
 <div class="card border-0 shadow-sm mb-4">
   <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
     <div>
@@ -660,30 +660,525 @@
 </div>
 
 {% elif role == 'supplier' %}
-<!-- SUPPLIER ROLE DASHBOARD -->
-<div class="row g-3 mb-4">
-  <div class="col-md-4">
-    <div class="card p-3 border-0 shadow-sm h-100" style="border-left: 4px solid #2ec4b6 !important;">
-      <span class="text-muted small text-uppercase fw-bold">Status Kemitraan</span>
-      <h3 class="mt-2 mb-0 fw-bold text-success"><i class="bi bi-patch-check-fill me-1"></i> Terverifikasi</h3>
-      <div class="small text-muted mt-1">Mitra Rekanan B2B Resmi Terdaftar</div>
-    </div>
-  </div>
-  <div class="col-md-4">
-    <div class="card p-3 border-0 shadow-sm h-100" style="border-left: 4px solid #4361ee !important;">
-      <span class="text-muted small text-uppercase fw-bold">Profil Usaha Anda</span>
-      <h3 class="mt-2 mb-0 fw-bold text-dark">{{ role_data.my_supplier_count }} Terdaftar</h3>
-      <div class="small text-muted mt-1"><a href="{{ url_for('procurement.index') }}" class="text-decoration-none">Buka Direktori Procurement &raquo;</a></div>
-    </div>
-  </div>
-  <div class="col-md-4">
-    <div class="card p-3 border-0 shadow-sm h-100" style="border-left: 4px solid #ff9f1c !important;">
-      <span class="text-muted small text-uppercase fw-bold">Total Vendor & Supplier</span>
-      <h3 class="mt-2 mb-0 fw-bold text-dark">{{ role_data.total_suppliers }} Rekanan</h3>
-      <div class="small text-muted mt-1">Terhubung di database pengadaan lintas kategori</div>
+<!-- ========================================================================= -->
+<!-- SUPPLIER & VENDOR PORTAL DASHBOARD (Dedicated Mitra Rekanan Hub) -->
+<!-- ========================================================================= -->
+
+<!-- 1. VENDOR IDENTITY BANNER -->
+<div class="card border-0 shadow-sm mb-4" style="background: linear-gradient(135deg, #0d3b66 0%, #1d3557 100%); color: white;">
+  <div class="card-body p-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+      <div>
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-1">
+            <i class="bi bi-patch-check-fill me-1"></i> Mitra Terverifikasi (Tier 1 Preferred Partner)
+          </span>
+          <span class="badge bg-secondary-subtle text-light border border-secondary-subtle">
+            ID Vendor: VND-{{ "%05d" % current_user.id }}
+          </span>
+        </div>
+        <h2 class="fw-bold mb-1 text-white">
+          {{ role_data.primary_supplier.company_name if role_data.primary_supplier else current_user.name }}
+        </h2>
+        <p class="mb-0 text-white-50 small">
+          Portal Resmi Rekanan & Penyedia Barang/Jasa &bull; Terhubung dengan Tim Pengadaan & Logistik Internal
+        </p>
+      </div>
+      <div class="text-md-end bg-white bg-opacity-10 p-3 rounded-3 border border-white border-opacity-25">
+        <div class="text-uppercase small text-white-50 fw-bold">Skor Performa & SLA</div>
+        <div class="fs-4 fw-bold text-warning"><i class="bi bi-star-fill me-1"></i> {{ role_data.rating }}</div>
+        <div class="small text-white-50">On-Time Delivery: <strong class="text-white">{{ role_data.performance_score }}</strong></div>
+      </div>
     </div>
   </div>
 </div>
+
+<!-- 2. VENDOR METRICS CARDS -->
+<div class="row g-3 mb-4">
+  <div class="col-sm-6 col-lg-3">
+    <div class="card p-3 border-0 shadow-sm h-100" style="border-left: 4px solid #4361ee !important;">
+      <div class="d-flex justify-content-between align-items-center">
+        <span class="text-muted small text-uppercase fw-bold">Permintaan RFQ</span>
+        <span class="badge bg-primary-subtle text-primary"><i class="bi bi-receipt"></i></span>
+      </div>
+      <h3 class="mt-2 mb-0 fw-bold text-dark">{{ role_data.active_rfq_count }} Aktif</h3>
+      <div class="small text-muted mt-1">Perlu penawaran harga segera</div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-lg-3">
+    <div class="card p-3 border-0 shadow-sm h-100" style="border-left: 4px solid #f77f00 !important;">
+      <div class="d-flex justify-content-between align-items-center">
+        <span class="text-muted small text-uppercase fw-bold">PO Berjalan</span>
+        <span class="badge bg-warning-subtle text-warning"><i class="bi bi-truck"></i></span>
+      </div>
+      <h3 class="mt-2 mb-0 fw-bold text-dark">{{ role_data.active_po_count }} PO Aktif</h3>
+      <div class="small text-muted mt-1">Sedang diproses & kirim</div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-lg-3">
+    <div class="card p-3 border-0 shadow-sm h-100" style="border-left: 4px solid #2ec4b6 !important;">
+      <div class="d-flex justify-content-between align-items-center">
+        <span class="text-muted small text-uppercase fw-bold">PO Selesai</span>
+        <span class="badge bg-success-subtle text-success"><i class="bi bi-check2-circle"></i></span>
+      </div>
+      <h3 class="mt-2 mb-0 fw-bold text-dark">{{ role_data.completed_po_count }} Pesanan</h3>
+      <div class="small text-muted mt-1">Transaksi sukses tuntas</div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-lg-3">
+    <div class="card p-3 border-0 shadow-sm h-100" style="border-left: 4px solid #7209b7 !important;">
+      <div class="d-flex justify-content-between align-items-center">
+        <span class="text-muted small text-uppercase fw-bold">Katalog Produk</span>
+        <span class="badge bg-secondary-subtle text-dark"><i class="bi bi-boxes"></i></span>
+      </div>
+      <h3 class="mt-2 mb-0 fw-bold text-dark">{{ role_data.catalog_count }} SKU</h3>
+      <div class="small text-muted mt-1">Tersedia dalam direktori aktif</div>
+    </div>
+  </div>
+</div>
+
+<!-- 3. SECTION: DAFTAR PERMINTAAN RFQ & TENDER (id="rfq-section") -->
+<div class="card border-0 shadow-sm mb-4" id="rfq-section">
+  <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+    <div>
+      <h5 class="mb-0 fw-bold text-dark">
+        <i class="bi bi-file-earmark-spreadsheet-fill text-primary me-2"></i>Permintaan Penawaran Harga (Inbound RFQ & Tender)
+      </h5>
+      <small class="text-muted">Daftar kebutuhan pengadaan dari divisi operasional yang sesuai dengan bidang usaha Anda.</small>
+    </div>
+    <span class="badge bg-primary px-3 py-2">
+      <i class="bi bi-bell-fill me-1"></i> {{ role_data.active_rfq_count }} RFQ Memerlukan Tindakan
+    </span>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light small text-uppercase text-secondary">
+          <tr>
+            <th class="ps-3" style="width: 140px;">No. Dokumen RFQ</th>
+            <th>Item / Komoditas Spesifikasi</th>
+            <th>Volume / Qty</th>
+            <th>Departemen Pemohon</th>
+            <th>Batas Tenggat (Deadline)</th>
+            <th>Status Penawaran</th>
+            <th class="text-end pe-3">Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="ps-3 fw-bold text-primary font-monospace">RFQ-2026-089</td>
+            <td>
+              <div class="fw-bold text-dark">Kain Katun Combed 30s & 24s Reaktif</div>
+              <div class="small text-muted">Gramasi 150-160 gsm, Warna Solid Hitam & Navy (OEKO-TEX)</div>
+            </td>
+            <td><span class="badge bg-secondary font-monospace">2.500 Kg</span></td>
+            <td><i class="bi bi-building me-1 text-muted"></i>Divisi Produksi Apparel</td>
+            <td><span class="text-danger fw-semibold"><i class="bi bi-clock me-1"></i>15 Okt 2026</span></td>
+            <td><span class="badge bg-warning text-dark"><i class="bi bi-hourglass-split me-1"></i>Menunggu Penawaran</span></td>
+            <td class="text-end pe-3">
+              <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalQuotation" onclick="openQuotationModal('RFQ-2026-089', 'Kain Katun Combed 30s & 24s Reaktif', '2.500 Kg', 'Divisi Produksi Apparel')">
+                <i class="bi bi-send me-1"></i> Ajukan Penawaran
+              </button>
+            </td>
+          </tr>
+          <tr>
+            <td class="ps-3 fw-bold text-primary font-monospace">RFQ-2026-094</td>
+            <td>
+              <div class="fw-bold text-dark">Label Woven Damask & Tag Polyflex HD</div>
+              <div class="small text-muted">Ukuran 5x2.5cm, high density weaving, minimal 8 warna</div>
+            </td>
+            <td><span class="badge bg-secondary font-monospace">15.000 Pcs</span></td>
+            <td><i class="bi bi-building me-1 text-muted"></i>Divisi Branding & Aksesoris</td>
+            <td><span class="text-muted"><i class="bi bi-clock me-1"></i>20 Okt 2026</span></td>
+            <td><span class="badge bg-info text-dark"><i class="bi bi-check2 me-1"></i>Penawaran Terkirim (Review)</span></td>
+            <td class="text-end pe-3">
+              <button class="btn btn-sm btn-outline-secondary" onclick="showQuotationDetails('RFQ-2026-094', 'Rp 450 / pcs', 'Dalam Tahap Evaluasi Teknis Tim Procurement')">
+                <i class="bi bi-eye me-1"></i> Detail
+              </button>
+            </td>
+          </tr>
+          <tr>
+            <td class="ps-3 fw-bold text-primary font-monospace">RFQ-2026-102</td>
+            <td>
+              <div class="fw-bold text-dark">Karton Box Corrugated Double Wall Master</div>
+              <div class="small text-muted">Ukuran 40 x 30 x 20 cm, B/C Flute K200/M150, sablon 1 warna logo</div>
+            </td>
+            <td><span class="badge bg-secondary font-monospace">5.000 Pcs</span></td>
+            <td><i class="bi bi-building me-1 text-muted"></i>Divisi Logistik & Gudang</td>
+            <td><span class="text-muted"><i class="bi bi-clock me-1"></i>28 Okt 2026</span></td>
+            <td><span class="badge bg-warning text-dark"><i class="bi bi-hourglass-split me-1"></i>Menunggu Penawaran</span></td>
+            <td class="text-end pe-3">
+              <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalQuotation" onclick="openQuotationModal('RFQ-2026-102', 'Karton Box Corrugated Double Wall', '5.000 Pcs', 'Divisi Logistik & Gudang')">
+                <i class="bi bi-send me-1"></i> Ajukan Penawaran
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- 4. SECTION: KATALOG PRODUK MITRA (id="katalog-section") -->
+<div class="card border-0 shadow-sm mb-4" id="katalog-section">
+  <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+    <div>
+      <h5 class="mb-0 fw-bold text-dark">
+        <i class="bi bi-boxes text-success me-2"></i>Katalog Produk & Komoditas Anda
+      </h5>
+      <small class="text-muted">Daftar item pasokan yang Anda daftarkan untuk penawaran pengadaan internal.</small>
+    </div>
+    <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#modalAddProduct">
+      <i class="bi bi-plus-circle me-1"></i> Tambah Produk Baru
+    </button>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0" id="productCatalogTable">
+        <thead class="table-light small text-uppercase text-secondary">
+          <tr>
+            <th class="ps-3">SKU</th>
+            <th>Nama Produk / Material</th>
+            <th>Kategori</th>
+            <th>Spesifikasi & Standar Mutu</th>
+            <th>Harga Indikatif</th>
+            <th>Status Pasokan</th>
+            <th class="text-end pe-3">Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="ps-3 font-monospace fw-semibold text-muted">RM-TEX-001</td>
+            <td>
+              <div class="fw-bold text-dark">Katun Combed 30s Reaktif (Soft Wash)</div>
+              <div class="small text-muted">Bahan kaos adem & menyerap keringat</div>
+            </td>
+            <td><span class="badge bg-primary">Raw Material</span></td>
+            <td class="small text-muted">OEKO-TEX Class I, Toleransi Susut 3%</td>
+            <td class="fw-bold text-dark">Rp 98.000 <span class="small fw-normal text-muted">/ kg</span></td>
+            <td><span class="badge bg-success">Ready Stock (1.200 kg)</span></td>
+            <td class="text-end pe-3">
+              <button class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="alert('Update stok & harga untuk SKU RM-TEX-001 disimpan.')"><i class="bi bi-pencil-square"></i></button>
+            </td>
+          </tr>
+          <tr>
+            <td class="ps-3 font-monospace fw-semibold text-muted">RM-TEX-004</td>
+            <td>
+              <div class="fw-bold text-dark">Benang Jahit & Obras Spun Polyester 40/2</div>
+              <div class="small text-muted">Kekuatan tarik tinggi, minim putus</div>
+            </td>
+            <td><span class="badge bg-primary">Raw Material</span></td>
+            <td class="small text-muted">5.000 Yards / Cone, Standar Garment</td>
+            <td class="fw-bold text-dark">Rp 42.000 <span class="small fw-normal text-muted">/ cone</span></td>
+            <td><span class="badge bg-success">Ready Stock (600 cone)</span></td>
+            <td class="text-end pe-3">
+              <button class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="alert('Update stok & harga untuk SKU RM-TEX-004 disimpan.')"><i class="bi bi-pencil-square"></i></button>
+            </td>
+          </tr>
+          <tr>
+            <td class="ps-3 font-monospace fw-semibold text-muted">PKG-BOX-012</td>
+            <td>
+              <div class="fw-bold text-dark">Corrugated Carton Box Master Double Wall</div>
+              <div class="small text-muted">Kardus packing pengiriman ekspor & domestik</div>
+            </td>
+            <td><span class="badge bg-success">Distributor</span></td>
+            <td class="small text-muted">Flute B/C K200/M150, Tahan Beban 25kg</td>
+            <td class="fw-bold text-dark">Rp 4.200 <span class="small fw-normal text-muted">/ pcs</span></td>
+            <td><span class="badge bg-info text-dark">Pre-Order (3 Hari)</span></td>
+            <td class="text-end pe-3">
+              <button class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="alert('Update stok & harga untuk SKU PKG-BOX-012 disimpan.')"><i class="bi bi-pencil-square"></i></button>
+            </td>
+          </tr>
+          <tr>
+            <td class="ps-3 font-monospace fw-semibold text-muted">ELC-MOT-005</td>
+            <td>
+              <div class="fw-bold text-dark">Direct Drive Servo Motor 550W Mesin Industri</div>
+              <div class="small text-muted">Motor hemat listrik mesin jahit jarum 1 & obras</div>
+            </td>
+            <td><span class="badge bg-warning text-dark">Elektrikal</span></td>
+            <td class="small text-muted">220V, Hemat Daya s/d 70%, Speed Adjustable</td>
+            <td class="fw-bold text-dark">Rp 1.650.000 <span class="small fw-normal text-muted">/ unit</span></td>
+            <td><span class="badge bg-success">Ready Stock (15 unit)</span></td>
+            <td class="text-end pe-3">
+              <button class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="alert('Update stok & harga untuk SKU ELC-MOT-005 disimpan.')"><i class="bi bi-pencil-square"></i></button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- 5. SECTION: STATUS PURCHASE ORDER (PO) & PENGIRIMAN (id="po-section") -->
+<div class="row g-3 mb-4" id="po-section">
+  <div class="col-lg-8">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+        <div>
+          <h5 class="mb-0 fw-bold text-dark">
+            <i class="bi bi-truck text-warning me-2"></i>Status Purchase Order (PO) Berjalan & Riwayat
+          </h5>
+          <small class="text-muted">Lacak realisasi PO, nomor resi pengiriman logistik, dan histori penerimaan barang.</small>
+        </div>
+        <span class="badge bg-warning text-dark px-3 py-2">
+          {{ role_data.active_po_count }} PO Sedang Berjalan
+        </span>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light small text-uppercase text-secondary">
+              <tr>
+                <th class="ps-3">No. PO</th>
+                <th>Item & Qty</th>
+                <th>Nilai Kontrak</th>
+                <th>Logistik & No. Resi</th>
+                <th>Status</th>
+                <th class="text-end pe-3">Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="ps-3 fw-bold text-primary font-monospace">PO-2026-0341</td>
+                <td>
+                  <div class="fw-bold text-dark">Kain Katun Combed 30s</div>
+                  <div class="small text-muted">Qty: 450 Kg &bull; Tanggal PO: 01 Okt 2026</div>
+                </td>
+                <td class="fw-bold text-dark">Rp 44.100.000</td>
+                <td>
+                  <div class="small fw-semibold text-secondary"><i class="bi bi-truck me-1"></i>JNE Trucking (JTR)</div>
+                  <div class="font-monospace small text-primary">JTR9082314560</div>
+                </td>
+                <td>
+                  <span class="badge bg-warning text-dark"><i class="bi bi-truck me-1"></i>Dalam Pengiriman</span>
+                  <div class="small text-muted mt-1">Est. Tiba: 05 Okt 2026</div>
+                </td>
+                <td class="text-end pe-3">
+                  <button class="btn btn-sm btn-outline-primary" onclick="alert('Pelacakan JNE Trucking: Paket sedang dalam transit di Hub Logistik Cakung, estimasi tiba di gudang tujuan besok.')">
+                    <i class="bi bi-geo-alt"></i> Lacak
+                  </button>
+                </td>
+              </tr>
+              <tr>
+                <td class="ps-3 fw-bold text-primary font-monospace">PO-2026-0298</td>
+                <td>
+                  <div class="fw-bold text-dark">Benang Rajut Polyester 40/2</div>
+                  <div class="small text-muted">Qty: 350 Cone &bull; Tanggal PO: 20 Sep 2026</div>
+                </td>
+                <td class="fw-bold text-dark">Rp 14.700.000</td>
+                <td>
+                  <div class="small fw-semibold text-secondary"><i class="bi bi-box-seam me-1"></i>Armada Vendor (Direct)</div>
+                  <div class="small text-muted">Selesai Bongkar Gudang</div>
+                </td>
+                <td>
+                  <span class="badge bg-success"><i class="bi bi-check-circle-fill me-1"></i>Diterima & Lunas</span>
+                  <div class="small text-muted mt-1">Paid on 28 Sep 2026</div>
+                </td>
+                <td class="text-end pe-3">
+                  <button class="btn btn-sm btn-outline-success" onclick="alert('Invoice PO-2026-0298 telah lunas. Bukti transfer: Bank Mandiri Ref #TRX9988219.')">
+                    <i class="bi bi-receipt"></i> Invoice
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VENDOR HELPDESK & GUIDELINES -->
+  <div class="col-lg-4">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-white py-3">
+        <h6 class="mb-0 fw-bold text-dark"><i class="bi bi-headset text-primary me-2"></i>Helpdesk & Panduan Vendor</h6>
+      </div>
+      <div class="card-body">
+        <div class="p-3 bg-light rounded-3 mb-3 border">
+          <div class="small fw-bold text-dark mb-1"><i class="bi bi-person-badge me-1 text-primary"></i> PIC Procurement Internal</div>
+          <div class="small text-muted">Bpk. Hendra Gunawan (Lead Procurement)</div>
+          <div class="small text-muted"><i class="bi bi-envelope me-1"></i>procurement-vendor@marketintel.id</div>
+          <div class="small text-muted"><i class="bi bi-whatsapp me-1 text-success"></i>+62 811-9876-5432 (Senin - Jumat, 08.00 - 17.00)</div>
+        </div>
+
+        <div class="small fw-bold text-secondary text-uppercase mb-2">Unduh Template Standar Rekanan:</div>
+        <div class="d-flex flex-column gap-2 mb-3">
+          <a href="javascript:void(0)" class="btn btn-sm btn-outline-secondary text-start" onclick="alert('Mengunduh Template_Penawaran_Harga_Vendor.xlsx')">
+            <i class="bi bi-file-earmark-excel text-success me-2"></i> Template Penawaran Harga (.XLSX)
+          </a>
+          <a href="javascript:void(0)" class="btn btn-sm btn-outline-secondary text-start" onclick="alert('Mengunduh Format_Surat_Jalan_Pengiriman.docx')">
+            <i class="bi bi-file-earmark-word text-primary me-2"></i> Format Surat Jalan Pengiriman (.DOCX)
+          </a>
+          <a href="javascript:void(0)" class="btn btn-sm btn-outline-secondary text-start" onclick="alert('Mengunduh Ketentuan_SLA_Standar_Mutu.pdf')">
+            <i class="bi bi-file-earmark-pdf text-danger me-2"></i> Ketentuan SLA & Standar Mutu (.PDF)
+          </a>
+        </div>
+
+        <div class="alert alert-info py-2 px-3 small mb-0">
+          <i class="bi bi-info-circle-fill me-1"></i> Harap cantumkan Nomor PO pada setiap lembar Surat Jalan dan Faktur Tagihan.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: AJUKAN PENAWARAN RFQ -->
+<div class="modal fade" id="modalQuotation" tabindex="-1" aria-labelledby="modalQuotationLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title fw-bold" id="modalQuotationLabel"><i class="bi bi-send-fill me-2"></i>Ajukan Penawaran Harga</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3 p-3 bg-light rounded-3 border">
+          <div class="small text-muted">Nomor RFQ: <strong id="rfqModalId" class="text-primary font-monospace">-</strong></div>
+          <div class="fw-bold text-dark" id="rfqModalTitle">-</div>
+          <div class="small text-muted mt-1">Kebutuhan Volume: <strong id="rfqModalQty">-</strong> &bull; <span id="rfqModalDept">-</span></div>
+        </div>
+        <form id="formSubmitQuotation" onsubmit="event.preventDefault(); submitQuotationForm();">
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Harga Penawaran Satuan (IDR)</label>
+            <div class="input-group">
+              <span class="input-group-text">Rp</span>
+              <input type="number" class="form-control" id="quotePrice" placeholder="Contoh: 95000" required>
+            </div>
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <label class="form-label small fw-semibold">Waktu Pemenuhan (Lead Time)</label>
+              <input type="text" class="form-control" id="quoteLeadTime" placeholder="Contoh: 4 Hari Kerja" required>
+            </div>
+            <div class="col-6">
+              <label class="form-label small fw-semibold">Masa Berlaku Harga</label>
+              <input type="text" class="form-control" id="quoteValidity" value="30 Hari Kalender" required>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Catatan Teknis / Spesifikasi Tambahan</label>
+            <textarea class="form-control" id="quoteNotes" rows="2" placeholder="Sertakan informasi batch, garansi cacat bahan, atau toleransi teknis..."></textarea>
+          </div>
+          <div class="d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+            <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle me-1"></i> Kirim Penawaran</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: TAMBAH PRODUK KATALOG BARU -->
+<div class="modal fade" id="modalAddProduct" tabindex="-1" aria-labelledby="modalAddProductLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title fw-bold" id="modalAddProductLabel"><i class="bi bi-plus-circle me-2"></i>Tambah Produk ke Katalog Mitra</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="formAddProduct" onsubmit="event.preventDefault(); submitAddProductForm();">
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <label class="form-label small fw-semibold">Kode SKU</label>
+              <input type="text" class="form-control font-monospace" id="newSku" placeholder="Contoh: RM-TEX-008" required>
+            </div>
+            <div class="col-6">
+              <label class="form-label small fw-semibold">Kategori Pasokan</label>
+              <select class="form-select" id="newCategory" required>
+                <option value="Raw Material" selected>Raw Material</option>
+                <option value="Distributor">Distributor</option>
+                <option value="Elektrikal">Elektrikal</option>
+                <option value="Services">Services</option>
+                <option value="Pharmaceutical">Pharmaceutical</option>
+                <option value="Local">Local Supplier</option>
+                <option value="Hardware">Hardware</option>
+                <option value="Software">Software</option>
+              </select>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Nama Produk / Material</label>
+            <input type="text" class="form-control" id="newProdName" placeholder="Contoh: Kain Fleece CVC Tebal 280 gsm" required>
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col-8">
+              <label class="form-label small fw-semibold">Harga Indikatif (IDR)</label>
+              <input type="number" class="form-control" id="newPrice" placeholder="Contoh: 85000" required>
+            </div>
+            <div class="col-4">
+              <label class="form-label small fw-semibold">Satuan</label>
+              <input type="text" class="form-control" id="newUnit" placeholder="kg / pcs / roll" required>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Spesifikasi & Standar Mutu</label>
+            <textarea class="form-control" id="newSpec" rows="2" placeholder="Sertifikasi, ketebalan, toleransi ukuran..." required></textarea>
+          </div>
+          <div class="d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+            <button type="submit" class="btn btn-success"><i class="bi bi-save me-1"></i> Simpan ke Katalog</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function openQuotationModal(rfqId, title, qty, dept) {
+  document.getElementById('rfqModalId').innerText = rfqId;
+  document.getElementById('rfqModalTitle').innerText = title;
+  document.getElementById('rfqModalQty').innerText = qty;
+  document.getElementById('rfqModalDept').innerText = dept;
+}
+
+function showQuotationDetails(rfqId, price, status) {
+  alert('Informasi RFQ ' + rfqId + ':\nHarga Diajukan: ' + price + '\nStatus: ' + status);
+}
+
+function submitQuotationForm() {
+  const rfqId = document.getElementById('rfqModalId').innerText;
+  const price = document.getElementById('quotePrice').value;
+  const leadTime = document.getElementById('quoteLeadTime').value;
+  const modalEl = document.getElementById('modalQuotation');
+  const modal = bootstrap.Modal.getInstance(modalEl);
+  if (modal) modal.hide();
+  alert('Berhasil! Penawaran resmi untuk ' + rfqId + ' sebesar Rp ' + Number(price).toLocaleString('id-ID') + ' (Lead time: ' + leadTime + ') telah terkirim ke Tim Procurement.');
+}
+
+function submitAddProductForm() {
+  const sku = document.getElementById('newSku').value;
+  const name = document.getElementById('newProdName').value;
+  const cat = document.getElementById('newCategory').value;
+  const price = document.getElementById('newPrice').value;
+  const unit = document.getElementById('newUnit').value;
+  const spec = document.getElementById('newSpec').value;
+
+  const table = document.getElementById('productCatalogTable').getElementsByTagName('tbody')[0];
+  const newRow = table.insertRow();
+  newRow.innerHTML = `
+    <td class="ps-3 font-monospace fw-semibold text-muted">${sku}</td>
+    <td>
+      <div class="fw-bold text-dark">${name}</div>
+      <div class="small text-muted">Ditambahkan baru</div>
+    </td>
+    <td><span class="badge bg-primary">${cat}</span></td>
+    <td class="small text-muted">${spec}</td>
+    <td class="fw-bold text-dark">Rp ${Number(price).toLocaleString('id-ID')} <span class="small fw-normal text-muted">/ ${unit}</span></td>
+    <td><span class="badge bg-success">Ready Stock</span></td>
+    <td class="text-end pe-3">
+      <button class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="alert('Update stok untuk ${sku}')"><i class="bi bi-pencil-square"></i></button>
+    </td>
+  `;
+
+  const modalEl = document.getElementById('modalAddProduct');
+  const modal = bootstrap.Modal.getInstance(modalEl);
+  if (modal) modal.hide();
+  document.getElementById('formAddProduct').reset();
+  alert('Produk ' + name + ' (' + sku + ') berhasil ditambahkan ke katalog aktif.');
+}
+</script>
 
 {% else %}
 <!-- Fallback generic view -->
@@ -712,6 +1207,7 @@
 <!-- ========================================================================= -->
 <!-- 5. PRESERVED SYSTEM QUICK NAVIGATION (Zero Regression) -->
 <!-- ========================================================================= -->
+{% if role != 'supplier' %}
 <h5 class="fw-bold mb-3 mt-4 text-dark"><i class="bi bi-grid-3x3-gap me-1"></i> Modul & Akses Cepat Sistem</h5>
 <div class="row g-3">
   <!-- 1. Company Intelligence -->
@@ -753,9 +1249,19 @@
   <div class="col-md-3"><a class="btn btn-outline-primary w-100 py-2 text-start" href="{{ url_for('admin.cron_jobs') }}"><i class="bi bi-clock-history me-2"></i> Kelola Cron Jobs</a></div>
   {% endif %}
 
-  <!-- 8. Procurement Hub -->
-  {% if current_user.role in ['admin', 'business_analyst', 'marketing', 'procurement', 'supplier'] %}
+  <!-- 8. Procurement Hub (Internal Users Only) -->
+  {% if current_user.role in ['admin', 'business_analyst', 'marketing', 'procurement'] %}
   <div class="col-md-3"><a class="btn btn-outline-success w-100 py-2 text-start" href="{{ url_for('procurement.index') }}"><i class="bi bi-box-seam me-2"></i> Procurement Hub</a></div>
   {% endif %}
 </div>
+{% else %}
+<!-- Navigasi Cepat Khusus Portal Mitra Rekanan -->
+<h5 class="fw-bold mb-3 mt-4 text-dark"><i class="bi bi-link-45deg me-1"></i> Pintasan Layanan Mitra Supplier</h5>
+<div class="row g-3">
+  <div class="col-md-3"><a class="btn btn-outline-primary w-100 py-2 text-start" href="#rfq-section"><i class="bi bi-file-earmark-spreadsheet me-2"></i> Permintaan RFQ Baru</a></div>
+  <div class="col-md-3"><a class="btn btn-outline-success w-100 py-2 text-start" href="#katalog-section"><i class="bi bi-boxes me-2"></i> Katalog Produk & SKU</a></div>
+  <div class="col-md-3"><a class="btn btn-outline-warning text-dark w-100 py-2 text-start" href="#po-section"><i class="bi bi-truck me-2"></i> Lacak Pengiriman PO</a></div>
+  <div class="col-md-3"><button class="btn btn-outline-secondary w-100 py-2 text-start" onclick="alert('Hubungi Helpdesk Vendor:\nEmail: procurement-vendor@marketintel.id\nWhatsApp: +62 811-9876-5432')"><i class="bi bi-headset me-2"></i> Bantuan & Helpdesk</button></div>
+</div>
+{% endif %}
 {% endblock %}

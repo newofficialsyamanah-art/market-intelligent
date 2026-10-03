@@ -41,7 +41,7 @@ CATEGORY_LIST = [
 
 @procurement_bp.route("/")
 @login_required
-@roles_required("admin", "business_analyst", "marketing", "management", "procurement", "supplier")
+@roles_required("admin", "business_analyst", "marketing", "management", "procurement")
 def index():
     _ensure_table()
     product = request.args.get("product", "").strip()

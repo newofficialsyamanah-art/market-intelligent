@@ -81,9 +81,17 @@
       <li class="nav-item"><a class="nav-link" href="{{ url_for('reporting.index') }}"><i class="bi bi-journal-text"></i> Reporting</a></li>
       {% endif %}
 
-      <!-- 5. Procurement Intelligence -->
-      {% if current_user.role in ['admin', 'business_analyst', 'marketing', 'management', 'procurement', 'supplier'] %}
+      <!-- 5. Procurement Intelligence (Internal Only) -->
+      {% if current_user.role in ['admin', 'business_analyst', 'marketing', 'management', 'procurement'] %}
       <li class="nav-item"><a class="nav-link" href="{{ url_for('procurement.index') }}"><i class="bi bi-box-seam"></i> Procurement</a></li>
+      {% endif %}
+
+      <!-- 6. Portal Rekanan Supplier -->
+      {% if current_user.role == 'supplier' %}
+      <li class="nav-item"><a class="nav-link" href="{{ url_for('dashboard') }}"><i class="bi bi-speedometer2"></i> Dashboard Mitra</a></li>
+      <li class="nav-item"><a class="nav-link" href="#rfq-section"><i class="bi bi-receipt-cutoff"></i> Permintaan RFQ</a></li>
+      <li class="nav-item"><a class="nav-link" href="#katalog-section"><i class="bi bi-boxes"></i> Katalog Produk</a></li>
+      <li class="nav-item"><a class="nav-link" href="#po-section"><i class="bi bi-truck"></i> Status PO</a></li>
       {% endif %}
 
       <!-- 6. Admin (Only Admin) -->
