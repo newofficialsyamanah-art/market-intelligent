@@ -302,7 +302,7 @@
       </div>
       <h3 class="fw-bold mb-1 text-dark">{{ role_data.total_catalog }}</h3>
       <div class="small text-muted">Komoditas & produk diunggah mitra</div>
-      <a href="{{ url_for('procurement.registered_suppliers') }}" class="stretched-link small text-decoration-none mt-2 d-inline-block text-primary fw-medium">Cek Katalog &rarr;</a>
+      <a href="{{ url_for('procurement.marketplace') }}" class="stretched-link small text-decoration-none mt-2 d-inline-block text-primary fw-medium">Buka e-Katalog &rarr;</a>
     </div>
   </div>
 </div>
@@ -1310,6 +1310,17 @@
 <h5 class="fw-bold mb-3 mt-4 text-dark"><i class="bi bi-link-45deg me-1"></i> Pintasan Khusus Modul Procurement</h5>
 <div class="row g-3">
   <div class="col-md-3">
+    <a class="btn btn-outline-primary w-100 py-3 text-start shadow-sm bg-white" href="{{ url_for('procurement.marketplace') }}">
+      <div class="d-flex align-items-center">
+        <i class="bi bi-shop fs-4 text-primary me-3"></i>
+        <div>
+          <div class="fw-bold text-dark">e-Katalog Marketplace</div>
+          <small class="text-muted">Etalase komoditas & produk supplier</small>
+        </div>
+      </div>
+    </a>
+  </div>
+  <div class="col-md-3">
     <a class="btn btn-outline-primary w-100 py-3 text-start shadow-sm bg-white" href="{{ url_for('procurement.registered_suppliers') }}">
       <div class="d-flex align-items-center">
         <i class="bi bi-shield-check fs-4 text-warning me-3"></i>
@@ -1323,21 +1334,10 @@
   <div class="col-md-3">
     <a class="btn btn-outline-primary w-100 py-3 text-start shadow-sm bg-white" href="{{ url_for('procurement.ai_discovery') }}">
       <div class="d-flex align-items-center">
-        <i class="bi bi-robot fs-4 text-primary me-3"></i>
+        <i class="bi bi-robot fs-4 text-info me-3"></i>
         <div>
           <div class="fw-bold text-dark">Temuan AI (Sourcing)</div>
           <small class="text-muted">Hasil crawling & scraping web</small>
-        </div>
-      </div>
-    </a>
-  </div>
-  <div class="col-md-3">
-    <a class="btn btn-outline-success w-100 py-3 text-start shadow-sm bg-white" href="{{ url_for('auth.register_supplier') }}" target="_blank">
-      <div class="d-flex align-items-center">
-        <i class="bi bi-person-plus fs-4 text-success me-3"></i>
-        <div>
-          <div class="fw-bold text-dark">Registrasi Supplier Baru</div>
-          <small class="text-muted">Buka formulir pendaftaran rekanan</small>
         </div>
       </div>
     </a>

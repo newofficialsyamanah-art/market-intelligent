@@ -19,23 +19,26 @@
     <div class="col-md-4">
       <label class="form-label small text-muted mb-1">Tipe Tugas Eksekusi</label>
       <select name="task_type" class="form-select form-select-sm" required>
-        <optgroup label="Tugas Otomasi Indonesia Market Intelligence">
+        <optgroup label="Tugas Otomasi Indonesia Market Intelligence & Procurement">
+          <option value="procurement_sourcing">Procurement B2B Supplier Sourcing (8 Kategori)</option>
           <option value="education_discovery">Discovery Institusi Pendidikan (PAUD - PT)</option>
           <option value="community_discovery">Discovery Komunitas Olahraga & Mahasiswa</option>
           <option value="social_discovery">Discovery Profil Media Sosial (IG, TikTok, FB, LinkedIn)</option>
           <option value="social_enrichment">Enrichment Media Sosial & Sinyal Jersey Master Org</option>
           <option value="event_refresh">Sinkronisasi Event & Turnamen Olahraga</option>
           <option value="ai_product_scoring">AI Product Fit Scoring (Jersey & Teamwear)</option>
+          <option value="department_contact_scraping">Scraping Kontak Purchasing, HR & Panitia</option>
+          <option value="company_enrichment">Enrichment Data Perusahaan Master (Domain & Kontak)</option>
           <option value="data_quality_check">Audit Kualitas Data & Kelengkapan Kontak</option>
           <option value="duplicate_detection">Deteksi Duplikasi Ambigu (Identity Engine)</option>
           <option value="retry_failed_jobs">Percobaan Ulang Otomatis (Retry Failed Jobs)</option>
           <option value="cache_maintenance">Pembersihan Cache & Berkas Sementara</option>
         </optgroup>
-        <optgroup label="Tugas Kompatibilitas Sistem">
+        <optgroup label="Tugas Pelaporan & Kompatibilitas Sistem">
+          <option value="report_generation">Generate Laporan Berkala</option>
           <option value="scraping">Scraping Sumber URL</option>
           <option value="ai_classification">Klasifikasi Kategori AI</option>
           <option value="enrichment">Enrichment AI Legacy</option>
-          <option value="report_generation">Generate Laporan Berkala</option>
           <option value="discovery_sync">Sync Discovery Sources</option>
         </optgroup>
       </select>
@@ -138,6 +141,14 @@
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button class="btn btn-sm btn-outline-secondary" title="{{ 'Nonaktifkan' if j.is_active else 'Aktifkan' }}">
                   {{ 'Pause' if j.is_active else 'Resume' }}
+                </button>
+              </form>
+
+              <!-- Delete Job -->
+              <form method="post" action="{{ url_for('admin.delete_cron_job', jid=j.id) }}" class="d-inline" onsubmit="return confirm('Hapus permanen cron job \'{{ j.name }}\'?');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="btn btn-sm btn-outline-danger" title="Hapus cron job">
+                  <i class="bi bi-trash"></i>
                 </button>
               </form>
             </td>

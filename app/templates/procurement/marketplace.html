@@ -1,0 +1,589 @@
+{% extends "base.html" %}
+{% block title %}e-Katalog Pasokan & B2B Marketplace - Syamanah Procurement{% endblock %}
+
+{% block content %}
+<!-- Header & Nav Tabs -->
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-3 pb-3 border-bottom">
+  <div>
+    <div class="d-flex align-items-center gap-2 mb-1">
+      <span class="badge" style="background-color: #2E5190; color: #FFFFFF;">
+        <i class="bi bi-shop me-1"></i> e-Katalog B2B
+      </span>
+      <span class="badge" style="background-color: #FEF3C7; color: #B45309; border: 1px solid #FDE68A;">
+        <i class="bi bi-lock-fill me-1"></i> Internal Procurement Only
+      </span>
+      <span class="text-muted small">&bull; Etalase Komoditas Mitra</span>
+    </div>
+    <h3 class="fw-bold mb-1 text-dark">e-Katalog Pasokan & Marketplace Pengadaan</h3>
+    <p class="text-muted small mb-0">Etalase komoditas, bahan baku, dan produk resmi dari mitra supplier Syamanah Tender terkurasi untuk perencanaan dan eksekusi pengadaan.</p>
+  </div>
+  <div class="d-flex flex-wrap gap-2">
+    <a href="{{ url_for('procurement.registered_suppliers') }}" class="btn btn-outline-secondary btn-sm">
+      <i class="bi bi-shield-check me-1"></i> Mitra Terdaftar (Web)
+    </a>
+    <a href="{{ url_for('procurement.ai_discovery') }}" class="btn btn-outline-primary btn-sm">
+      <i class="bi bi-robot me-1"></i> AI Sourcing
+    </a>
+  </div>
+</div>
+
+<!-- Flash Messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+<!-- Top Marketplace KPI Cards -->
+<div class="row g-3 mb-4">
+  <div class="col-sm-6 col-xl-3">
+    <div class="card h-100 p-3 border-0 shadow-sm summary-card">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <span class="text-muted small fw-semibold text-uppercase">Total Produk Terkatalog</span>
+        <div class="icon-circle text-primary bg-primary-subtle"><i class="bi bi-boxes"></i></div>
+      </div>
+      <h3 class="fw-bold mb-1 text-dark">{{ total_products }}</h3>
+      <div class="small text-muted">SKU produk pasokan aktif</div>
+    </div>
+  </div>
+
+  <div class="col-sm-6 col-xl-3">
+    <div class="card h-100 p-3 border-0 shadow-sm summary-card">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <span class="text-muted small fw-semibold text-uppercase">Mitra Penyedia Aktif</span>
+        <div class="icon-circle" style="color: #D9730D; background-color: rgba(217, 115, 13, 0.12);"><i class="bi bi-building-check"></i></div>
+      </div>
+      <h3 class="fw-bold mb-1 text-dark">{{ supplier_count }}</h3>
+      <div class="small text-muted">Vendor yang telah mengunggah katalog</div>
+    </div>
+  </div>
+
+  <div class="col-sm-6 col-xl-3">
+    <div class="card h-100 p-3 border-0 shadow-sm summary-card">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <span class="text-muted small fw-semibold text-uppercase">Produk Siap Pasok (Ready)</span>
+        <div class="icon-circle text-success bg-success-subtle"><i class="bi bi-check-circle"></i></div>
+      </div>
+      <h3 class="fw-bold mb-1 text-dark">{{ ready_products_count }}</h3>
+      <div class="small text-muted">Tersedia langsung di gudang supplier</div>
+    </div>
+  </div>
+
+  <div class="col-sm-6 col-xl-3">
+    <div class="card h-100 p-3 border-0 shadow-sm summary-card">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <span class="text-muted small fw-semibold text-uppercase">Kategori Pasokan</span>
+        <div class="icon-circle text-info bg-info-subtle"><i class="bi bi-tags"></i></div>
+      </div>
+      <h3 class="fw-bold mb-1 text-dark">8 Kategori</h3>
+      <div class="small text-muted">Standar klasifikasi pengadaan B2B</div>
+    </div>
+  </div>
+</div>
+
+<!-- Category Chips Filter (Horizontal Scrollable) -->
+<div class="mb-4 overflow-auto pb-1" style="white-space: nowrap;">
+  <div class="d-inline-flex gap-2">
+    <a href="{{ url_for('procurement.marketplace', q=filters.q, stock_status=filters.stock_status, sort=filters.sort, view=filters.view) }}" 
+       class="btn btn-sm rounded-pill px-3 fw-semibold {% if not filters.category %}btn-primary text-white{% else %}btn-outline-secondary bg-white{% endif %}">
+      <i class="bi bi-grid-fill me-1"></i> Semua Kategori ({{ total_products }})
+    </a>
+    {% for cat in category_list %}
+      {% set c_count = category_counts.get(cat.key, 0) %}
+      <a href="{{ url_for('procurement.marketplace', category=cat.key, q=filters.q, stock_status=filters.stock_status, sort=filters.sort, view=filters.view) }}" 
+         class="btn btn-sm rounded-pill px-3 fw-semibold {% if filters.category == cat.key %}btn-primary text-white{% else %}btn-outline-secondary bg-white{% endif %}">
+        <i class="bi {{ cat.icon }} me-1"></i> {{ cat.label }} ({{ c_count }})
+      </a>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Search & Advanced Filter Toolbar -->
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-body p-3">
+    <form method="get" action="{{ url_for('procurement.marketplace') }}" class="row g-2 align-items-center">
+      <input type="hidden" name="view" value="{{ filters.view }}">
+      {% if filters.category %}
+        <input type="hidden" name="category" value="{{ filters.category }}">
+      {% endif %}
+
+      <!-- 1. Search Bar -->
+      <div class="col-12 col-md-4">
+        <div class="input-group input-group-sm">
+          <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+          <input type="text" name="q" class="form-control border-start-0 ps-0" placeholder="Cari nama produk, SKU, spesifikasi, atau vendor..." value="{{ filters.q }}">
+        </div>
+      </div>
+
+      <!-- 2. Filter Penyedia / Supplier -->
+      <div class="col-6 col-md-3">
+        <select name="supplier_id" class="form-select form-select-sm" onchange="this.form.submit()">
+          <option value="">Semua Penyedia / Vendor</option>
+          {% for s in active_suppliers %}
+            <option value="{{ s.id }}" {% if filters.supplier_id == s.id %}selected{% endif %}>{{ s.company_name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- 3. Status Stok -->
+      <div class="col-6 col-md-2">
+        <select name="stock_status" class="form-select form-select-sm" onchange="this.form.submit()">
+          <option value="">Semua Status Stok</option>
+          <option value="ready" {% if filters.stock_status == 'ready' %}selected{% endif %}>Ready Stock</option>
+          <option value="preorder" {% if filters.stock_status == 'preorder' %}selected{% endif %}>Pre-Order</option>
+          <option value="out_of_stock" {% if filters.stock_status == 'out_of_stock' %}selected{% endif %}>Habis</option>
+        </select>
+      </div>
+
+      <!-- 4. Urutan (Sort) -->
+      <div class="col-8 col-md-2">
+        <select name="sort" class="form-select form-select-sm" onchange="this.form.submit()">
+          <option value="newest" {% if filters.sort == 'newest' %}selected{% endif %}>Terbaru Ditambahkan</option>
+          <option value="price_asc" {% if filters.sort == 'price_asc' %}selected{% endif %}>Harga Terendah</option>
+          <option value="price_desc" {% if filters.sort == 'price_desc' %}selected{% endif %}>Harga Tertinggi</option>
+          <option value="name_asc" {% if filters.sort == 'name_asc' %}selected{% endif %}>Nama Produk A - Z</option>
+        </select>
+      </div>
+
+      <!-- 5. View Switcher & Reset -->
+      <div class="col-4 col-md-1 d-flex gap-1 justify-content-end">
+        <div class="btn-group btn-group-sm" role="group">
+          <a href="{{ url_for('procurement.marketplace', view='grid', q=filters.q, category=filters.category, supplier_id=filters.supplier_id, stock_status=filters.stock_status, sort=filters.sort) }}" 
+             class="btn {% if filters.view == 'grid' %}btn-primary{% else %}btn-outline-secondary{% endif %}" title="Grid View">
+            <i class="bi bi-grid-3x3-gap-fill"></i>
+          </a>
+          <a href="{{ url_for('procurement.marketplace', view='list', q=filters.q, category=filters.category, supplier_id=filters.supplier_id, stock_status=filters.stock_status, sort=filters.sort) }}" 
+             class="btn {% if filters.view == 'list' %}btn-primary{% else %}btn-outline-secondary{% endif %}" title="List Table View">
+            <i class="bi bi-list-ul"></i>
+          </a>
+        </div>
+        {% if filters.q or filters.category or filters.stock_status or filters.supplier_id or filters.sort != 'newest' %}
+          <a href="{{ url_for('procurement.marketplace', view=filters.view) }}" class="btn btn-outline-secondary btn-sm" title="Reset Filter"><i class="bi bi-x-circle"></i></a>
+        {% endif %}
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- 1. GRID VIEW (KARTU PRODUK E-COMMERCE / MARKETPLACE INAPROC STYLE) -->
+<!-- ========================================================================= -->
+{% if filters.view == 'grid' %}
+  {% if product_items %}
+  <div class="row g-3 mb-4">
+    {% for item in product_items %}
+    {% set p = item.product %}
+    {% set sup = item.supplier %}
+    <div class="col-12 col-sm-6 col-md-4 col-xl-3">
+      <div class="card h-100 border-0 shadow-sm product-card transition hover-shadow">
+        
+        <!-- Thumbnail / Foto Produk -->
+        <div class="position-relative overflow-hidden bg-light rounded-top d-flex align-items-center justify-content-center" style="height: 180px;">
+          {% if p.file_path and (p.file_path.endswith('.jpg') or p.file_path.endswith('.jpeg') or p.file_path.endswith('.png') or p.file_path.endswith('.webp')) %}
+            <img src="{{ url_for('static', filename=p.file_path) }}" alt="{{ p.name }}" class="w-100 h-100" style="object-fit: cover;">
+          {% else %}
+            <!-- Gradient Graphic Placeholder by Category -->
+            <div class="w-100 h-100 d-flex flex-column align-items-center justify-content-center text-white" 
+                 style="background: linear-gradient(135deg, {% if p.category == 'raw material' %}#1D4ED8, #3B82F6{% elif p.category == 'distributor' %}#059669, #10B981{% elif p.category == 'elektrikal' %}#D97706, #F59E0B{% elif p.category == 'software' %}#4338CA, #6366F1{% elif p.category == 'hardware' %}#374151, #4B5563{% elif p.category == 'pharmaceutical' %}#DC2626, #EF4444{% else %}#3A7D8A, #2E5190{% endif %});">
+              <i class="bi {% if p.category == 'raw material' %}bi-boxes{% elif p.category == 'distributor' %}bi-truck{% elif p.category == 'elektrikal' %}bi-lightning-charge{% elif p.category == 'software' %}bi-cpu{% elif p.category == 'hardware' %}bi-tools{% elif p.category == 'pharmaceutical' %}bi-capsule{% else %}bi-box-seam{% endif %} fs-1 mb-1"></i>
+              <span class="small fw-semibold text-uppercase font-monospace" style="letter-spacing: 0.5px;">{{ p.category }}</span>
+            </div>
+          {% endif %}
+
+          <!-- Badge Status Stok -->
+          <div class="position-absolute top-0 start-0 m-2">
+            {% if p.stock_status == 'ready' %}
+              <span class="badge bg-success bg-opacity-90 shadow-sm"><i class="bi bi-check-circle me-1"></i>Ready Stock</span>
+            {% elif p.stock_status == 'preorder' %}
+              <span class="badge bg-warning text-dark bg-opacity-90 shadow-sm"><i class="bi bi-clock me-1"></i>Pre-Order</span>
+            {% else %}
+              <span class="badge bg-secondary bg-opacity-90 shadow-sm">Stok Habis</span>
+            {% endif %}
+          </div>
+
+          <!-- SKU Tag -->
+          <div class="position-absolute bottom-0 start-0 m-2">
+            <span class="badge bg-dark bg-opacity-75 text-white font-monospace" style="font-size: 0.65rem;">
+              {{ p.sku or 'SKU-NONE' }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Body Kartu Produk -->
+        <div class="card-body p-3 d-flex flex-column justify-content-between">
+          <div>
+            <!-- Vendor / Rekanan Info -->
+            <div class="d-flex align-items-center justify-content-between mb-1">
+              {% if sup %}
+                <a href="{{ url_for('procurement.detail', supplier_id=sup.id) }}" class="small text-truncate fw-semibold text-decoration-none text-muted" title="{{ sup.company_name }}" style="max-width: 170px;">
+                  <i class="bi bi-building me-1"></i>{{ sup.company_name }}
+                </a>
+                <span class="badge bg-success-subtle text-success border border-success-subtle" style="font-size: 0.6rem;">
+                  <i class="bi bi-patch-check-fill"></i>
+                </span>
+              {% else %}
+                <span class="small text-muted"><i class="bi bi-building me-1"></i>Vendor Rekanan</span>
+              {% endif %}
+            </div>
+
+            <!-- Nama Produk -->
+            <h6 class="fw-bold text-dark mb-1 text-truncate-2" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 42px;" title="{{ p.name }}">
+              {{ p.name }}
+            </h6>
+
+            <!-- Spesifikasi Singkat -->
+            {% if p.specifications %}
+              <p class="small text-muted text-truncate mb-2" title="{{ p.specifications }}">
+                <i class="bi bi-info-circle me-1"></i>{{ p.specifications }}
+              </p>
+            {% else %}
+              <div class="mb-2" style="height: 19px;"></div>
+            {% endif %}
+          </div>
+
+          <div>
+            <!-- Harga & Satuan -->
+            <div class="pt-2 border-top mb-2">
+              <div class="d-flex align-items-baseline gap-1">
+                <span class="fs-5 fw-bold text-primary">
+                  Rp {{ "{:,.0f}".format(p.price).replace(',', '.') }}
+                </span>
+                <small class="text-muted">/ {{ p.unit }}</small>
+              </div>
+              <div class="small text-muted d-flex justify-content-between mt-1">
+                <span>MOQ: <strong>{{ p.min_order or '1' }} {{ p.unit }}</strong></span>
+                <span class="text-truncate" style="max-width: 110px;" title="{{ p.lead_time or 'Ready' }}"><i class="bi bi-stopwatch me-1"></i>{{ p.lead_time or 'Ready' }}</span>
+              </div>
+            </div>
+
+            <!-- Action Buttons: Detail & WhatsApp -->
+            <div class="d-flex gap-1 pt-1">
+              <button class="btn btn-outline-secondary btn-sm flex-fill" data-bs-toggle="modal" data-bs-target="#modalProduct{{ p.id }}">
+                <i class="bi bi-eye me-1"></i> Rincian
+              </button>
+
+              {% if sup and sup.contact_phone %}
+                {% set clean_phone = sup.contact_phone|replace(' ', '')|replace('-', '')|replace('+', '') %}
+                {% if clean_phone.startswith('0') %}
+                  {% set wa_num = '62' ~ clean_phone[1:] %}
+                {% else %}
+                  {% set wa_num = clean_phone %}
+                {% endif %}
+                {% set wa_msg = "Halo " ~ sup.company_name ~ ", kami dari Tim Pengadaan Syamanah berminat dengan produk pasokan Anda: " ~ p.name ~ " (SKU: " ~ (p.sku or '-') ~ "). Mohon informasi ketersediaan stok dan kuotasi penawaran harga pengadaan." %}
+                <a href="https://wa.me/{{ wa_num }}?text={{ wa_msg|urlencode }}" target="_blank" rel="noopener" class="btn btn-success btn-sm px-3" title="Chat WhatsApp PIC Vendor">
+                  <i class="bi bi-whatsapp"></i> Chat
+                </a>
+              {% endif %}
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Rincian Produk & Profil Penyedia -->
+    <div class="modal fade" id="modalProduct{{ p.id }}" tabindex="-1" aria-labelledby="modalProductLabel{{ p.id }}" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow">
+          <div class="modal-header bg-light py-3">
+            <div>
+              <span class="badge" style="background-color: #3A7D8A; color: white;">{{ p.category|title }}</span>
+              <span class="font-monospace text-muted small ms-2">{{ p.sku or 'SKU-NONE' }}</span>
+              <h5 class="modal-title fw-bold text-dark mt-1" id="modalProductLabel{{ p.id }}">{{ p.name }}</h5>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body p-4">
+            <div class="row g-4">
+              <!-- Foto / Dokumen -->
+              <div class="col-md-5 text-center">
+                {% if p.file_path and (p.file_path.endswith('.jpg') or p.file_path.endswith('.jpeg') or p.file_path.endswith('.png') or p.file_path.endswith('.webp')) %}
+                  <img src="{{ url_for('static', filename=p.file_path) }}" alt="{{ p.name }}" class="img-fluid rounded border mb-2" style="max-height: 240px; object-fit: contain;">
+                {% else %}
+                  <div class="rounded bg-light border p-4 d-flex flex-column align-items-center justify-content-center mb-2" style="height: 200px;">
+                    <i class="bi bi-box-seam fs-1 text-primary mb-2"></i>
+                    <span class="text-muted small">Ikon Komoditas Pasokan</span>
+                  </div>
+                {% endif %}
+
+                {% if p.file_path %}
+                  <a href="{{ url_for('static', filename=p.file_path) }}" target="_blank" rel="noopener" class="btn btn-outline-primary btn-sm w-100">
+                    <i class="bi bi-download me-1"></i> Unduh File Brosur / Dokumen
+                  </a>
+                {% endif %}
+              </div>
+
+              <!-- Spesifikasi & Detail Harga -->
+              <div class="col-md-7">
+                <div class="p-3 bg-light rounded mb-3 border">
+                  <div class="small text-muted">Harga Penawaran B2B:</div>
+                  <div class="fs-4 fw-bold text-primary">
+                    Rp {{ "{:,.0f}".format(p.price).replace(',', '.') }} <span class="fs-6 text-muted fw-normal">/ {{ p.unit }}</span>
+                  </div>
+                  <div class="d-flex flex-wrap gap-3 mt-2 pt-2 border-top small">
+                    <div>Minimal Order (MOQ): <strong>{{ p.min_order or '1' }} {{ p.unit }}</strong></div>
+                    <div>Lead Time: <strong>{{ p.lead_time or 'Ready stock' }}</strong></div>
+                    <div>Status: 
+                      {% if p.stock_status == 'ready' %}<span class="text-success fw-bold">Ready Stock</span>{% elif p.stock_status == 'preorder' %}<span class="text-warning fw-bold">Pre-Order</span>{% else %}<span class="text-secondary fw-bold">Habis</span>{% endif %}
+                    </div>
+                  </div>
+                </div>
+
+                <h6 class="fw-bold text-dark mb-1">Spesifikasi Teknis:</h6>
+                <p class="text-secondary small mb-3">{{ p.specifications or 'Spesifikasi detail dapat dikonfirmasi langsung dengan PIC vendor.' }}</p>
+
+                {% if p.description %}
+                  <h6 class="fw-bold text-dark mb-1">Deskripsi Tambahan:</h6>
+                  <p class="text-secondary small mb-3">{{ p.description }}</p>
+                {% endif %}
+
+                <!-- Info Mitra Rekanan -->
+                {% if sup %}
+                <div class="p-3 border rounded bg-white mt-3">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="fw-bold text-dark"><i class="bi bi-building me-1 text-primary"></i> {{ sup.company_name }}</span>
+                    <a href="{{ url_for('procurement.detail', supplier_id=sup.id) }}" class="small text-decoration-none">Buka Profil &rarr;</a>
+                  </div>
+                  <div class="small text-muted mb-1"><i class="bi bi-geo-alt me-1 text-danger"></i> {{ sup.region or 'Indonesia' }}</div>
+                  {% if sup.contact_phone %}
+                    <div class="small text-dark font-monospace mb-2"><i class="bi bi-telephone me-1"></i> {{ sup.contact_phone }}</div>
+                  {% endif %}
+
+                  {% if sup.contact_phone %}
+                    {% set clean_phone = sup.contact_phone|replace(' ', '')|replace('-', '')|replace('+', '') %}
+                    {% if clean_phone.startswith('0') %}
+                      {% set wa_num = '62' ~ clean_phone[1:] %}
+                    {% else %}
+                      {% set wa_num = clean_phone %}
+                    {% endif %}
+                    {% set wa_msg = "Halo " ~ sup.company_name ~ ", kami dari Tim Pengadaan Syamanah tertarik dengan produk " ~ p.name ~ " (SKU: " ~ (p.sku or '-') ~ "). Mohon info kuotasi pengadaan resmi." %}
+                    <a href="https://wa.me/{{ wa_num }}?text={{ wa_msg|urlencode }}" target="_blank" rel="noopener" class="btn btn-success btn-sm w-100 fw-semibold">
+                      <i class="bi bi-whatsapp me-2"></i> Negosiasi via WhatsApp
+                    </a>
+                  {% endif %}
+                </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer bg-light py-2">
+            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Tutup</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% else %}
+  <!-- Empty State Grid -->
+  <div class="card border-0 shadow-sm text-center py-5 mb-4">
+    <div class="card-body">
+      <i class="bi bi-cart-x fs-1 text-muted d-block mb-3"></i>
+      <h5 class="fw-bold text-dark mb-1">Belum Ada Produk Pasokan yang Sesuai</h5>
+      <p class="text-muted small mb-3">Tidak ditemukan item produk katalog pasokan pada kriteria filter atau kata kunci ini.</p>
+      {% if filters.q or filters.category or filters.stock_status or filters.supplier_id %}
+        <a href="{{ url_for('procurement.marketplace') }}" class="btn btn-outline-primary btn-sm">
+          <i class="bi bi-arrow-counterclockwise me-1"></i> Reset Seluruh Filter
+        </a>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+
+<!-- ========================================================================= -->
+<!-- 2. LIST VIEW (TABEL KOMPARASI HARGA E-KATALOG INAPROC / LKPP STYLE) -->
+<!-- ========================================================================= -->
+{% else %}
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+      <h6 class="mb-0 fw-bold text-dark d-flex align-items-center gap-2">
+        <i class="bi bi-table text-primary"></i> Tabel Komparasi Harga & Komoditas Pengadaan
+      </h6>
+      <span class="badge" style="background-color: #3A7D8A; color: white;">{{ product_items|length }} Item Ditampilkan</span>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light small text-uppercase text-secondary">
+          <tr>
+            <th class="ps-3" style="width: 60px;">Item</th>
+            <th>Nama Produk & SKU</th>
+            <th>Kategori</th>
+            <th>Penyedia & Lokasi</th>
+            <th>Harga Satuan B2B</th>
+            <th>MOQ & Lead Time</th>
+            <th>Status Stok</th>
+            <th class="text-end pe-3" style="min-width: 130px;">Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for item in product_items %}
+        {% set p = item.product %}
+        {% set sup = item.supplier %}
+        <tr>
+          <!-- 1. Foto -->
+          <td class="ps-3">
+            {% if p.file_path and (p.file_path.endswith('.jpg') or p.file_path.endswith('.jpeg') or p.file_path.endswith('.png') or p.file_path.endswith('.webp')) %}
+              <img src="{{ url_for('static', filename=p.file_path) }}" alt="{{ p.name }}" class="rounded border" style="width: 44px; height: 44px; object-fit: cover;">
+            {% else %}
+              <div class="rounded bg-light border text-primary d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
+                <i class="bi bi-box-seam fs-5"></i>
+              </div>
+            {% endif %}
+          </td>
+
+          <!-- 2. Nama & SKU -->
+          <td>
+            <div class="fw-bold text-dark">{{ p.name }}</div>
+            <div class="small font-monospace text-muted">{{ p.sku or 'SKU-NONE' }}</div>
+            {% if p.specifications %}
+              <small class="text-secondary text-truncate d-block" style="max-width: 250px;" title="{{ p.specifications }}">{{ p.specifications }}</small>
+            {% endif %}
+          </td>
+
+          <!-- 3. Kategori -->
+          <td>
+            <span class="badge bg-light text-dark border">{{ p.category|title }}</span>
+          </td>
+
+          <!-- 4. Penyedia -->
+          <td>
+            {% if sup %}
+              <a href="{{ url_for('procurement.detail', supplier_id=sup.id) }}" class="fw-semibold text-dark text-decoration-none d-block">
+                {{ sup.company_name }}
+              </a>
+              <small class="text-muted"><i class="bi bi-geo-alt"></i> {{ sup.region or 'Indonesia' }}</small>
+            {% else %}
+              <span class="text-muted">-</span>
+            {% endif %}
+          </td>
+
+          <!-- 5. Harga -->
+          <td>
+            <div class="fw-bold text-primary">Rp {{ "{:,.0f}".format(p.price).replace(',', '.') }}</div>
+            <small class="text-muted">per {{ p.unit }}</small>
+          </td>
+
+          <!-- 6. MOQ & Lead Time -->
+          <td>
+            <div class="small fw-semibold">{{ p.min_order or '1' }} {{ p.unit }}</div>
+            <small class="text-muted">{{ p.lead_time or 'Ready' }}</small>
+          </td>
+
+          <!-- 7. Status Stok -->
+          <td>
+            {% if p.stock_status == 'ready' %}
+              <span class="badge bg-success-subtle text-success border border-success-subtle">Ready</span>
+            {% elif p.stock_status == 'preorder' %}
+              <span class="badge bg-warning-subtle text-warning border border-warning-subtle">Pre-Order</span>
+            {% else %}
+              <span class="badge bg-secondary-subtle text-secondary border">Habis</span>
+            {% endif %}
+          </td>
+
+          <!-- 8. Aksi -->
+          <td class="text-end pe-3">
+            <div class="d-flex justify-content-end gap-1">
+              <button class="btn btn-outline-primary btn-sm py-1 px-2" data-bs-toggle="modal" data-bs-target="#modalProductList{{ p.id }}" title="Lihat Rincian">
+                <i class="bi bi-eye"></i>
+              </button>
+
+              {% if sup and sup.contact_phone %}
+                {% set clean_phone = sup.contact_phone|replace(' ', '')|replace('-', '')|replace('+', '') %}
+                {% if clean_phone.startswith('0') %}
+                  {% set wa_num = '62' ~ clean_phone[1:] %}
+                {% else %}
+                  {% set wa_num = clean_phone %}
+                {% endif %}
+                {% set wa_msg = "Halo " ~ sup.company_name ~ ", kami dari Tim Pengadaan Syamanah tertarik dengan produk " ~ p.name ~ " (SKU: " ~ (p.sku or '-') ~ ")." %}
+                <a href="https://wa.me/{{ wa_num }}?text={{ wa_msg|urlencode }}" target="_blank" rel="noopener" class="btn btn-outline-success btn-sm py-1 px-2" title="Chat WhatsApp">
+                  <i class="bi bi-whatsapp"></i>
+                </a>
+              {% endif %}
+            </div>
+
+            <!-- Modal List View -->
+            <div class="modal fade text-start" id="modalProductList{{ p.id }}" tabindex="-1" aria-hidden="true">
+              <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow">
+                  <div class="modal-header bg-light">
+                    <h6 class="modal-title fw-bold text-dark">{{ p.name }}</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body p-3 small">
+                    <div class="fs-5 fw-bold text-primary mb-2">Rp {{ "{:,.0f}".format(p.price).replace(',', '.') }} / {{ p.unit }}</div>
+                    <div class="mb-2"><strong>SKU:</strong> {{ p.sku or '-' }} &bull; <strong>Kategori:</strong> {{ p.category|title }}</div>
+                    <div class="mb-2"><strong>Spesifikasi:</strong> {{ p.specifications or '-' }}</div>
+                    <div class="mb-2"><strong>Penyedia:</strong> {{ sup.company_name if sup else '-' }} ({{ sup.region if sup else '-' }})</div>
+                    {% if p.file_path %}
+                      <a href="{{ url_for('static', filename=p.file_path) }}" target="_blank" class="btn btn-outline-primary btn-sm w-100 mt-2"><i class="bi bi-download me-1"></i>Unduh Dokumen Brosur</a>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="8" class="text-center py-5 text-muted">
+            <i class="bi bi-cart-x fs-2 d-block mb-2"></i>
+            Tidak ada produk pasokan yang ditemukan pada filter ini.
+          </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endif %}
+
+<!-- Paginasi Responsif -->
+{% if pagination and pagination.pages > 1 %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div class="small text-muted">
+    Halaman <strong>{{ pagination.page }}</strong> dari <strong>{{ pagination.pages }}</strong> (Total {{ pagination.total }} produk pasokan)
+  </div>
+  <nav aria-label="Page navigation">
+    <ul class="pagination pagination-sm mb-0">
+      {% if pagination.has_prev %}
+        <li class="page-item">
+          <a class="page-link" href="{{ url_for('procurement.marketplace', page=pagination.prev_num, q=filters.q, category=filters.category, stock_status=filters.stock_status, supplier_id=filters.supplier_id, sort=filters.sort, view=filters.view) }}">&laquo; Prev</a>
+        </li>
+      {% else %}
+        <li class="page-item disabled"><span class="page-link">&laquo; Prev</span></li>
+      {% endif %}
+
+      {% for p_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+        {% if p_num %}
+          {% if p_num == pagination.page %}
+            <li class="page-item active"><span class="page-link">{{ p_num }}</span></li>
+          {% else %}
+            <li class="page-item">
+              <a class="page-link" href="{{ url_for('procurement.marketplace', page=p_num, q=filters.q, category=filters.category, stock_status=filters.stock_status, supplier_id=filters.supplier_id, sort=filters.sort, view=filters.view) }}">{{ p_num }}</a>
+            </li>
+          {% endif %}
+        {% else %}
+          <li class="page-item disabled"><span class="page-link">&hellip;</span></li>
+        {% endif %}
+      {% endfor %}
+
+      {% if pagination.has_next %}
+        <li class="page-item">
+          <a class="page-link" href="{{ url_for('procurement.marketplace', page=pagination.next_num, q=filters.q, category=filters.category, stock_status=filters.stock_status, supplier_id=filters.supplier_id, sort=filters.sort, view=filters.view) }}">Next &raquo;</a>
+        </li>
+      {% else %}
+        <li class="page-item disabled"><span class="page-link">Next &raquo;</span></li>
+      {% endif %}
+    </ul>
+  </nav>
+</div>
+{% endif %}
+
+{% endblock %}

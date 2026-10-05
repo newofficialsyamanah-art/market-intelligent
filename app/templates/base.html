@@ -108,6 +108,8 @@
             <i class="bi bi-box-seam text-primary"></i> Procurement
           </a>
           <ul class="dropdown-menu shadow-sm">
+            <li><a class="dropdown-item py-2" href="{{ url_for('procurement.marketplace') }}"><i class="bi bi-shop me-2 text-primary"></i> <strong>e-Katalog Marketplace</strong> <span class="badge bg-primary-subtle text-primary ms-1 small">B2B</span></a></li>
+            <li><hr class="dropdown-divider my-1"></li>
             <li><a class="dropdown-item" href="{{ url_for('procurement.registered_suppliers') }}"><i class="bi bi-shield-check me-2" style="color: #D9730D;"></i> Mitra Terdaftar (Web)</a></li>
             <li><a class="dropdown-item" href="{{ url_for('procurement.ai_discovery') }}"><i class="bi bi-robot me-2 text-primary"></i> Hasil Temuan AI (Sourcing)</a></li>
           </ul>

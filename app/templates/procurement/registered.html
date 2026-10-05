@@ -21,8 +21,13 @@
   </div>
 </div>
 
-<!-- Tab Navigasi Pemisah Halaman: Terdaftar (Web) vs Temuan AI -->
-<ul class="nav nav-pills mb-4 p-1 bg-light rounded border d-inline-flex">
+<!-- Tab Navigasi: e-Katalog Marketplace vs Terdaftar (Web) vs Temuan AI -->
+<ul class="nav nav-pills mb-4 p-1 bg-light rounded border d-inline-flex flex-wrap">
+  <li class="nav-item">
+    <a class="nav-link text-secondary fw-semibold py-2 px-3" href="{{ url_for('procurement.marketplace') }}">
+      <i class="bi bi-shop me-1 text-primary"></i> e-Katalog Marketplace ({{ total_catalog_items }})
+    </a>
+  </li>
   <li class="nav-item">
     <a class="nav-link active fw-semibold py-2 px-3" style="background-color: #3A7D8A;" href="{{ url_for('procurement.registered_suppliers') }}">
       <i class="bi bi-shield-check me-1"></i> Mitra Terdaftar via Web ({{ total_registered }})

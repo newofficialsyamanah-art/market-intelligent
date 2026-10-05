@@ -424,3 +424,121 @@ def detail(supplier_id):
         products=products,
         creator_user=creator_user,
     )
+
+
+# ==============================================================================
+# 5. E-KATALOG PASOKAN & B2B MARKETPLACE PENGADAAN (INTERNAL PROCUREMENT ONLY)
+# ==============================================================================
+@procurement_bp.route("/marketplace")
+@procurement_bp.route("/catalog")
+@login_required
+@roles_required("admin", "business_analyst", "marketing", "management", "procurement")
+def marketplace():
+    """Etalase B2B Marketplace & e-Katalog internal untuk tim procurement memantau seluruh produk pasokan supplier."""
+    _ensure_table()
+    from sqlalchemy import func
+    from app.models import SupplierProduct, User
+
+    search_q = request.args.get("q", "").strip()
+    category = request.args.get("category", "").strip().lower()
+    stock_status = request.args.get("stock_status", "").strip().lower()
+    supplier_id = request.args.get("supplier_id", type=int)
+    min_price = request.args.get("min_price", type=float)
+    max_price = request.args.get("max_price", type=float)
+    sort_by = request.args.get("sort", "newest").strip().lower()
+    view_mode = request.args.get("view", "grid").strip().lower()
+    page = request.args.get("page", 1, type=int)
+
+    query = SupplierProduct.query.join(ProcurementSupplier, SupplierProduct.supplier_id == ProcurementSupplier.id, isouter=True)
+
+    # Filter keyword (Product Name, SKU, Specs, Desc, Vendor Name)
+    if search_q:
+        query = query.filter(
+            db.or_(
+                SupplierProduct.name.ilike(f"%{search_q}%"),
+                SupplierProduct.sku.ilike(f"%{search_q}%"),
+                SupplierProduct.description.ilike(f"%{search_q}%"),
+                SupplierProduct.specifications.ilike(f"%{search_q}%"),
+                ProcurementSupplier.company_name.ilike(f"%{search_q}%"),
+            )
+        )
+
+    # Filter category
+    if category:
+        query = query.filter(SupplierProduct.category == category)
+
+    # Filter stock status
+    if stock_status:
+        query = query.filter(SupplierProduct.stock_status == stock_status)
+
+    # Filter specific supplier
+    if supplier_id:
+        query = query.filter(SupplierProduct.supplier_id == supplier_id)
+
+    # Filter price range
+    if min_price is not None:
+        query = query.filter(SupplierProduct.price >= min_price)
+    if max_price is not None:
+        query = query.filter(SupplierProduct.price <= max_price)
+
+    # Sorting
+    if sort_by == "price_asc":
+        query = query.order_by(SupplierProduct.price.asc())
+    elif sort_by == "price_desc":
+        query = query.order_by(SupplierProduct.price.desc())
+    elif sort_by == "name_asc":
+        query = query.order_by(SupplierProduct.name.asc())
+    else:  # newest
+        query = query.order_by(SupplierProduct.created_at.desc())
+
+    per_page = 16 if view_mode == "grid" else 20
+    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+    products = pagination.items
+
+    # KPI & Metrik Summary
+    total_products = SupplierProduct.query.count()
+    ready_products_count = SupplierProduct.query.filter_by(stock_status="ready").count()
+    
+    # Hitung jumlah vendor unik yang telah mengunggah produk
+    supplier_count = db.session.query(func.count(func.distinct(SupplierProduct.supplier_id))).scalar() or 0
+
+    # Distribusi kategori
+    category_counts_tuples = db.session.query(SupplierProduct.category, func.count(SupplierProduct.id)).group_by(SupplierProduct.category).all()
+    category_counts = {str(k).lower(): v for k, v in category_counts_tuples if k}
+
+    # Daftar supplier yang aktif untuk filter dropdown
+    active_supplier_ids = [r[0] for r in db.session.query(SupplierProduct.supplier_id).distinct().all() if r[0]]
+    active_suppliers = ProcurementSupplier.query.filter(ProcurementSupplier.id.in_(active_supplier_ids)).order_by(ProcurementSupplier.company_name.asc()).all() if active_supplier_ids else []
+
+    # Format produk dengan data supplier fallback jika p.supplier_id null tapi user_id ada
+    product_items = []
+    for p in products:
+        sup = p.supplier
+        if not sup and p.user_id:
+            sup = ProcurementSupplier.query.filter_by(created_by=p.user_id).first()
+        product_items.append({
+            "product": p,
+            "supplier": sup
+        })
+
+    return render_template(
+        "procurement/marketplace.html",
+        product_items=product_items,
+        pagination=pagination,
+        filters={
+            "q": search_q,
+            "category": category,
+            "stock_status": stock_status,
+            "supplier_id": supplier_id,
+            "min_price": min_price,
+            "max_price": max_price,
+            "sort": sort_by,
+            "view": view_mode,
+        },
+        category_list=CATEGORY_LIST,
+        category_counts=category_counts,
+        total_products=total_products,
+        ready_products_count=ready_products_count,
+        supplier_count=supplier_count,
+        active_suppliers=active_suppliers,
+    )

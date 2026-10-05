@@ -439,6 +439,20 @@ def retry_cron_job(jid):
     return redirect(url_for("admin.cron_jobs"))
 
 
+@admin_bp.route("/cron-jobs/<int:jid>/delete", methods=["POST"])
+@login_required
+@roles_required("admin")
+def delete_cron_job(jid):
+    job = CronJob.query.get_or_404(jid)
+    job_name = job.name
+    unschedule_job(job.id)
+    db.session.delete(job)
+    db.session.commit()
+    log_activity("delete_cron_job", f"Cron job '{job_name}' dihapus")
+    flash(f"Cron job '{job_name}' berhasil dihapus.", "success")
+    return redirect(url_for("admin.cron_jobs"))
+
+
 # ---------- Discovery Triggers (Education, Community, Social) ----------
 
 @admin_bp.route("/discovery/education/trigger", methods=["POST"])

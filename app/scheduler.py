@@ -65,6 +65,8 @@ TASK_TYPES = {
     "retry_failed_jobs",
     "cache_maintenance",
     "department_contact_scraping",
+    "procurement_sourcing",
+    "company_enrichment",
     # Legacy compatibility tasks
     "scraping",
     "ai_classification",
@@ -327,6 +329,50 @@ def _task_cache_maintenance() -> Dict[str, Any]:
     }
 
 
+def _task_procurement_sourcing() -> Dict[str, Any]:
+    """Sourcing berkala B2B supplier & vendor pengadaan across 8 kategori bisnis."""
+    import random
+    from app.services.procurement_service import search_suppliers
+    categories = [
+        "raw material",
+        "distributor",
+        "elektrikal",
+        "services",
+        "pharmaceutical",
+        "local",
+        "hardware",
+        "software",
+    ]
+    target_category = random.choice(categories)
+    query_used, saved = search_suppliers(
+        product=target_category,
+        material="",
+        region="Indonesia",
+        limit=6,
+        user_id=None,
+        use_ai_pipeline=True,
+    )
+    return {
+        "detail": f"Procurement Sourcing ({target_category}): {len(saved)} supplier ditemukan & disinkronkan",
+        "processed": len(saved),
+        "success": len(saved),
+        "failed": 0
+    }
+
+
+def _task_company_enrichment() -> Dict[str, Any]:
+    """Enrichment berkala master organization untuk melengkapi website, domain, dan kontak."""
+    from app.services.company_enrichment import CompanyEnrichmentService
+    svc = CompanyEnrichmentService()
+    res = svc.run_batch(limit=20, dry_run=False, resume=True)
+    return {
+        "detail": f"Company Enrichment: {res['organizations_processed']} diproses, {res['auto_accepted']} auto-accepted, {res['review_candidates']} review",
+        "processed": res["organizations_processed"],
+        "success": res["auto_accepted"],
+        "failed": res["errors"]
+    }
+
+
 # =========================================================================
 # LEGACY TASKS (Preserved for compatibility)
 # =========================================================================
@@ -461,6 +507,10 @@ def _run_task(task_type: str) -> Dict[str, Any]:
             "success": res["orgs_enriched"],
             "failed": 0
         }
+    if task_type == "procurement_sourcing":
+        return _task_procurement_sourcing()
+    if task_type == "company_enrichment":
+        return _task_company_enrichment()
     # Legacy
     if task_type == "scraping":
         return _scrape_sources()
@@ -483,6 +533,8 @@ def execute_job(app: Flask, job_id: int, force: bool = False):
     """Mengeksekusi cron job secara nyata, idempotent, dan mencatat metrik durasi,
     jumlah record yang diproses, keberhasilan, serta waktu eksekusi berikutnya.
     """
+    if hasattr(app, "_get_current_object"):
+        app = app._get_current_object()
     with app.app_context():
         job = db.session.get(CronJob, job_id)
         if not job or (not job.is_active and not force):
@@ -524,6 +576,8 @@ def execute_job(app: Flask, job_id: int, force: bool = False):
 def schedule_job(app: Flask, job: CronJob):
     """Mendaftarkan CronJob ke scheduler aktif."""
     validate_schedule(job.schedule_cron)
+    if hasattr(app, "_get_current_object"):
+        app = app._get_current_object()
     if _scheduler:
         _scheduler.add_job(
             execute_job,
