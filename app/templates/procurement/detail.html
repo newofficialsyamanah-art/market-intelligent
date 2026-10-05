@@ -1,98 +1,287 @@
 {% extends "base.html" %}
-{% block title %}Detail Supplier - {{ supplier.company_name }}{% endblock %}
+{% block title %}Detail Supplier - {{ supplier.company_name }} | Syamanah Procurement{% endblock %}
+
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-3">
+<!-- Breadcrumb & Top Bar -->
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4 pb-3 border-bottom">
   <div>
-    <a href="{{ url_for('procurement.index') }}" class="small text-decoration-none text-secondary">
-      <i class="bi bi-arrow-left me-1"></i>Kembali ke Daftar Supplier
-    </a>
-    <h3 class="mt-2 mb-1 fw-bold">{{ supplier.company_name }}</h3>
-    <div class="text-muted">
-      <span class="badge bg-light text-dark border me-1">{{ supplier.product|title }}</span>
-      {% if supplier.material %}<span class="text-secondary small">{{ supplier.material }}</span>{% endif %}
-      {% if supplier.region %}<span class="text-muted small"> · <i class="bi bi-geo-alt"></i>{{ supplier.region }}</span>{% endif %}
+    <div class="d-flex align-items-center gap-2 mb-2">
+      {% if supplier.created_by %}
+        <a href="{{ url_for('procurement.registered_suppliers') }}" class="btn btn-sm btn-outline-secondary py-1 px-2 text-decoration-none">
+          <i class="bi bi-arrow-left me-1"></i> Kembali ke Mitra Terdaftar (Web)
+        </a>
+      {% else %}
+        <a href="{{ url_for('procurement.ai_discovery') }}" class="btn btn-sm btn-outline-secondary py-1 px-2 text-decoration-none">
+          <i class="bi bi-arrow-left me-1"></i> Kembali ke Temuan AI
+        </a>
+      {% endif %}
+      <span class="text-muted small">&bull;</span>
+      <span class="badge" style="background-color: #3A7D8A; color: #FFFFFF;">
+        <i class="bi bi-box-seam me-1"></i> Procurement
+      </span>
+      {% if supplier.created_by %}
+        <span class="badge" style="background-color: #FEF3C7; color: #B45309; border: 1px solid #FDE68A;">
+          <i class="bi bi-shield-check me-1"></i> Mitra Syamanah Tender
+        </span>
+      {% else %}
+        <span class="badge bg-light text-secondary border">
+          <i class="bi bi-globe me-1"></i> AI Web Discovery
+        </span>
+      {% endif %}
+    </div>
+
+    <div class="d-flex flex-wrap align-items-baseline gap-2">
+      <h3 class="fw-bold mb-0 text-dark">{{ supplier.company_name }}</h3>
+      {% if company_profile.get('business_entity') %}
+        <span class="badge bg-secondary-subtle text-dark border">{{ company_profile.get('business_entity') }}</span>
+      {% endif %}
+      <span class="badge bg-light text-dark border">{{ supplier.product|title }}</span>
+    </div>
+    <div class="text-muted small mt-1">
+      {% if supplier.material %}<span class="text-secondary fw-semibold">{{ supplier.material }}</span> &bull; {% endif %}
+      <i class="bi bi-geo-alt text-danger me-1"></i>{{ supplier.region or 'Indonesia' }}
+      {% if supplier.created_at %} &bull; Terdaftar sejak {{ supplier.created_at.strftime('%d %B %Y') }}{% endif %}
     </div>
   </div>
-  <div class="d-flex align-items-center gap-2">
-    <span class="badge {% if supplier.fit_score >= 85 %}bg-success{% elif supplier.fit_score >= 65 %}bg-primary{% elif supplier.fit_score >= 50 %}bg-warning text-dark{% else %}bg-secondary{% endif %} fs-6 py-2 px-3">
-      AI Fit: {{ supplier.fit_score }}/100
-    </span>
-    <form method="post" action="{{ url_for('procurement.delete', supplier_id=supplier.id) }}" onsubmit="return confirm('Hapus supplier {{ supplier.company_name }}?');">
+
+  <div class="d-flex flex-wrap align-items-center gap-2 w-100 w-md-auto">
+    <!-- Tombol Verifikasi Rekanan -->
+    <form method="post" action="{{ url_for('procurement.verify_supplier', supplier_id=supplier.id) }}" class="d-inline">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <button class="btn btn-outline-danger btn-sm" title="Hapus supplier"><i class="bi bi-trash me-1"></i>Hapus</button>
+      <input type="hidden" name="next" value="{{ request.url }}">
+      {% if supplier.verification_status == 'verified' %}
+        <button type="submit" class="btn btn-sm btn-outline-success text-success bg-success-subtle border-success-subtle fw-semibold" title="Klik untuk membatalkan status terverifikasi">
+          <i class="bi bi-patch-check-fill me-1"></i> Rekanan Terverifikasi
+        </button>
+      {% else %}
+        <button type="submit" class="btn btn-sm text-white fw-semibold" style="background-color: #3A7D8A;" title="Verifikasi supplier ini sebagai rekanan resmi pengadaan">
+          <i class="bi bi-shield-check me-1"></i> Verifikasi Rekanan
+        </button>
+      {% endif %}
+    </form>
+
+    <!-- WhatsApp Quick Contact -->
+    {% if supplier.contact_phone %}
+      {% set clean_phone = supplier.contact_phone|replace(' ', '')|replace('-', '')|replace('+', '') %}
+      {% if clean_phone.startswith('0') %}
+        {% set wa_num = '62' ~ clean_phone[1:] %}
+      {% else %}
+        {% set wa_num = clean_phone %}
+      {% endif %}
+      {% set wa_msg = "Halo " ~ supplier.company_name ~ ", kami dari Tim Pengadaan / Procurement Syamanah ingin mendiskusikan kebutuhan pasokan rekanan." %}
+      <a href="https://wa.me/{{ wa_num }}?text={{ wa_msg|urlencode }}" target="_blank" rel="noopener" class="btn btn-sm btn-success fw-semibold">
+        <i class="bi bi-whatsapp me-1"></i> Hubungi WhatsApp
+      </a>
+    {% endif %}
+
+    <!-- Hapus Supplier -->
+    <form method="post" action="{{ url_for('procurement.delete', supplier_id=supplier.id) }}" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data supplier {{ supplier.company_name }}?');" class="d-inline">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="btn btn-outline-danger btn-sm" title="Hapus supplier"><i class="bi bi-trash"></i></button>
     </form>
   </div>
 </div>
 
-<div class="row g-3">
+<!-- Flash Messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+<div class="row g-4">
+  <!-- Kolom Kiri: Profil, Legalitas, dan Katalog Produk -->
   <div class="col-lg-8">
-    <!-- Profil & Ringkasan -->
-    <div class="card border-0 shadow-sm mb-3">
+
+    <!-- 1. Ringkasan & Profil Perusahaan -->
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+        <h6 class="mb-0 fw-bold text-dark d-flex align-items-center gap-2">
+          <i class="bi bi-building text-primary"></i> Profil & Ringkasan Perusahaan
+        </h6>
+        <span class="badge {% if supplier.fit_score >= 85 %}bg-success{% elif supplier.fit_score >= 65 %}bg-primary{% elif supplier.fit_score >= 50 %}bg-warning text-dark{% else %}bg-secondary{% endif %} px-2 py-1">
+          AI Fit Score: {{ supplier.fit_score }}/100
+        </span>
+      </div>
       <div class="card-body">
-        <h5 class="fw-bold mb-3"><i class="bi bi-building text-primary me-2"></i>Profil & Deskripsi Supplier</h5>
-        <p class="text-secondary" style="line-height: 1.6;">{{ supplier.description or 'Deskripsi belum tersedia.' }}</p>
-        
-        <hr class="my-3">
-        
-        <dl class="row mb-0">
-          <dt class="col-sm-3 text-muted">Wilayah / Lokasi</dt>
-          <dd class="col-sm-9">{{ supplier.region or 'Indonesia' }}</dd>
-          
-          <dt class="col-sm-3 text-muted">Material Spesifik</dt>
-          <dd class="col-sm-9">{{ supplier.material or 'Material umum apparel' }}</dd>
+        <p class="text-secondary mb-3" style="line-height: 1.6;">
+          {{ supplier.description or 'Belum ada ringkasan deskripsi bisnis untuk rekanan ini.' }}
+        </p>
 
-          <dt class="col-sm-3 text-muted">Kontak Telepon / WA</dt>
-          <dd class="col-sm-9">
-            {% if supplier.contact_phone %}
-              {% set clean_phone = supplier.contact_phone|replace(' ', '')|replace('-', '')|replace('+', '') %}
-              {% if clean_phone.startswith('0') %}
-                {% set wa_num = '62' ~ clean_phone[1:] %}
-              {% else %}
-                {% set wa_num = clean_phone %}
-              {% endif %}
-              <div class="d-flex align-items-center gap-2">
-                <span class="font-monospace fw-semibold">{{ supplier.contact_phone }}</span>
-                <a href="https://wa.me/{{ wa_num }}" target="_blank" rel="noopener" class="btn btn-sm btn-success rounded-pill px-3 py-1">
-                  <i class="bi bi-whatsapp me-1"></i>Chat WhatsApp
-                </a>
-              </div>
-            {% else %}
-              <span class="text-muted">-</span>
-            {% endif %}
-          </dd>
-
-          <dt class="col-sm-3 text-muted">Email Kontak</dt>
-          <dd class="col-sm-9">
-            {% if supplier.contact_email %}
-              <a href="mailto:{{ supplier.contact_email }}" class="text-decoration-none">{{ supplier.contact_email }}</a>
-            {% else %}
-              <span class="text-muted">-</span>
-            {% endif %}
-          </dd>
-
-          <dt class="col-sm-3 text-muted">Website Resmi</dt>
-          <dd class="col-sm-9">
-            {% if supplier.website %}
-              <a href="{{ supplier.website }}" target="_blank" rel="noopener" class="text-decoration-none">
-                {{ supplier.website }} <i class="bi bi-box-arrow-up-right small ms-1"></i>
-              </a>
-            {% else %}
-              <span class="text-muted">-</span>
-            {% endif %}
-          </dd>
-        </dl>
+        <div class="row g-3 pt-2 border-top">
+          <div class="col-sm-6">
+            <span class="text-muted small d-block">Badan Usaha</span>
+            <span class="fw-semibold text-dark">{{ company_profile.get('business_entity') or 'PT / CV' }}</span>
+          </div>
+          <div class="col-sm-6">
+            <span class="text-muted small d-block">Kategori Pengadaan</span>
+            <span class="fw-semibold text-dark">{{ supplier.product|title }}</span>
+          </div>
+          <div class="col-sm-6">
+            <span class="text-muted small d-block">Komoditas / Material Spesifik</span>
+            <span class="fw-semibold text-dark">{{ supplier.material or '-' }}</span>
+          </div>
+          <div class="col-sm-6">
+            <span class="text-muted small d-block">Wilayah / Domisili Operasional</span>
+            <span class="fw-semibold text-dark">{{ supplier.region or '-' }}</span>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Rekomendasi AI & Next Steps -->
-    <div class="card border-0 shadow-sm">
+    <!-- 2. Legalitas & Alamat Pabrik / Gudang (Jika Mitra Terdaftar) -->
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-white py-3">
+        <h6 class="mb-0 fw-bold text-dark d-flex align-items-center gap-2">
+          <i class="bi bi-file-earmark-check text-success"></i> Dokumen Legalitas & Alamat Operasional
+        </h6>
+      </div>
       <div class="card-body">
-        <h5 class="fw-bold mb-3"><i class="bi bi-robot text-primary me-2"></i>Evaluasi & Rekomendasi AI</h5>
+        <div class="row g-3">
+          <div class="col-sm-6">
+            <div class="p-3 bg-light rounded border">
+              <span class="text-muted small d-block">Nomor Pokok Wajib Pajak (NPWP)</span>
+              <span class="fw-bold font-monospace text-dark">{{ company_profile.get('npwp') or 'Belum dilampirkan' }}</span>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="p-3 bg-light rounded border">
+              <span class="text-muted small d-block">Nomor Induk Berusaha (NIB)</span>
+              <span class="fw-bold font-monospace text-dark">{{ company_profile.get('nib') or 'Belum dilampirkan' }}</span>
+            </div>
+          </div>
+          <div class="col-12">
+            <div class="p-3 bg-light rounded border">
+              <span class="text-muted small d-block mb-1">Alamat Kantor / Gudang Logistik</span>
+              <p class="mb-0 text-dark">
+                {{ company_profile.get('address') or supplier.region or 'Alamat kantor rekanan belum diisi lengkap.' }}
+                {% if company_profile.get('city') %}, {{ company_profile.get('city') }}{% endif %}
+                {% if company_profile.get('province') %}, {{ company_profile.get('province') }}{% endif %}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. Katalog Produk Pasokan yang Diunggah Supplier -->
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-white py-3 d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2">
+        <div>
+          <h6 class="mb-0 fw-bold text-dark d-flex align-items-center gap-2">
+            <i class="bi bi-boxes text-info"></i> Katalog Produk & Komoditas Pasokan
+          </h6>
+          <small class="text-muted">Total {{ products|length }} item produk terdaftar dari rekanan ini.</small>
+        </div>
+        <span class="badge" style="background-color: #3A7D8A; color: white;">
+          {{ products|length }} Item Aktif
+        </span>
+      </div>
+
+      {% if products %}
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light small text-uppercase text-secondary">
+            <tr>
+              <th class="ps-3" style="width: 60px;">Item</th>
+              <th>Nama Produk & Spesifikasi</th>
+              <th>Kategori</th>
+              <th>Harga Penawaran</th>
+              <th>MOQ & Lead Time</th>
+              <th>Status Pasokan</th>
+              <th class="text-end pe-3">File / Dokumen</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in products %}
+            <tr>
+              <td class="ps-3">
+                {% if p.file_path and (p.file_path.endswith('.jpg') or p.file_path.endswith('.jpeg') or p.file_path.endswith('.png') or p.file_path.endswith('.webp')) %}
+                  <img src="{{ url_for('static', filename=p.file_path) }}" alt="{{ p.name }}" class="rounded border" style="width: 48px; height: 48px; object-fit: cover;">
+                {% else %}
+                  <div class="rounded bg-light d-flex align-items-center justify-content-center text-primary border" style="width: 48px; height: 48px;">
+                    <i class="bi bi-box-seam fs-5"></i>
+                  </div>
+                {% endif %}
+              </td>
+              <td>
+                <div class="fw-bold text-dark">{{ p.name }}</div>
+                <div class="small font-monospace text-muted">{{ p.sku or 'SKU-NONE' }}</div>
+                {% if p.specifications %}
+                  <div class="small text-secondary text-truncate" style="max-width: 250px;" title="{{ p.specifications }}">
+                    <i class="bi bi-info-circle me-1"></i>{{ p.specifications }}
+                  </div>
+                {% endif %}
+              </td>
+              <td>
+                <span class="badge bg-light text-dark border">{{ p.category|title }}</span>
+              </td>
+              <td>
+                <div class="fw-bold text-dark">
+                  {% if p.price %}
+                    Rp {{ "{:,.0f}".format(p.price).replace(',', '.') }}
+                  {% else %}
+                    <span class="text-muted small">Hubungi Vendor</span>
+                  {% endif %}
+                </div>
+                <small class="text-muted">per {{ p.unit or 'unit' }}</small>
+              </td>
+              <td>
+                <div class="small fw-semibold text-dark">Min: {{ p.min_order or '1' }} {{ p.unit or 'unit' }}</div>
+                <small class="text-muted d-block">{{ p.lead_time or 'Ready stock' }}</small>
+              </td>
+              <td>
+                {% if p.stock_status == 'ready' %}
+                  <span class="badge bg-success-subtle text-success border border-success-subtle"><i class="bi bi-check-circle me-1"></i>Ready</span>
+                {% elif p.stock_status == 'preorder' %}
+                  <span class="badge bg-warning-subtle text-warning border border-warning-subtle"><i class="bi bi-clock me-1"></i>Pre-Order</span>
+                {% else %}
+                  <span class="badge bg-secondary-subtle text-secondary border"><i class="bi bi-dash-circle me-1"></i>Habis</span>
+                {% endif %}
+              </td>
+              <td class="text-end pe-3">
+                {% if p.file_path %}
+                  <a href="{{ url_for('static', filename=p.file_path) }}" target="_blank" rel="noopener" class="btn btn-outline-primary btn-sm py-1 px-2" title="Unduh File Brosur/Dokumen">
+                    <i class="bi bi-file-earmark-arrow-down me-1"></i> File
+                  </a>
+                {% else %}
+                  <span class="text-muted small">-</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="card-body text-center py-4">
+        <i class="bi bi-boxes text-muted fs-2 d-block mb-2"></i>
+        <h6 class="fw-bold text-dark mb-1">Belum Ada Item Katalog yang Diunggah</h6>
+        <p class="text-muted small mb-0">Supplier ini belum memasukkan item katalog produk secara digital ke dalam sistem Syamanah Tender.</p>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- 4. Evaluasi & Rekomendasi AI Sourcing -->
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white py-3">
+        <h6 class="mb-0 fw-bold text-dark d-flex align-items-center gap-2">
+          <i class="bi bi-robot text-primary"></i> Evaluasi & Rekomendasi AI Procurement
+        </h6>
+      </div>
+      <div class="card-body">
         <div class="p-3 bg-light rounded mb-3 border-start border-4 border-primary">
-          <p class="mb-0 fw-semibold text-dark">{{ recommendation.recommendation or 'Supplier ini telah tersimpan dalam database pengadaan Syamanah. Lakukan validasi stok dan harga sebelum bertransaksi.' }}</p>
+          <p class="mb-0 fw-semibold text-dark">
+            {{ recommendation.recommendation or 'Supplier ini telah terindeks dalam database sourcing B2B Syamanah. Lakukan pengecekan MOQ, sampel produk, dan kesesuaian harga sebelum pengadaan partai besar.' }}
+          </p>
         </div>
 
-        <h6 class="fw-bold mb-2">Langkah Tindak Lanjut Procurement:</h6>
+        <h6 class="fw-bold mb-2 text-dark small text-uppercase">Checklist Tindak Lanjut Tim Procurement:</h6>
         <ul class="list-group list-group-flush mb-3">
           {% for step in recommendation.next_steps or [] %}
           <li class="list-group-item px-0 d-flex align-items-center gap-2">
@@ -102,61 +291,187 @@
           {% else %}
           <li class="list-group-item px-0 d-flex align-items-center gap-2">
             <i class="bi bi-check2-circle text-success fs-5"></i>
-            <span>Validasi ketersediaan katalog dan minimum order quantity (MOQ) rollan.</span>
+            <span>Validasi ketersediaan stok fisik dan minimum order quantity (MOQ).</span>
           </li>
           <li class="list-group-item px-0 d-flex align-items-center gap-2">
             <i class="bi bi-check2-circle text-success fs-5"></i>
-            <span>Minta swatch card atau sample handfeel kain sebelum pemesanan partai besar.</span>
+            <span>Minta sampel spesifikasi material / uji teknis sebelum kontrak pembelian.</span>
           </li>
           <li class="list-group-item px-0 d-flex align-items-center gap-2">
             <i class="bi bi-check2-circle text-success fs-5"></i>
-            <span>Bandingkan harga per roll / kg serta estimasi biaya ekspedisi kargo.</span>
+            <span>Negosiasikan termin pembayaran (TOP) dan garansi pasokan dengan PIC supplier.</span>
           </li>
           {% endfor %}
         </ul>
 
         <div class="d-flex justify-content-between align-items-center pt-2 border-top">
-          <span class="small text-muted">Confidence: <span class="badge bg-light text-dark border text-uppercase">{{ recommendation.confidence or 'medium' }}</span></span>
-          <span class="small text-muted fst-italic">Rekomendasi AI bersifat asistensi keputusan pengadaan.</span>
+          <span class="small text-muted">Confidence Score: <span class="badge bg-light text-dark border text-uppercase">{{ recommendation.confidence or 'medium' }}</span></span>
+          <span class="small text-muted fst-italic">Asistensi berbasis AI untuk pertimbangan procurement internal.</span>
         </div>
       </div>
     </div>
+
   </div>
 
+  <!-- Kolom Kanan: Kontak PIC, Status Verifikasi, Provenance -->
   <div class="col-lg-4">
-    <!-- Provenance & Audit Card -->
-    <div class="card border-0 shadow-sm mb-3">
-      <div class="card-body">
-        <h5 class="fw-bold mb-3"><i class="bi bi-shield-check text-success me-2"></i>Provenance Sumber</h5>
-        <p class="small text-muted mb-2">Data supplier ini terverifikasi dari sumber web berikut:</p>
-        <a href="{{ supplier.source_url }}" target="_blank" rel="noopener" class="btn btn-outline-primary w-100 mb-3 text-truncate">
-          <i class="bi bi-link-45deg me-1"></i>Buka Sumber URL
-        </a>
 
-        <div class="small">
-          <div class="d-flex justify-content-between py-1 border-bottom">
-            <span class="text-muted">Status Validasi</span>
-            <span class="fw-semibold">
-              {% if supplier.verification_status == 'verified' %}
-                <span class="text-success"><i class="bi bi-check-circle-fill me-1"></i>Verified</span>
-              {% elif supplier.verification_status == 'user_added' %}
-                <span class="text-info"><i class="bi bi-person-fill me-1"></i>User Added</span>
-              {% else %}
-                <span class="text-secondary"><i class="bi bi-globe me-1"></i>Discovered</span>
-              {% endif %}
-            </span>
+    <!-- Card 1: Person in Charge (PIC) & Kontak -->
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-white py-3">
+        <h6 class="mb-0 fw-bold text-dark d-flex align-items-center gap-2">
+          <i class="bi bi-person-badge text-primary"></i> Kontak PIC & Komunikasi
+        </h6>
+      </div>
+      <div class="card-body">
+        {% if company_profile.get('pic_name') %}
+          <div class="d-flex align-items-center gap-3 mb-3 pb-3 border-bottom">
+            <div class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center fw-bold" style="width: 48px; height: 48px; font-size: 1.2rem;">
+              {{ company_profile.get('pic_name')[:1].upper() }}
+            </div>
+            <div>
+              <div class="fw-bold text-dark">{{ company_profile.get('pic_name') }}</div>
+              <small class="text-muted">{{ company_profile.get('pic_position') or 'Penanggung Jawab Rekanan' }}</small>
+            </div>
           </div>
-          <div class="d-flex justify-content-between py-1 border-bottom">
-            <span class="text-muted">Tanggal Ditambahkan</span>
-            <span class="fw-semibold text-secondary">{{ supplier.created_at.strftime('%d %b %Y, %H:%M') if supplier.created_at else '-' }}</span>
-          </div>
-          <div class="d-flex justify-content-between py-1">
-            <span class="text-muted">ID Record</span>
-            <span class="font-monospace text-muted">#{{ supplier.id }}</span>
-          </div>
-        </div>
+        {% endif %}
+
+        <!-- Tombol WhatsApp -->
+        {% if supplier.contact_phone %}
+          {% set clean_phone = supplier.contact_phone|replace(' ', '')|replace('-', '')|replace('+', '') %}
+          {% if clean_phone.startswith('0') %}
+            {% set wa_num = '62' ~ clean_phone[1:] %}
+          {% else %}
+            {% set wa_num = clean_phone %}
+          {% endif %}
+          {% set wa_msg = "Halo " ~ supplier.company_name ~ ", kami dari Tim Pengadaan Syamanah ingin mendiskusikan pasokan." %}
+          <a href="https://wa.me/{{ wa_num }}?text={{ wa_msg|urlencode }}" target="_blank" rel="noopener" class="btn btn-success w-100 mb-3 fw-semibold">
+            <i class="bi bi-whatsapp me-2"></i>Hubungi via WhatsApp
+          </a>
+        {% endif %}
+
+        <dl class="row mb-0 small">
+          <dt class="col-4 text-muted">Nomor Telp/WA</dt>
+          <dd class="col-8 font-monospace fw-semibold">{{ supplier.contact_phone or '-' }}</dd>
+
+          <dt class="col-4 text-muted">Email Resmi</dt>
+          <dd class="col-8">
+            {% if supplier.contact_email %}
+              <a href="mailto:{{ supplier.contact_email }}" class="text-decoration-none text-truncate d-block">{{ supplier.contact_email }}</a>
+            {% else %}
+              <span class="text-muted">-</span>
+            {% endif %}
+          </dd>
+
+          <dt class="col-4 text-muted">Website</dt>
+          <dd class="col-8">
+            {% if supplier.website %}
+              <a href="{{ supplier.website }}" target="_blank" rel="noopener" class="text-decoration-none text-truncate d-block">
+                {{ supplier.website }} <i class="bi bi-box-arrow-up-right small"></i>
+              </a>
+            {% else %}
+              <span class="text-muted">-</span>
+            {% endif %}
+          </dd>
+        </dl>
       </div>
     </div>
+
+    <!-- Card 2: Status & Verifikasi Pengadaan -->
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-white py-3">
+        <h6 class="mb-0 fw-bold text-dark d-flex align-items-center gap-2">
+          <i class="bi bi-shield-check text-success"></i> Status & Verifikasi
+        </h6>
+      </div>
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="text-muted small">Status Rekanan:</span>
+          {% if supplier.verification_status == 'verified' %}
+            <span class="badge bg-success-subtle text-success border border-success-subtle fw-semibold px-2 py-1">
+              <i class="bi bi-patch-check-fill me-1"></i> Terverifikasi (Verified)
+            </span>
+          {% else %}
+            <span class="badge bg-secondary-subtle text-secondary border fw-semibold px-2 py-1">
+              <i class="bi bi-clock me-1"></i> Pending / Discovered
+            </span>
+          {% endif %}
+        </div>
+
+        <div class="mb-3">
+          <div class="d-flex justify-content-between small text-muted mb-1">
+            <span>Kelengkapan Data Profil</span>
+            <span class="fw-bold">{{ completeness }}%</span>
+          </div>
+          <div class="progress" style="height: 6px;">
+            <div class="progress-bar {% if completeness >= 80 %}bg-success{% elif completeness >= 50 %}bg-primary{% else %}bg-warning{% endif %}" role="progressbar" style="width: {{ completeness }}%;"></div>
+          </div>
+        </div>
+
+        <form method="post" action="{{ url_for('procurement.verify_supplier', supplier_id=supplier.id) }}" class="d-grid mb-2">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="next" value="{{ request.url }}">
+          {% if supplier.verification_status == 'verified' %}
+            <button type="submit" class="btn btn-outline-secondary btn-sm">
+              <i class="bi bi-arrow-counterclockwise me-1"></i> Ubah ke Pending
+            </button>
+          {% else %}
+            <button type="submit" class="btn btn-success btn-sm fw-semibold">
+              <i class="bi bi-check-circle me-1"></i> Verifikasi Supplier Sekarang
+            </button>
+          {% endif %}
+        </form>
+        <small class="text-muted text-center d-block">Verifikasi menandai rekanan telah memenuhi standar operasional pengadaan Syamanah.</small>
+      </div>
+    </div>
+
+    <!-- Card 3: Provenance & Informasi Akun -->
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white py-3">
+        <h6 class="mb-0 fw-bold text-dark d-flex align-items-center gap-2">
+          <i class="bi bi-clock-history text-secondary"></i> Provenance & Audit Trail
+        </h6>
+      </div>
+      <div class="card-body small">
+        <div class="d-flex justify-content-between py-1 border-bottom">
+          <span class="text-muted">Sumber Data</span>
+          <span class="fw-semibold">
+            {% if supplier.created_by %}
+              <span class="text-warning-emphasis"><i class="bi bi-person-badge me-1"></i>Registrasi Mandiri</span>
+            {% else %}
+              <span class="text-secondary"><i class="bi bi-robot me-1"></i>AI Web Crawler</span>
+            {% endif %}
+          </span>
+        </div>
+
+        {% if creator_user %}
+        <div class="d-flex justify-content-between py-1 border-bottom">
+          <span class="text-muted">Akun Terdaftar</span>
+          <span class="fw-semibold text-dark">{{ creator_user.email }}</span>
+        </div>
+        {% endif %}
+
+        <div class="d-flex justify-content-between py-1 border-bottom">
+          <span class="text-muted">Tanggal Dicatat</span>
+          <span class="fw-semibold text-secondary">{{ supplier.created_at.strftime('%d %b %Y, %H:%M') if supplier.created_at else '-' }}</span>
+        </div>
+
+        <div class="d-flex justify-content-between py-1 border-bottom">
+          <span class="text-muted">ID Database</span>
+          <span class="font-monospace text-muted">#{{ supplier.id }}</span>
+        </div>
+
+        {% if supplier.source_url %}
+        <div class="pt-3">
+          <span class="text-muted d-block mb-1">Tautan Sumber Asli:</span>
+          <a href="{{ supplier.source_url }}" target="_blank" rel="noopener" class="btn btn-outline-secondary btn-sm w-100 text-truncate">
+            <i class="bi bi-link-45deg me-1"></i>{{ supplier.source_url }}
+          </a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
   </div>
 </div>
 {% endblock %}

@@ -44,6 +44,7 @@ def create_app(config_class=None):
     from app.blueprints.admin.routes import admin_bp
     from app.blueprints.events.routes import events_bp
     from app.blueprints.procurement.routes import procurement_bp
+    from app.blueprints.supplier.routes import supplier_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(data_collection_bp, url_prefix="/data-collection")
@@ -55,6 +56,7 @@ def create_app(config_class=None):
     app.register_blueprint(reporting_bp, url_prefix="/reporting")
     app.register_blueprint(admin_bp, url_prefix="/admin")
     app.register_blueprint(procurement_bp, url_prefix="/procurement")
+    app.register_blueprint(supplier_bp, url_prefix="/supplier")
 
     from app.utils import parse_whatsapp
     app.jinja_env.filters["parse_wa"] = parse_whatsapp
@@ -194,24 +196,94 @@ def create_app(config_class=None):
                 "recent_campaigns": campaigns,
             }
         elif user_role == "procurement":
+            from app.models import SupplierProduct, User
+
+            base_reg = ProcurementSupplier.query.filter(ProcurementSupplier.created_by.isnot(None))
+            base_ai = ProcurementSupplier.query.filter(ProcurementSupplier.created_by.is_(None))
+
+            total_registered = base_reg.count()
+            verified_registered = base_reg.filter_by(verification_status="verified").count()
+            pending_registered = total_registered - verified_registered
+
+            total_ai = base_ai.count()
+            high_fit_ai = base_ai.filter(ProcurementSupplier.fit_score >= 80).count()
+            with_phone_ai = base_ai.filter(ProcurementSupplier.contact_phone.isnot(None), ProcurementSupplier.contact_phone != "").count()
+
+            total_catalog = SupplierProduct.query.count()
+            total_all_suppliers = ProcurementSupplier.query.count()
+            total_verified_all = ProcurementSupplier.query.filter_by(verification_status="verified").count()
+
+            # Distribusi per 8 kategori B2B
+            cat_tuples = db.session.query(ProcurementSupplier.product, db.func.count(ProcurementSupplier.id)).group_by(ProcurementSupplier.product).all()
+            cat_map = {str(k).lower(): v for k, v in cat_tuples if k}
+            
+            raw_material_count = cat_map.get("raw material", 0) + cat_map.get("jersey", 0) + cat_map.get("kaos", 0) + cat_map.get("polo", 0) + cat_map.get("kemeja", 0) + cat_map.get("jaket", 0)
+            
+            categories_stat = [
+                {"key": "raw material", "label": "Raw Material", "count": raw_material_count, "icon": "bi-boxes", "badge": "bg-primary"},
+                {"key": "distributor", "label": "Distributor", "count": cat_map.get("distributor", 0), "icon": "bi-truck", "badge": "bg-success"},
+                {"key": "elektrikal", "label": "Elektrikal", "count": cat_map.get("elektrikal", 0), "icon": "bi-lightning-charge", "badge": "bg-warning text-dark"},
+                {"key": "services", "label": "Services", "count": cat_map.get("services", 0), "icon": "bi-gear-wide-connected", "badge": "bg-info text-dark"},
+                {"key": "pharmaceutical", "label": "Pharmaceutical", "count": cat_map.get("pharmaceutical", 0), "icon": "bi-capsule", "badge": "bg-danger"},
+                {"key": "local", "label": "Local Supplier", "count": cat_map.get("local", 0), "icon": "bi-geo-alt", "badge": "bg-secondary"},
+                {"key": "hardware", "label": "Hardware", "count": cat_map.get("hardware", 0), "icon": "bi-tools", "badge": "bg-dark"},
+                {"key": "software", "label": "Software", "count": cat_map.get("software", 0), "icon": "bi-cpu", "badge": "bg-primary"},
+            ]
+
+            # Mitra web terdaftar terbaru
+            recent_registered = base_reg.order_by(ProcurementSupplier.created_at.desc()).limit(5).all()
+            recent_registered_items = []
+            for r in recent_registered:
+                u = db.session.get(User, r.created_by) if r.created_by else None
+                recent_registered_items.append({
+                    "supplier": r,
+                    "user": u,
+                    "profile": r.get_profile_data(),
+                    "completeness": r.calculate_completeness(),
+                    "catalog_count": len(r.catalog_products) if r.catalog_products else 0
+                })
+
+            # Temuan AI Fit Tertinggi
+            top_ai_suppliers = base_ai.order_by(ProcurementSupplier.fit_score.desc(), ProcurementSupplier.created_at.desc()).limit(5).all()
+
+            # Katalog Produk Terbaru yang diunggah
+            recent_products = SupplierProduct.query.order_by(SupplierProduct.created_at.desc()).limit(5).all()
+
             role_data = {
-                "supplier_count": ProcurementSupplier.query.count(),
-                "high_fit_suppliers": ProcurementSupplier.query.filter(ProcurementSupplier.fit_score >= 75).count(),
-                "recent_suppliers": ProcurementSupplier.query.order_by(ProcurementSupplier.created_at.desc()).limit(6).all(),
+                "total_registered": total_registered,
+                "verified_registered": verified_registered,
+                "pending_registered": pending_registered,
+                "total_ai": total_ai,
+                "high_fit_ai": high_fit_ai,
+                "with_phone_ai": with_phone_ai,
+                "total_catalog": total_catalog,
+                "total_all_suppliers": total_all_suppliers,
+                "total_verified_all": total_verified_all,
+                "categories_stat": categories_stat,
+                "recent_registered_items": recent_registered_items,
+                "top_ai_suppliers": top_ai_suppliers,
+                "recent_products": recent_products,
             }
         elif user_role == "supplier":
+            from app.models import SupplierProduct
             my_suppliers = ProcurementSupplier.query.filter_by(created_by=current_user.id).all() if current_user.is_authenticated else []
             primary_supplier = my_suppliers[0] if my_suppliers else None
+            products = SupplierProduct.query.filter_by(user_id=current_user.id).order_by(SupplierProduct.created_at.desc()).all() if current_user.is_authenticated else []
+            completeness = primary_supplier.calculate_completeness() if primary_supplier else 25
+
+            categories_count = {}
+            for p in products:
+                categories_count[p.category] = categories_count.get(p.category, 0) + 1
+
             role_data = {
                 "my_supplier_count": len(my_suppliers),
                 "my_suppliers": my_suppliers,
                 "primary_supplier": primary_supplier,
-                "catalog_count": 8,
-                "active_rfq_count": 3,
-                "active_po_count": 2,
-                "completed_po_count": 14,
-                "performance_score": "98.4%",
-                "rating": "4.9 / 5.0",
+                "catalog_count": len(products),
+                "products": products,
+                "recent_products": products[:6],
+                "completeness": completeness,
+                "categories_count": categories_count,
             }
 
         # Ringkasan Kategori Lintas Modul untuk Dashboard Utama

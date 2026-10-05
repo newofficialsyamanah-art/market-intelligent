@@ -1,0 +1,365 @@
+{% extends "base.html" %}
+{% block title %}Katalog Produk - Syamanah Tender{% endblock %}
+{% block content %}
+
+<!-- Header & Nav Tabs -->
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4 pb-3 border-bottom">
+  <div>
+    <div class="d-flex align-items-center gap-2 mb-1">
+      <span class="badge" style="background-color: #FEF3C7; color: #B45309; border: 1px solid #FDE68A;">
+        <i class="bi bi-shield-check me-1"></i> Syamanah Tender
+      </span>
+      <span class="text-muted small">&bull; Manajemen Pasokan</span>
+    </div>
+    <h3 class="fw-bold mb-1 text-dark">Katalog Produk & Komoditas</h3>
+    <p class="text-muted small mb-0">Kelola daftar item pasokan, harga penawaran, dan spesifikasi teknis untuk pengadaan internal.</p>
+  </div>
+  <div class="d-flex flex-wrap gap-2 w-100 w-md-auto">
+    <a href="{{ url_for('supplier.profile') }}" class="btn btn-outline-secondary btn-sm flex-fill flex-md-grow-0">
+      <i class="bi bi-building-gear me-1"></i> Profil Perusahaan
+    </a>
+    <button class="btn btn-sm text-white fw-semibold flex-fill flex-md-grow-0" style="background-color: #D9730D;" data-bs-toggle="modal" data-bs-target="#modalAddProduct">
+      <i class="bi bi-plus-circle me-1"></i> Tambah Produk
+    </button>
+  </div>
+</div>
+
+<!-- Flash Messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+<!-- Filter & Search Toolbar -->
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-body p-3">
+    <form method="get" action="{{ url_for('supplier.catalog') }}" class="row g-2 align-items-center">
+      <div class="col-12 col-md-5">
+        <div class="input-group">
+          <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+          <input type="text" name="q" class="form-control border-start-0 ps-0" placeholder="Cari nama produk, SKU, atau spesifikasi..." value="{{ search_q }}">
+        </div>
+      </div>
+      <div class="col-12 col-md-4">
+        <select name="category" class="form-select" onchange="this.form.submit()">
+          <option value="">Semua Kategori ({{ total_products }})</option>
+          {% for cat in category_list %}
+            <option value="{{ cat.key }}" {% if active_cat == cat.key %}selected{% endif %}>
+              {{ cat.label }} ({{ category_counts.get(cat.key, 0) }})
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-12 col-md-3 d-flex gap-2">
+        <button type="submit" class="btn btn-primary flex-grow-1"><i class="bi bi-funnel me-1"></i> Filter</button>
+        {% if active_cat or search_q %}
+          <a href="{{ url_for('supplier.catalog') }}" class="btn btn-outline-secondary" title="Reset Filter"><i class="bi bi-x-circle"></i></a>
+        {% endif %}
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Product Table Card -->
+<div class="card border-0 shadow-sm">
+  <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+    <div>
+      <h6 class="mb-0 fw-bold text-dark"><i class="bi bi-boxes text-primary me-2"></i>Daftar Item Katalog Anda</h6>
+      <small class="text-muted">Total {{ products|length }} produk ditampilkan dari seluruh katalog aktif.</small>
+    </div>
+    <span class="badge bg-light text-dark border">
+      Kelengkapan Profil: <strong>{{ completeness }}%</strong>
+    </span>
+  </div>
+  <div class="card-body p-0">
+    {% if products %}
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light small text-uppercase text-secondary">
+          <tr>
+            <th class="ps-3" style="width: 70px;">Item</th>
+            <th>Nama Produk & SKU</th>
+            <th>Kategori</th>
+            <th>Harga Indikatif</th>
+            <th>Minimal Order (MOQ)</th>
+            <th>Status Pasokan</th>
+            <th>Dokumen / File</th>
+            <th class="text-end pe-3">Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in products %}
+          <tr>
+            <td class="ps-3">
+              {% if p.file_path and (p.file_path.endswith('.jpg') or p.file_path.endswith('.jpeg') or p.file_path.endswith('.png') or p.file_path.endswith('.webp')) %}
+                <img src="{{ url_for('static', filename=p.file_path) }}" alt="{{ p.name }}" class="rounded border" style="width: 48px; height: 48px; object-fit: cover;">
+              {% else %}
+                <div class="rounded bg-light d-flex align-items-center justify-content-center text-primary border" style="width: 48px; height: 48px;">
+                  <i class="bi bi-box-seam fs-5"></i>
+                </div>
+              {% endif %}
+            </td>
+            <td>
+              <div class="fw-bold text-dark">{{ p.name }}</div>
+              <div class="small font-monospace text-muted">{{ p.sku or 'SKU-NONE' }}</div>
+              {% if p.specifications %}
+                <div class="small text-muted text-truncate" style="max-width: 280px;" title="{{ p.specifications }}"><i class="bi bi-patch-check me-1"></i>{{ p.specifications }}</div>
+              {% endif %}
+            </td>
+            <td>
+              <span class="badge bg-light text-dark border">{{ p.category|title }}</span>
+            </td>
+            <td>
+              <div class="fw-bold text-dark">Rp {{ "{:,.0f}".format(p.price).replace(',', '.') }}</div>
+              <small class="text-muted">per {{ p.unit }}</small>
+            </td>
+            <td>
+              <span class="small font-monospace">{{ p.min_order }}</span>
+              <div class="small text-muted">{{ p.lead_time or 'Ready' }}</div>
+            </td>
+            <td>
+              {% if p.stock_status == 'ready' %}
+                <span class="badge bg-success-subtle text-success border border-success-subtle"><i class="bi bi-check-circle me-1"></i>Ready Stock</span>
+              {% elif p.stock_status == 'pre_order' %}
+                <span class="badge bg-info-subtle text-info border border-info-subtle"><i class="bi bi-hourglass me-1"></i>Pre-Order</span>
+              {% else %}
+                <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">Habis</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if p.file_path %}
+                <a href="{{ url_for('static', filename=p.file_path) }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-secondary py-1 px-2" title="Buka Dokumen/Foto">
+                  {% if p.file_path.endswith('.pdf') %}
+                    <i class="bi bi-file-earmark-pdf text-danger me-1"></i> PDF
+                  {% else %}
+                    <i class="bi bi-image text-primary me-1"></i> Foto
+                  {% endif %}
+                </a>
+              {% else %}
+                <span class="text-muted small">-</span>
+              {% endif %}
+            </td>
+            <td class="text-end pe-3">
+              <button class="btn btn-sm btn-outline-primary me-1" data-bs-toggle="modal" data-bs-target="#modalEditProduct{{ p.id }}" title="Edit Produk">
+                <i class="bi bi-pencil-square"></i>
+              </button>
+              <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#modalDeleteProduct{{ p.id }}" title="Hapus Produk">
+                <i class="bi bi-trash3"></i>
+              </button>
+            </td>
+          </tr>
+
+          <!-- MODAL EDIT PRODUK -->
+          <div class="modal fade" id="modalEditProduct{{ p.id }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+              <div class="modal-content">
+                <form method="post" action="{{ url_for('supplier.catalog_edit', product_id=p.id) }}" enctype="multipart/form-data">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold text-white"><i class="bi bi-pencil-square me-2"></i>Edit Produk: {{ p.name }}</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
+                    <div class="row g-3">
+                      <div class="col-md-8">
+                        <label class="form-label small fw-semibold">Nama Produk / Material / Layanan <span class="text-danger">*</span></label>
+                        <input type="text" name="name" class="form-control" value="{{ p.name }}" required>
+                      </div>
+                      <div class="col-md-4">
+                        <label class="form-label small fw-semibold">Kode SKU</label>
+                        <input type="text" name="sku" class="form-control font-monospace" value="{{ p.sku }}">
+                      </div>
+                      <div class="col-md-4">
+                        <label class="form-label small fw-semibold">Kategori B2B <span class="text-danger">*</span></label>
+                        <select name="category" class="form-select" required>
+                          {% for cat in category_list %}
+                            <option value="{{ cat.key }}" {% if p.category == cat.key %}selected{% endif %}>{{ cat.label }}</option>
+                          {% endfor %}
+                        </select>
+                      </div>
+                      <div class="col-md-4">
+                        <label class="form-label small fw-semibold">Harga Indikatif (IDR)</label>
+                        <div class="input-group">
+                          <span class="input-group-text">Rp</span>
+                          <input type="number" step="any" name="price" class="form-control" value="{{ p.price }}">
+                        </div>
+                      </div>
+                      <div class="col-md-4">
+                        <label class="form-label small fw-semibold">Satuan</label>
+                        <input type="text" name="unit" class="form-control" value="{{ p.unit }}" placeholder="kg, pcs, roll, unit">
+                      </div>
+                      <div class="col-md-4">
+                        <label class="form-label small fw-semibold">Minimal Pemesanan (MOQ)</label>
+                        <input type="text" name="min_order" class="form-control" value="{{ p.min_order }}" placeholder="Contoh: 50 kg">
+                      </div>
+                      <div class="col-md-4">
+                        <label class="form-label small fw-semibold">Lead Time / Ketersediaan</label>
+                        <input type="text" name="lead_time" class="form-control" value="{{ p.lead_time }}" placeholder="Ready Stock / 3 Hari">
+                      </div>
+                      <div class="col-md-4">
+                        <label class="form-label small fw-semibold">Status Ketersediaan</label>
+                        <select name="stock_status" class="form-select">
+                          <option value="ready" {% if p.stock_status == 'ready' %}selected{% endif %}>Ready Stock</option>
+                          <option value="pre_order" {% if p.stock_status == 'pre_order' %}selected{% endif %}>Pre-Order</option>
+                          <option value="out_of_stock" {% if p.stock_status == 'out_of_stock' %}selected{% endif %}>Habis / Tidak Tersedia</option>
+                        </select>
+                      </div>
+                      <div class="col-md-12">
+                        <label class="form-label small fw-semibold">Spesifikasi Teknis & Standar Mutu</label>
+                        <input type="text" name="specifications" class="form-control" value="{{ p.specifications }}" placeholder="Contoh: OEKO-TEX Standard 100, Gramasi 160 gsm, SNI">
+                      </div>
+                      <div class="col-md-12">
+                        <label class="form-label small fw-semibold">Deskripsi / Detail Pasokan</label>
+                        <textarea name="description" class="form-control" rows="3">{{ p.description }}</textarea>
+                      </div>
+                      <div class="col-md-12">
+                        <label class="form-label small fw-semibold">Ganti File Brosur / Foto Produk (Opsional)</label>
+                        <input type="file" name="catalog_file" class="form-control" accept=".png,.jpg,.jpeg,.webp,.pdf,.docx,.xlsx">
+                        {% if p.file_path %}
+                          <small class="text-muted">File saat ini: <a href="{{ url_for('static', filename=p.file_path) }}" target="_blank">{{ p.file_path }}</a></small>
+                        {% endif %}
+                      </div>
+                    </div>
+                  </div>
+                  <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-save me-1"></i> Simpan Perubahan</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <!-- MODAL HAPUS PRODUK -->
+          <div class="modal fade" id="modalDeleteProduct{{ p.id }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+              <div class="modal-content">
+                <form method="post" action="{{ url_for('supplier.catalog_delete', product_id=p.id) }}">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-exclamation-triangle me-2"></i>Konfirmasi Hapus Produk</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body py-4">
+                    <p class="mb-1">Apakah Anda yakin ingin menghapus item produk berikut dari katalog?</p>
+                    <div class="p-3 bg-light rounded border mt-2">
+                      <div class="fw-bold text-dark">{{ p.name }}</div>
+                      <div class="small font-monospace text-muted">{{ p.sku }} &bull; Rp {{ "{:,.0f}".format(p.price).replace(',', '.') }} / {{ p.unit }}</div>
+                    </div>
+                  </div>
+                  <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-danger"><i class="bi bi-trash3 me-1"></i> Hapus Sekarang</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <!-- Empty State -->
+    <div class="text-center py-5 px-3">
+      <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+        <i class="bi bi-box-seam fs-1 text-primary"></i>
+      </div>
+      <h5 class="fw-bold text-dark">Belum Ada Item di Katalog Anda</h5>
+      <p class="text-muted small mx-auto" style="max-width: 480px;">
+        Unggah produk, bahan baku, atau layanan yang disediakan oleh perusahaan Anda agar dapat ditemukan oleh tim pengadaan internal Syamanah.
+      </p>
+      <button class="btn btn-primary px-4 py-2 mt-2" data-bs-toggle="modal" data-bs-target="#modalAddProduct">
+        <i class="bi bi-cloud-arrow-up me-1"></i> Upload Produk Pertama Sekarang
+      </button>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- MODAL TAMBAH PRODUK BARU -->
+<div class="modal fade" id="modalAddProduct" tabindex="-1" aria-labelledby="modalAddProductLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <form method="post" action="{{ url_for('supplier.catalog_add') }}" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title fw-bold" id="modalAddProductLabel"><i class="bi bi-cloud-arrow-up me-2"></i>Upload / Tambah Produk ke Katalog</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-md-8">
+              <label class="form-label small fw-semibold">Nama Produk / Bahan Pasokan <span class="text-danger">*</span></label>
+              <input type="text" name="name" class="form-control" placeholder="Contoh: Katun Combed 30s Reaktif Soft Finish" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-semibold">Kode SKU (Opsional)</label>
+              <input type="text" name="sku" class="form-control font-monospace" placeholder="Otomatis jika kosong">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-semibold">Kategori Pasokan <span class="text-danger">*</span></label>
+              <select name="category" class="form-select" required>
+                {% for cat in category_list %}
+                  <option value="{{ cat.key }}" {% if supplier.product == cat.key %}selected{% endif %}>{{ cat.label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-semibold">Harga Indikatif (IDR)</label>
+              <div class="input-group">
+                <span class="input-group-text">Rp</span>
+                <input type="number" step="any" name="price" class="form-control" placeholder="95000">
+              </div>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-semibold">Satuan</label>
+              <input type="text" name="unit" class="form-control" placeholder="kg, pcs, roll, unit" value="kg">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-semibold">Minimal Pemesanan (MOQ)</label>
+              <input type="text" name="min_order" class="form-control" placeholder="Contoh: 100 kg / 10 pcs" value="1">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-semibold">Lead Time / Ketersediaan</label>
+              <input type="text" name="lead_time" class="form-control" placeholder="Ready Stock / 3-5 Hari" value="Ready Stock">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-semibold">Status Ketersediaan</label>
+              <select name="stock_status" class="form-select">
+                <option value="ready" selected>Ready Stock</option>
+                <option value="pre_order">Pre-Order</option>
+                <option value="out_of_stock">Habis / Tidak Tersedia</option>
+              </select>
+            </div>
+            <div class="col-md-12">
+              <label class="form-label small fw-semibold">Spesifikasi Teknis & Standar Mutu</label>
+              <input type="text" name="specifications" class="form-control" placeholder="Contoh: Sertifikasi OEKO-TEX, Gramasi 150-160 gsm, Toleransi susut <3%">
+            </div>
+            <div class="col-md-12">
+              <label class="form-label small fw-semibold">Deskripsi / Detail Pasokan</label>
+              <textarea name="description" class="form-control" rows="3" placeholder="Informasi detail keunggulan bahan, varian warna/ukuran, atau ketentuan pesanan khusus..."></textarea>
+            </div>
+            <div class="col-md-12">
+              <label class="form-label small fw-semibold">Upload Foto Produk atau Dokumen Brosur PDF (Opsional)</label>
+              <input type="file" name="catalog_file" class="form-control" accept=".png,.jpg,.jpeg,.webp,.pdf,.docx,.xlsx">
+              <small class="text-muted">Format didukung: JPG, PNG, WEBP, PDF brosur (Maks 10MB).</small>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer bg-light">
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+          <button type="submit" class="btn btn-primary"><i class="bi bi-save me-1"></i> Simpan ke Katalog</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

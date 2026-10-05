@@ -1,86 +1,820 @@
-body { background-color: #f5f7fa; }
+/* ========================================================================= */
+/* SYAMANAH BRAND DESIGN SYSTEM (Matches syamanah.com)                       */
+/* Primary: #3A7D8A | Secondary: #2E5190 | Accent: #D9730D | Dark: #0F1D2E   */
+/* Fonts: Poppins (Headings & Brand), Rubik / Plus Jakarta Sans (Body)       */
+/* ========================================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Poppins:wght@500;600;700;800&family=Rubik:wght@400;500;600&display=swap');
+
+:root {
+  /* Syamanah Global Color Tokens */
+  --sya-primary: #3A7D8A;           /* Syamanah Teal Slate */
+  --sya-primary-hover: #2F6974;
+  --sya-primary-light: #EBF4F6;
+  --sya-primary-subtle: rgba(58, 125, 138, 0.12);
+
+  --sya-secondary: #2E5190;         /* Syamanah Royal Navy */
+  --sya-secondary-hover: #223D70;
+  --sya-secondary-light: #EDF2FA;
+
+  --sya-accent: #D9730D;            /* Syamanah Warm Amber / Gold Orange */
+  --sya-accent-hover: #BF6206;
+  --sya-accent-light: #FEF3E8;
+  --sya-accent-subtle: rgba(217, 115, 13, 0.12);
+
+  --sya-dark: #0F1D2E;              /* Syamanah Midnight Navy */
+  --sya-dark-surface: #172B42;
+  --sya-dark-border: rgba(255, 255, 255, 0.12);
+
+  --sya-success: #118442;           /* Syamanah Emerald Green */
+  --sya-success-light: #E8F6EE;
+  --sya-sage: #5AA67A;
+
+  --sya-text: #1A1A1A;              /* Charcoal Dark Text */
+  --sya-text-muted: #64748B;
+  --sya-text-light: #94A3B8;
+
+  --sya-bg: #F8F7F5;                /* Syamanah Warm Off-White */
+  --sya-card-bg: #FFFFFF;
+  --sya-border: #E5E9F0;
+  --sya-border-subtle: #F1F4F8;
+
+  --sya-radius-sm: 8px;
+  --sya-radius: 14px;
+  --sya-radius-lg: 18px;
+
+  --sya-shadow-xs: 0 1px 2px rgba(15, 29, 46, 0.04);
+  --sya-shadow-sm: 0 2px 6px rgba(15, 29, 46, 0.05);
+  --sya-shadow-md: 0 6px 20px -2px rgba(15, 29, 46, 0.07), 0 2px 6px -1px rgba(15, 29, 46, 0.04);
+  --sya-shadow-lg: 0 14px 34px -4px rgba(15, 29, 46, 0.12), 0 4px 12px -2px rgba(15, 29, 46, 0.06);
+
+  --bs-primary: #3A7D8A;
+  --bs-primary-rgb: 58, 125, 138;
+}
+
+/* ========================================================================= */
+/* BASE TYPOGRAPHY & BODY                                                   */
+/* ========================================================================= */
+body {
+  background-color: var(--sya-bg);
+  color: var(--sya-text);
+  font-family: 'Plus Jakarta Sans', 'Rubik', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 0.94rem;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6 {
+  font-family: 'Poppins', 'Plus Jakarta Sans', sans-serif;
+  font-weight: 600;
+  color: var(--sya-text);
+  letter-spacing: -0.015em;
+}
+
+/* ========================================================================= */
+/* NAVBAR & HEADER (Syamanah Authentic Clean Aesthetic)                      */
+/* ========================================================================= */
 .app-navbar {
-	min-height: 72px;
-	background: #17202b;
-	border-bottom: 1px solid rgba(255,255,255,0.08);
-	box-shadow: 0 4px 18px rgba(23,32,43,0.16);
+  min-height: 72px;
+  background-color: #FFFFFF !important;
+  border-top: 3px solid var(--sya-primary);
+  border-bottom: 1px solid rgba(15, 29, 46, 0.08);
+  box-shadow: 0 4px 20px rgba(15, 29, 46, 0.05);
+  padding-top: 0.45rem;
+  padding-bottom: 0.45rem;
 }
+
 .app-brand {
-	display: inline-flex;
-	align-items: center;
-	gap: 0.65rem;
-	margin-right: 2rem;
-	color: #fff;
-	letter-spacing: 0.04em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.85rem;
+  margin-right: 2rem;
+  text-decoration: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
 }
-.app-brand:hover { color: #fff; }
-.app-brand > span:last-child { display: flex; flex-direction: column; line-height: 1.05; }
-.app-brand strong { font-size: 0.95rem; letter-spacing: 0.14em; }
-.app-brand small { margin-top: 0.28rem; color: #a9b6c5; font-size: 0.62rem; letter-spacing: 0.05em; }
-.brand-mark {
-	display: inline-grid;
-	width: 36px;
-	height: 36px;
-	place-items: center;
-	border-radius: 10px;
-	color: #17202b;
-	background: #f2c14e;
-	font-size: 1.05rem;
+
+.app-brand:hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
 }
-.app-nav-links { gap: 0.25rem; }
+
+.app-logo-img {
+  height: 38px;
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.06));
+}
+
+.brand-text-container {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+
+.brand-title {
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.12rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: #1A1A1A;
+}
+
+.badge-brand-tender {
+  background: linear-gradient(135deg, #D9730D 0%, #F59E0B 100%);
+  color: #FFFFFF;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 0.2rem 0.45rem;
+  border-radius: 4px;
+  box-shadow: 0 2px 6px rgba(217, 115, 13, 0.25);
+}
+
+.badge-brand-intel {
+  background: linear-gradient(135deg, #3A7D8A 0%, #2E5190 100%);
+  color: #FFFFFF;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 0.2rem 0.45rem;
+  border-radius: 4px;
+  box-shadow: 0 2px 6px rgba(58, 125, 138, 0.25);
+}
+
+.brand-subtitle {
+  margin-top: 0.15rem;
+  color: #64748B;
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* Nav Links */
+.app-nav-links {
+  gap: 0.25rem;
+}
+
 .app-nav-links .nav-link {
-	padding: 0.62rem 0.78rem !important;
-	border-radius: 8px;
-	color: #b9c4d0;
-	font-size: 0.86rem;
-	transition: color 160ms ease, background-color 160ms ease;
+  padding: 0.55rem 0.85rem !important;
+  border-radius: 8px;
+  color: #1E293B !important;
+  font-family: 'Poppins', 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  transition: all 180ms ease-in-out;
 }
+
+.app-nav-links .nav-link i {
+  font-size: 1rem;
+}
+
 .app-nav-links .nav-link:hover,
 .app-nav-links .nav-link:focus {
-	color: #fff;
-	background: rgba(255,255,255,0.09);
+  color: var(--sya-primary) !important;
+  background: rgba(58, 125, 138, 0.08);
 }
-.account-area { display: flex; align-items: center; gap: 0.7rem; margin-left: 1rem; }
+
+.app-nav-links .nav-link.active {
+  color: var(--sya-secondary) !important;
+  font-weight: 600;
+  background: rgba(46, 81, 144, 0.09);
+  border: 1px solid rgba(46, 81, 144, 0.15);
+}
+
+/* Dropdown Menu */
+.dropdown-menu {
+  background-color: #FFFFFF;
+  border: 1px solid rgba(15, 29, 46, 0.08);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(15, 29, 46, 0.1);
+  padding: 0.5rem;
+  animation: dropdownFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  min-width: 220px;
+}
+
+@keyframes dropdownFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.dropdown-item {
+  padding: 0.6rem 0.9rem;
+  border-radius: 8px;
+  font-size: 0.86rem;
+  font-weight: 500;
+  color: #1E293B;
+  display: flex;
+  align-items: center;
+  transition: all 0.15s ease;
+}
+
+.dropdown-item:hover {
+  background: rgba(58, 125, 138, 0.08);
+  color: var(--sya-primary);
+  transform: translateX(3px);
+}
+
+.dropdown-divider {
+  border-color: #F1F5F9;
+  margin: 0.4rem 0;
+}
+
+/* Account Area */
+.account-area {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-left: 1.25rem;
+}
+
 .account-chip {
-	display: flex;
-	align-items: center;
-	gap: 0.55rem;
-	padding: 0.35rem 0.7rem 0.35rem 0.4rem;
-	border: 1px solid rgba(255,255,255,0.1);
-	border-radius: 999px;
-	background: rgba(255,255,255,0.06);
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.3rem 0.75rem 0.3rem 0.35rem;
+  border: 1px solid #E2E8F0;
+  border-radius: 999px;
+  background: #F8FAFC;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
+
 .account-icon {
-	display: grid;
-	width: 30px;
-	height: 30px;
-	place-items: center;
-	border-radius: 50%;
-	color: #17202b;
-	background: #d8e7f3;
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border-radius: 50%;
+  color: #FFFFFF;
+  background: linear-gradient(135deg, #3A7D8A 0%, #2E5190 100%);
+  font-size: 0.9rem;
+  box-shadow: 0 2px 6px rgba(58, 125, 138, 0.3);
 }
-.account-copy { display: flex; flex-direction: column; line-height: 1.1; }
-.account-copy strong { color: #fff; font-size: 0.78rem; font-weight: 600; }
-.account-copy small { margin-top: 0.2rem; color: #a9b6c5; font-size: 0.65rem; text-transform: capitalize; }
+
+.account-copy {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+
+.account-copy strong {
+  color: #0F172A;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.badge-role-supplier {
+  background-color: #FEF3C7;
+  color: #B45309;
+  font-weight: 600;
+  font-size: 0.65rem;
+  border: 1px solid #FDE68A;
+  border-radius: 4px;
+  padding: 0.1rem 0.4rem;
+}
+
+.badge-role-admin {
+  background-color: #FEE2E2;
+  color: #B91C1C;
+  font-weight: 600;
+  font-size: 0.65rem;
+  border: 1px solid #FECACA;
+  border-radius: 4px;
+  padding: 0.1rem 0.4rem;
+}
+
+.badge-role-user {
+  background-color: #E0F2FE;
+  color: #0369A1;
+  font-weight: 600;
+  font-size: 0.65rem;
+  border: 1px solid #BAE6FD;
+  border-radius: 4px;
+  padding: 0.1rem 0.4rem;
+}
+
 .logout-link {
-	display: inline-flex;
-	align-items: center;
-	gap: 0.35rem;
-	padding: 0.55rem 0.7rem;
-	border-radius: 8px;
-	color: #b9c4d0;
-	font-size: 0.82rem;
-	text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.48rem 0.8rem;
+  border-radius: 8px;
+  color: #64748B;
+  font-size: 0.84rem;
+  font-weight: 500;
+  text-decoration: none;
+  border: 1px solid #E2E8F0;
+  background: #FFFFFF;
+  transition: all 0.2s ease;
 }
-.logout-link:hover { color: #fff; background: rgba(255,255,255,0.09); }
-.card { border: none; box-shadow: 0 1px 3px rgba(0,0,0,0.08); border-radius: 10px; }
-.stat-card { border-radius: 12px; color: #fff; padding: 1.25rem; }
-.stat-card h2 { margin: 0; font-weight: 700; }
-.badge-score { font-size: 0.9rem; }
-.table thead { background-color: #eef1f6; }
+
+.logout-link:hover {
+  color: #DC2626;
+  border-color: #FECACA;
+  background-color: #FEF2F2;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.08);
+}
+
+/* ========================================================================= */
+/* BUTTONS (Eye-catching Syamanah gradients)                                */
+/* ========================================================================= */
+.btn {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 600;
+  border-radius: 10px;
+  padding: 0.55rem 1.15rem;
+  font-size: 0.88rem;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  letter-spacing: 0.01em;
+}
+
+.btn:hover {
+  transform: translateY(-1.5px);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+/* Primary Button (Syamanah Teal Gradient) */
+.btn-primary {
+  background: linear-gradient(135deg, #3A7D8A 0%, #2E5190 100%) !important;
+  border: none !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 14px rgba(58, 125, 138, 0.3);
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+  background: linear-gradient(135deg, #2E6570 0%, #244175 100%) !important;
+  box-shadow: 0 6px 18px rgba(58, 125, 138, 0.42);
+  color: #FFFFFF !important;
+}
+
+/* Warning / Accent Button (Syamanah Warm Amber) */
+.btn-warning,
+.btn-accent {
+  background: linear-gradient(135deg, #D9730D 0%, #E8831B 100%) !important;
+  border: none !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 14px rgba(217, 115, 13, 0.35);
+}
+
+.btn-warning:hover,
+.btn-warning:focus,
+.btn-accent:hover {
+  background: linear-gradient(135deg, #BF6206 0%, #D9730D 100%) !important;
+  box-shadow: 0 6px 20px rgba(217, 115, 13, 0.48);
+  color: #FFFFFF !important;
+}
+
+/* Outline Buttons */
+.btn-outline-primary {
+  border: 1.5px solid var(--sya-primary) !important;
+  color: var(--sya-primary) !important;
+  background: transparent !important;
+}
+
+.btn-outline-primary:hover {
+  background: var(--sya-primary) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 14px rgba(58, 125, 138, 0.25);
+}
+
+.btn-outline-warning {
+  border: 1.5px solid var(--sya-accent) !important;
+  color: var(--sya-accent) !important;
+  background: transparent !important;
+}
+
+.btn-outline-warning:hover {
+  background: var(--sya-accent) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 14px rgba(217, 115, 13, 0.3);
+}
+
+.btn-success {
+  background: linear-gradient(135deg, #118442 0%, #16A34A 100%) !important;
+  border: none !important;
+  box-shadow: 0 4px 14px rgba(17, 132, 66, 0.25);
+}
+
+.btn-success:hover {
+  box-shadow: 0 6px 18px rgba(17, 132, 66, 0.38);
+}
+
+/* ========================================================================= */
+/* CARDS & CONTAINERS                                                       */
+/* ========================================================================= */
+.card {
+  border: 1px solid var(--sya-border) !important;
+  box-shadow: var(--sya-shadow-md) !important;
+  border-radius: var(--sya-radius) !important;
+  background-color: var(--sya-card-bg);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  overflow: hidden;
+}
+
+.card-header {
+  background-color: #FFFFFF;
+  border-bottom: 1px solid var(--sya-border);
+  padding: 1.1rem 1.35rem;
+}
+
+/* Syamanah Hero Card (Matches syamanah.com dark sections) */
+.syamanah-hero-card {
+  background: linear-gradient(135deg, #0F1D2E 0%, #18314F 50%, #3A7D8A 100%) !important;
+  color: #FFFFFF !important;
+  border: 1px solid rgba(217, 115, 13, 0.3) !important;
+  box-shadow: 0 12px 36px -4px rgba(15, 29, 46, 0.28) !important;
+  border-radius: var(--sya-radius-lg) !important;
+}
+
+/* Metric / Stat Card */
+.stat-card {
+  border-radius: var(--sya-radius);
+  color: #fff;
+  padding: 1.35rem;
+  box-shadow: var(--sya-shadow-md);
+  transition: transform 0.2s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+}
+
+.stat-card h2,
+.stat-card h3 {
+  margin: 0;
+  font-weight: 700;
+  font-family: 'Poppins', sans-serif;
+}
+
+/* ========================================================================= */
+/* BADGES (Refined Syamanah Pill System)                                    */
+/* ========================================================================= */
+.badge {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 600;
+  padding: 0.35rem 0.65rem;
+  border-radius: 6px;
+  letter-spacing: 0.02em;
+}
+
+.badge.bg-primary {
+  background-color: var(--sya-primary) !important;
+  color: #FFFFFF !important;
+}
+
+.badge.bg-secondary {
+  background-color: var(--sya-secondary) !important;
+  color: #FFFFFF !important;
+}
+
+.badge.bg-warning {
+  background-color: var(--sya-accent) !important;
+  color: #FFFFFF !important;
+}
+
+.badge.bg-success {
+  background-color: var(--sya-success) !important;
+  color: #FFFFFF !important;
+}
+
+/* Subtle Badges */
+.badge.bg-primary-subtle {
+  background-color: var(--sya-primary-light) !important;
+  color: var(--sya-primary) !important;
+  border: 1px solid rgba(58, 125, 138, 0.3) !important;
+}
+
+.badge.bg-warning-subtle {
+  background-color: var(--sya-accent-light) !important;
+  color: var(--sya-accent) !important;
+  border: 1px solid rgba(217, 115, 13, 0.35) !important;
+}
+
+.badge.bg-success-subtle {
+  background-color: var(--sya-success-light) !important;
+  color: var(--sya-success) !important;
+  border: 1px solid rgba(17, 132, 66, 0.3) !important;
+}
+
+.badge.bg-info-subtle {
+  background-color: var(--sya-secondary-light) !important;
+  color: var(--sya-secondary) !important;
+  border: 1px solid rgba(46, 81, 144, 0.3) !important;
+}
+
+/* ========================================================================= */
+/* TABLES (Crisp & Readable)                                                */
+/* ========================================================================= */
+.table {
+  color: var(--sya-text);
+  vertical-align: middle;
+}
+
+.table thead th {
+  background-color: #F1F5F9 !important;
+  color: #475569;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.76rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.85rem 1rem;
+  border-bottom: 2px solid var(--sya-border);
+}
+
+.table tbody td {
+  padding: 0.95rem 1rem;
+  border-bottom: 1px solid var(--sya-border-subtle);
+  font-size: 0.89rem;
+}
+
+.table-hover tbody tr {
+  transition: background-color 0.15s ease;
+}
+
+.table-hover tbody tr:hover {
+  background-color: rgba(58, 125, 138, 0.04) !important;
+}
+
+/* ========================================================================= */
+/* FORM INPUTS & SELECTS                                                    */
+/* ========================================================================= */
+.form-control,
+.form-select {
+  border: 1.5px solid var(--sya-border);
+  border-radius: var(--sya-radius-sm);
+  padding: 0.6rem 0.85rem;
+  font-size: 0.9rem;
+  color: var(--sya-text);
+  background-color: #FFFFFF;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--sya-primary);
+  box-shadow: 0 0 0 3px rgba(58, 125, 138, 0.18);
+  outline: none;
+}
+
+.form-label {
+  color: #334155;
+  margin-bottom: 0.35rem;
+  font-weight: 600;
+}
+
+.input-group-text {
+  border: 1.5px solid var(--sya-border);
+  background-color: #F8FAFC;
+  color: #64748B;
+  border-radius: var(--sya-radius-sm);
+}
+
+/* ========================================================================= */
+/* PROGRESS BARS                                                            */
+/* ========================================================================= */
+.progress {
+  background-color: #E2E8F0;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progress-bar.bg-success {
+  background: linear-gradient(90deg, #118442 0%, #16A34A 100%) !important;
+}
+
+.progress-bar.bg-warning {
+  background: linear-gradient(90deg, #D9730D 0%, #F59E0B 100%) !important;
+}
+
+.progress-bar.bg-primary {
+  background: linear-gradient(90deg, #3A7D8A 0%, #2E5190 100%) !important;
+}
+
+/* ========================================================================= */
+/* ALERTS                                                                   */
+/* ========================================================================= */
+.alert {
+  border-radius: var(--sya-radius-sm);
+  border: none;
+  font-weight: 500;
+  padding: 0.9rem 1.15rem;
+}
+
+.alert-success {
+  background-color: var(--sya-success-light);
+  color: #0F5132;
+  border-left: 4px solid var(--sya-success);
+}
+
+.alert-warning {
+  background-color: var(--sya-accent-light);
+  color: #854D0E;
+  border-left: 4px solid var(--sya-accent);
+}
+
+.alert-info {
+  background-color: var(--sya-primary-light);
+  color: #1E4E59;
+  border-left: 4px solid var(--sya-primary);
+}
+
+.alert-danger {
+  background-color: #FEF2F2;
+  color: #991B1B;
+  border-left: 4px solid #EF4444;
+}
+
+/* ========================================================================= */
+/* MODALS                                                                   */
+/* ========================================================================= */
+.modal-content {
+  border: 1px solid var(--sya-border);
+  border-radius: var(--sya-radius);
+  box-shadow: var(--sya-shadow-lg);
+  overflow: hidden;
+}
+
+.modal-header {
+  padding: 1.1rem 1.4rem;
+  border-bottom: 1px solid var(--sya-border);
+}
+
+.modal-header.bg-primary {
+  background: linear-gradient(135deg, #0F1D2E 0%, #2E5190 50%, #3A7D8A 100%) !important;
+  color: #FFFFFF !important;
+}
+
+.modal-body {
+  padding: 1.4rem;
+}
+
+.modal-footer {
+  padding: 0.95rem 1.4rem;
+  border-top: 1px solid var(--sya-border);
+}
+
+/* ========================================================================= */
+/* LAYOUT UTILITIES & SUMMARY CARDS (Clean, Simple, Not Cluttered)           */
+/* ========================================================================= */
+.app-main-container {
+  max-width: 1440px;
+  margin: 0 auto;
+}
+
+.summary-card {
+  background: #FFFFFF;
+  border: 1px solid var(--sya-border) !important;
+  border-radius: var(--sya-radius);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+}
+
+.summary-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--sya-shadow-md) !important;
+}
+
+.icon-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  flex-shrink: 0;
+}
+
+/* ========================================================================= */
+/* RESPONSIVE DESIGN (Mobile & Tablet Perfection)                            */
+/* ========================================================================= */
 @media (max-width: 991.98px) {
-	.app-brand { margin-right: 0; }
-	.app-nav-links { gap: 0; padding-top: 0.75rem; }
-	.account-area { align-items: flex-start; flex-direction: column; gap: 0.45rem; margin: 0.8rem 0 0.4rem; padding-top: 0.75rem; border-top: 1px solid rgba(255,255,255,0.1); }
-	.logout-link { padding-left: 0.45rem; }
+  .app-navbar {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+
+  .app-brand {
+    margin-right: 0;
+    gap: 0.65rem;
+  }
+
+  .app-logo-img {
+    height: 32px;
+  }
+
+  .brand-title {
+    font-size: 1.05rem;
+  }
+
+  .navbar-toggler {
+    padding: 0.4rem 0.65rem;
+    border: 1.5px solid var(--sya-border);
+    border-radius: 8px;
+    font-size: 1.1rem;
+    color: var(--sya-text);
+  }
+
+  .navbar-toggler:focus {
+    box-shadow: 0 0 0 2px rgba(58, 125, 138, 0.2);
+  }
+
+  .navbar-collapse {
+    background-color: #FFFFFF;
+    padding: 1rem 0.5rem;
+    border-top: 1px solid var(--sya-border);
+    margin-top: 0.5rem;
+    border-radius: 0 0 12px 12px;
+    box-shadow: 0 10px 25px rgba(15, 29, 46, 0.08);
+  }
+
+  .app-nav-links {
+    gap: 0.35rem;
+    padding-bottom: 0.75rem;
+  }
+
+  .app-nav-links .nav-link {
+    padding: 0.65rem 0.85rem !important;
+    font-size: 0.92rem;
+  }
+
+  .account-area {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin-left: 0;
+    padding-top: 0.85rem;
+    border-top: 1px solid var(--sya-border);
+    width: 100%;
+  }
+
+  .dropdown-menu {
+    border: none;
+    box-shadow: none;
+    padding-left: 0.75rem;
+    background-color: #F8FAFC;
+    border-radius: 8px;
+    margin-top: 0.25rem;
+  }
+}
+
+@media (max-width: 575.98px) {
+  body {
+    font-size: 0.88rem;
+  }
+
+  h1, .h1 { font-size: 1.6rem; }
+  h2, .h2 { font-size: 1.4rem; }
+  h3, .h3 { font-size: 1.25rem; }
+  h4, .h4 { font-size: 1.1rem; }
+
+  .brand-subtitle {
+    display: none; /* Hide subtitle on tiny mobile screens for crisp fit */
+  }
+
+  .brand-title {
+    font-size: 0.95rem;
+  }
+
+  .badge-brand-tender,
+  .badge-brand-intel {
+    font-size: 0.6rem;
+    padding: 0.15rem 0.35rem;
+  }
+
+  .account-area {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.65rem;
+  }
+
+  .account-chip {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .logout-link {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .card-body {
+    padding: 1rem !important;
+  }
+
+  .table thead th,
+  .table tbody td {
+    padding: 0.65rem 0.75rem;
+    font-size: 0.82rem;
+  }
 }

@@ -5,124 +5,164 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{% block title %}Market Intelligence System{% endblock %}</title>
 <meta name="csrf-token" content="{{ csrf_token() }}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Poppins:wght@500;600;700;800&family=Rubik:wght@400;500;600&display=swap" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
 </head>
 <body>
 {% if current_user.is_authenticated %}
-<nav class="navbar navbar-expand-lg navbar-dark app-navbar px-3 px-lg-4">
-  <a class="navbar-brand app-brand" href="{{ url_for('dashboard') }}">
-    <span class="brand-mark"><i class="bi bi-graph-up-arrow"></i></span>
-    <span><strong>SYAMANAH</strong><small>Market Intelligence</small></span>
-  </a>
-  <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav" aria-label="Buka menu navigasi"><span class="navbar-toggler-icon"></span></button>
-  <div class="collapse navbar-collapse" id="nav">
-    <ul class="navbar-nav me-auto app-nav-links">
-      <!-- 1. Company Intelligence -->
-      {% if current_user.role in ['admin', 'business_analyst', 'marketing', 'management'] %}
-      <li class="nav-item dropdown">
-        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-          <i class="bi bi-buildings"></i> Company Intelligence
-        </a>
-        <ul class="dropdown-menu">
-          <li><a class="dropdown-item" href="{{ url_for('market_analysis.explorer') }}"><i class="bi bi-search me-2"></i> Master Organizations</a></li>
-          <li><a class="dropdown-item" href="{{ url_for('prospect.list_prospects') }}"><i class="bi bi-person-lines-fill me-2"></i> Prospek</a></li>
-          {% if current_user.role in ['admin', 'business_analyst', 'management'] %}
-          <li><a class="dropdown-item" href="{{ url_for('market_analysis.index') }}"><i class="bi bi-graph-up me-2"></i> Market Analytics</a></li>
-          {% endif %}
-          {% if current_user.role in ['admin', 'business_analyst'] %}
-          <li><hr class="dropdown-divider"></li>
-          <li><a class="dropdown-item" href="{{ url_for('admin.discovery') }}"><i class="bi bi-binoculars me-2"></i> Data Discovery</a></li>
-          <li><a class="dropdown-item" href="{{ url_for('data_collection.index') }}"><i class="bi bi-cloud-arrow-down me-2"></i> Ingestion Sources</a></li>
-          <li><a class="dropdown-item" href="{{ url_for('data_processing.index') }}"><i class="bi bi-cpu me-2"></i> Processing & AI</a></li>
-          {% endif %}
-        </ul>
-      </li>
-      {% endif %}
-
-      <!-- 2. Event Intelligence -->
-      {% if current_user.role in ['admin', 'business_analyst', 'marketing', 'management'] %}
-      <li class="nav-item dropdown">
-        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-          <i class="bi bi-calendar-event"></i> Event Intelligence
-        </a>
-        <ul class="dropdown-menu">
-          <li><a class="dropdown-item" href="{{ url_for('events.index') }}"><i class="bi bi-list-stars me-2"></i> Event Directory</a></li>
-          <li><a class="dropdown-item" href="{{ url_for('events.calendar') }}"><i class="bi bi-calendar3 me-2"></i> Event Calendar</a></li>
-          {% if current_user.role in ['admin', 'business_analyst', 'marketing'] %}
-          <li><a class="dropdown-item" href="{{ url_for('events.create_event') }}"><i class="bi bi-plus-circle me-2"></i> Tambah Event</a></li>
-          <li><hr class="dropdown-divider"></li>
-          <li><a class="dropdown-item" href="{{ url_for('events.export') }}"><i class="bi bi-file-earmark-spreadsheet me-2"></i> Export Participants (CSV)</a></li>
-          {% endif %}
-        </ul>
-      </li>
-      {% endif %}
-
-      <!-- 3. Marketing Intelligence -->
-      {% if current_user.role in ['admin', 'marketing', 'business_analyst', 'management'] %}
-      <li class="nav-item dropdown">
-        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-          <i class="bi bi-bullseye"></i> Marketing Intelligence
-        </a>
-        <ul class="dropdown-menu">
-          <li><a class="dropdown-item" href="{{ url_for('marketing.dashboard') }}"><i class="bi bi-speedometer2 me-2"></i> Marketing Dashboard</a></li>
-          <li><a class="dropdown-item" href="{{ url_for('marketing.campaigns_index') }}"><i class="bi bi-megaphone me-2"></i> Campaign Management</a></li>
-          <li><a class="dropdown-item" href="{{ url_for('marketing.targets') }}"><i class="bi bi-crosshair me-2"></i> Target Explorer</a></li>
-          <li><a class="dropdown-item" href="{{ url_for('marketing.segments') }}"><i class="bi bi-pie-chart me-2"></i> B2B Segmentation</a></li>
-          <li><hr class="dropdown-divider"></li>
-          <li><a class="dropdown-item" href="{{ url_for('marketing.export') }}"><i class="bi bi-download me-2"></i> Export Target Accounts</a></li>
-        </ul>
-      </li>
-      {% endif %}
-
-      <!-- 4. Reporting (Management & Admin) -->
-      {% if current_user.role in ['admin', 'management'] %}
-      <li class="nav-item"><a class="nav-link" href="{{ url_for('reporting.index') }}"><i class="bi bi-journal-text"></i> Reporting</a></li>
-      {% endif %}
-
-      <!-- 5. Procurement Intelligence (Internal Only) -->
-      {% if current_user.role in ['admin', 'business_analyst', 'marketing', 'management', 'procurement'] %}
-      <li class="nav-item"><a class="nav-link" href="{{ url_for('procurement.index') }}"><i class="bi bi-box-seam"></i> Procurement</a></li>
-      {% endif %}
-
-      <!-- 6. Portal Rekanan Supplier -->
-      {% if current_user.role == 'supplier' %}
-      <li class="nav-item"><a class="nav-link" href="{{ url_for('dashboard') }}"><i class="bi bi-speedometer2"></i> Dashboard Mitra</a></li>
-      <li class="nav-item"><a class="nav-link" href="#rfq-section"><i class="bi bi-receipt-cutoff"></i> Permintaan RFQ</a></li>
-      <li class="nav-item"><a class="nav-link" href="#katalog-section"><i class="bi bi-boxes"></i> Katalog Produk</a></li>
-      <li class="nav-item"><a class="nav-link" href="#po-section"><i class="bi bi-truck"></i> Status PO</a></li>
-      {% endif %}
-
-      <!-- 6. Admin (Only Admin) -->
-      {% if current_user.role == 'admin' %}
-      <li class="nav-item dropdown">
-        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-          <i class="bi bi-shield-lock"></i> Admin Panel
-        </a>
-        <ul class="dropdown-menu">
-          <li><a class="dropdown-item" href="{{ url_for('admin.index') }}"><i class="bi bi-speedometer me-2"></i> Admin Overview</a></li>
-          <li><a class="dropdown-item" href="{{ url_for('admin.users') }}"><i class="bi bi-people me-2"></i> Kelola User & RBAC</a></li>
-          <li><a class="dropdown-item" href="{{ url_for('admin.cron_jobs') }}"><i class="bi bi-clock-history me-2"></i> Scheduler & Cron</a></li>
-          <li><a class="dropdown-item" href="{{ url_for('admin.monitoring') }}"><i class="bi bi-activity me-2"></i> Pipeline Monitoring</a></li>
-          <li><a class="dropdown-item" href="{{ url_for('admin.logs') }}"><i class="bi bi-card-checklist me-2"></i> Audit Activity Logs</a></li>
-          <li><a class="dropdown-item" href="{{ url_for('admin.ai_config') }}"><i class="bi bi-robot me-2"></i> Konfigurasi AI</a></li>
-        </ul>
-      </li>
-      {% endif %}
-    </ul>
-    <div class="account-area">
-      <div class="account-chip">
-        <span class="account-icon"><i class="bi bi-person-fill"></i></span>
-        <span class="account-copy"><strong>{{ current_user.name }}</strong><small>{{ current_user.role|replace('_', ' ')|title }}</small></span>
+<nav class="navbar navbar-expand-lg navbar-light app-navbar px-3 px-lg-4 sticky-top">
+  <div class="container-fluid px-0">
+    <a class="navbar-brand app-brand" href="{{ url_for('dashboard') }}">
+      <img src="{{ url_for('static', filename='img/logo-syamanah.png') }}" alt="Syamanah" class="app-logo-img">
+      <div class="brand-text-container">
+        {% if current_user.role == 'supplier' %}
+          <div class="d-flex align-items-center gap-1">
+            <!-- <span class="brand-title">SYAMANAH</span> -->
+            <span class="badge badge-brand-tender">TENDER</span>
+          </div>
+          <small class="brand-subtitle">Portal Rekanan Resmi</small>
+        {% else %}
+          <div class="d-flex align-items-center gap-1">
+            <!-- <span class="brand-title">SYAMANAH</span> -->
+            <span class="badge badge-brand-intel">MARKET INTEL</span>
+          </div>
+          <small class="brand-subtitle">Organization Intelligence</small>
+        {% endif %}
       </div>
-      <a class="logout-link" href="{{ url_for('auth.logout') }}" title="Logout"><i class="bi bi-box-arrow-right"></i><span>Logout</span></a>
+    </a>
+    <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#nav" aria-label="Buka menu navigasi">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="nav">
+      <ul class="navbar-nav me-auto app-nav-links">
+        <!-- 1. Company Intelligence -->
+        {% if current_user.role in ['admin', 'business_analyst', 'marketing', 'management'] %}
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-buildings text-primary"></i> Company Intel
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="{{ url_for('market_analysis.explorer') }}"><i class="bi bi-search me-2 text-primary"></i> Master Organizations</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('prospect.list_prospects') }}"><i class="bi bi-person-lines-fill me-2 text-primary"></i> Prospek</a></li>
+            {% if current_user.role in ['admin', 'business_analyst', 'management'] %}
+            <li><a class="dropdown-item" href="{{ url_for('market_analysis.index') }}"><i class="bi bi-graph-up me-2 text-primary"></i> Market Analytics</a></li>
+            {% endif %}
+            {% if current_user.role in ['admin', 'business_analyst'] %}
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="{{ url_for('admin.discovery') }}"><i class="bi bi-binoculars me-2 text-muted"></i> Data Discovery</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('data_collection.index') }}"><i class="bi bi-cloud-arrow-down me-2 text-muted"></i> Ingestion Sources</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('data_processing.index') }}"><i class="bi bi-cpu me-2 text-muted"></i> Processing & AI</a></li>
+            {% endif %}
+          </ul>
+        </li>
+        {% endif %}
+
+        <!-- 2. Event Intelligence -->
+        {% if current_user.role in ['admin', 'business_analyst', 'marketing', 'management'] %}
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-calendar-event text-primary"></i> Event Intel
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="{{ url_for('events.index') }}"><i class="bi bi-list-stars me-2 text-primary"></i> Event Directory</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('events.calendar') }}"><i class="bi bi-calendar3 me-2 text-primary"></i> Event Calendar</a></li>
+            {% if current_user.role in ['admin', 'business_analyst', 'marketing'] %}
+            <li><a class="dropdown-item" href="{{ url_for('events.create_event') }}"><i class="bi bi-plus-circle me-2 text-success"></i> Tambah Event</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="{{ url_for('events.export') }}"><i class="bi bi-file-earmark-spreadsheet me-2 text-muted"></i> Export Participants (CSV)</a></li>
+            {% endif %}
+          </ul>
+        </li>
+        {% endif %}
+
+        <!-- 3. Marketing Intelligence -->
+        {% if current_user.role in ['admin', 'marketing', 'business_analyst', 'management'] %}
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-bullseye text-primary"></i> Marketing Intel
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="{{ url_for('marketing.dashboard') }}"><i class="bi bi-speedometer2 me-2 text-primary"></i> Marketing Dashboard</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('marketing.campaigns_index') }}"><i class="bi bi-megaphone me-2 text-primary"></i> Campaign Management</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('marketing.targets') }}"><i class="bi bi-crosshair me-2 text-primary"></i> Target Explorer</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('marketing.segments') }}"><i class="bi bi-pie-chart me-2 text-primary"></i> B2B Segmentation</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="{{ url_for('marketing.export') }}"><i class="bi bi-download me-2 text-muted"></i> Export Target Accounts</a></li>
+          </ul>
+        </li>
+        {% endif %}
+
+        <!-- 4. Reporting (Management & Admin) -->
+        {% if current_user.role in ['admin', 'management'] %}
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('reporting.index') }}"><i class="bi bi-journal-text text-primary"></i> Reporting</a></li>
+        {% endif %}
+
+        <!-- 5. Procurement Intelligence (Internal Only) -->
+        {% if current_user.role in ['admin', 'business_analyst', 'marketing', 'management', 'procurement'] %}
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-box-seam text-primary"></i> Procurement
+          </a>
+          <ul class="dropdown-menu shadow-sm">
+            <li><a class="dropdown-item" href="{{ url_for('procurement.registered_suppliers') }}"><i class="bi bi-shield-check me-2" style="color: #D9730D;"></i> Mitra Terdaftar (Web)</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('procurement.ai_discovery') }}"><i class="bi bi-robot me-2 text-primary"></i> Hasil Temuan AI (Sourcing)</a></li>
+          </ul>
+        </li>
+        {% endif %}
+
+        <!-- 6. Portal Rekanan Supplier (Syamanah Tender) -->
+        {% if current_user.role == 'supplier' %}
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('dashboard') }}"><i class="bi bi-speedometer2 text-primary"></i> Dashboard</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('supplier.catalog') }}"><i class="bi bi-boxes" style="color: #D9730D;"></i> Katalog Produk</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('supplier.profile') }}"><i class="bi bi-building-gear text-primary"></i> Profil Perusahaan</a></li>
+        {% endif %}
+
+        <!-- 7. Admin (Only Admin) -->
+        {% if current_user.role == 'admin' %}
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-shield-lock text-primary"></i> Admin Panel
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="{{ url_for('admin.index') }}"><i class="bi bi-speedometer me-2 text-primary"></i> Admin Overview</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('admin.users') }}"><i class="bi bi-people me-2 text-primary"></i> Kelola User & RBAC</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('admin.cron_jobs') }}"><i class="bi bi-clock-history me-2 text-primary"></i> Scheduler & Cron</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('admin.monitoring') }}"><i class="bi bi-activity me-2 text-primary"></i> Pipeline Monitoring</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('admin.logs') }}"><i class="bi bi-card-checklist me-2 text-primary"></i> Audit Activity Logs</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('admin.ai_config') }}"><i class="bi bi-robot me-2 text-primary"></i> Konfigurasi AI</a></li>
+          </ul>
+        </li>
+        {% endif %}
+      </ul>
+      <div class="account-area">
+        <div class="account-chip">
+          <span class="account-icon"><i class="bi bi-person-fill"></i></span>
+          <div class="account-copy">
+            <strong>{{ current_user.name }}</strong>
+            {% if current_user.role == 'supplier' %}
+              <span class="badge badge-role-supplier"><i class="bi bi-patch-check-fill me-1"></i>Supplier</span>
+            {% elif current_user.role == 'admin' %}
+              <span class="badge badge-role-admin">Admin</span>
+            {% else %}
+              <span class="badge badge-role-user">{{ current_user.role|replace('_', ' ')|title }}</span>
+            {% endif %}
+          </div>
+        </div>
+        <a class="logout-link" href="{{ url_for('auth.logout') }}" title="Logout">
+          <i class="bi bi-box-arrow-right"></i>
+          <span>Logout</span>
+        </a>
+      </div>
     </div>
   </div>
 </nav>
 {% endif %}
 
-<div class="container-fluid px-4 py-3">
+<div class="container-fluid app-main-container px-3 px-sm-4 py-3 py-md-4">
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
       {% for category, msg in messages %}

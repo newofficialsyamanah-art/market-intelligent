@@ -1,28 +1,58 @@
 {% extends "base.html" %}
-{% block title %}Login - Market Intelligence System{% endblock %}
+{% block title %}Login - Syamanah System{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-center align-items-center" style="min-height:80vh;">
-  <div class="card p-4" style="width:380px;">
-    <h4 class="mb-3 text-center">Market Intelligence System</h4>
+<div class="d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+  <div class="card p-4 p-md-5 border-0 shadow-lg" style="width: 100%; max-width: 420px; border-radius: 18px;">
+    <div class="text-center mb-4">
+      <div class="brand-mark d-inline-grid mb-2" style="width: 48px; height: 48px; font-size: 1.4rem;">
+        <i class="bi bi-shield-check"></i>
+      </div>
+      <h3 class="fw-bold text-dark mb-0">SYAMANAH</h3>
+      <small class="text-muted text-uppercase fw-semibold" style="letter-spacing: 0.1em; font-size: 0.72rem;">Intelligence & Tender Portal</small>
+    </div>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} py-2 px-3 small mb-3">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
     <form method="post">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <div class="mb-3">
-        <label class="form-label">Email</label>
-        <input type="email" name="email" class="form-control" required>
+        <label class="form-label small fw-semibold">Email Pengguna</label>
+        <div class="input-group">
+          <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+          <input type="email" name="email" class="form-control" placeholder="nama@perusahaan.com" required>
+        </div>
       </div>
-      <div class="mb-3">
-        <label class="form-label">Password</label>
-        <input type="password" name="password" class="form-control" required>
+      <div class="mb-4">
+        <label class="form-label small fw-semibold">Kata Sandi</label>
+        <div class="input-group">
+          <span class="input-group-text"><i class="bi bi-lock"></i></span>
+          <input type="password" name="password" class="form-control" placeholder="Masukkan password" required>
+        </div>
       </div>
-      <button class="btn btn-primary w-100" type="submit">Login</button>
+      <button class="btn btn-primary w-100 py-2 fw-semibold" type="submit">
+        <i class="bi bi-box-arrow-in-right me-1"></i> Masuk ke Sistem
+      </button>
     </form>
-    <div class="mt-3 pt-3 border-top text-center">
-      <span class="small text-muted d-block mb-1">Penyedia Bahan Baku Tekstil & Kain?</span>
-      <a href="{{ url_for('auth.register_supplier') }}" class="btn btn-outline-success btn-sm w-100">
-        <i class="bi bi-box-seam me-1"></i> Daftar Sebagai Rekanan Supplier
+
+    <div class="mt-4 pt-3 border-top text-center">
+      <span class="small text-muted d-block mb-2">Penyedia Bahan Baku, Barang & Jasa?</span>
+      <a href="{{ url_for('auth.register_supplier') }}" class="btn btn-warning text-white fw-semibold btn-sm w-100 py-2">
+        <i class="bi bi-shield-plus me-1"></i> Daftar Rekanan Syamanah Tender
       </a>
     </div>
-    <p class="text-center mt-3 mb-0 small"><a href="{{ url_for('auth.register') }}" class="text-muted">Buat akun admin awal</a></p>
+
+    <p class="text-center mt-3 mb-0 small">
+      <a href="{{ url_for('auth.register') }}" class="text-muted text-decoration-none">Registrasi akun admin</a>
+    </p>
   </div>
 </div>
 {% endblock %}

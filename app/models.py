@@ -273,6 +273,75 @@ class ProcurementSupplier(db.Model):
         db.UniqueConstraint("product", "source_url", name="uq_procurement_suppliers_product_url"),
     )
 
+    def get_profile_data(self) -> dict:
+        import json
+        if not self.recommendation_json:
+            return {}
+        try:
+            val = json.loads(self.recommendation_json)
+            if isinstance(val, dict):
+                return val.get("company_profile", {})
+        except Exception:
+            pass
+        return {}
+
+    def update_profile_data(self, profile_dict: dict):
+        import json
+        current = {}
+        if self.recommendation_json:
+            try:
+                parsed = json.loads(self.recommendation_json)
+                if isinstance(parsed, dict):
+                    current = parsed
+            except Exception:
+                current = {}
+        current["company_profile"] = profile_dict
+        self.recommendation_json = json.dumps(current, ensure_ascii=False)
+
+    def calculate_completeness(self) -> int:
+        profile = self.get_profile_data()
+        fields = [
+            bool(self.company_name),
+            bool(self.product),
+            bool(self.material),
+            bool(self.region),
+            bool(self.website),
+            bool(self.contact_email),
+            bool(self.contact_phone),
+            bool(self.description),
+            bool(profile.get("business_entity")),
+            bool(profile.get("address")),
+            bool(profile.get("npwp") or profile.get("nib")),
+            bool(profile.get("pic_name")),
+        ]
+        score = int((sum(1 for f in fields if f) / len(fields)) * 100)
+        return min(100, max(0, score))
+
+
+class SupplierProduct(db.Model):
+    """Katalog produk & komoditas yang diunggah oleh rekanan supplier B2B (Syamanah Tender)."""
+    __tablename__ = "supplier_products"
+
+    id = db.Column(db.Integer, primary_key=True)
+    supplier_id = db.Column(db.Integer, db.ForeignKey("procurement_suppliers.id", ondelete="CASCADE"), nullable=True, index=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    sku = db.Column(db.String(100), nullable=True, index=True)
+    name = db.Column(db.String(255), nullable=False)
+    category = db.Column(db.String(100), nullable=False, default="raw material")
+    description = db.Column(db.Text, nullable=True)
+    specifications = db.Column(db.Text, nullable=True)
+    price = db.Column(db.Float, default=0.0)
+    unit = db.Column(db.String(50), default="pcs")
+    min_order = db.Column(db.String(100), default="1")
+    lead_time = db.Column(db.String(100), default="Ready Stock")
+    stock_status = db.Column(db.String(50), default="ready")  # ready, pre_order, out_of_stock
+    file_path = db.Column(db.String(500), nullable=True)  # Foto produk atau file brosur PDF
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
+
+    supplier = db.relationship("ProcurementSupplier", backref=db.backref("catalog_products", cascade="all, delete-orphan"))
+    user = db.relationship("User", backref=db.backref("supplier_products", cascade="all, delete-orphan"))
+
 
 class Organization(db.Model):
     """

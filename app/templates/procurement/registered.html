@@ -1,0 +1,373 @@
+{% extends "base.html" %}
+{% block title %}Mitra Supplier Terdaftar (Web) - Syamanah Procurement{% endblock %}
+{% block content %}
+
+<!-- Header & Nav Tabs -->
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-3 pb-3 border-bottom">
+  <div>
+    <div class="d-flex align-items-center gap-2 mb-1">
+      <span class="badge" style="background-color: #FEF3C7; color: #B45309; border: 1px solid #FDE68A;">
+        <i class="bi bi-shield-check me-1"></i> Syamanah Tender
+      </span>
+      <span class="text-muted small">&bull; Direktori Rekanan Mandiri</span>
+    </div>
+    <h3 class="fw-bold mb-1 text-dark">Mitra Supplier Terdaftar (Web)</h3>
+    <p class="text-muted small mb-0">Daftar pemasok resmi yang mendaftar mandiri via portal web Syamanah Tender, mengunggah profil legalitas, dan menyediakan katalog produk.</p>
+  </div>
+  <div>
+    <a href="{{ url_for('procurement.ai_discovery') }}" class="btn btn-outline-primary btn-sm">
+      <i class="bi bi-robot me-1"></i> Buka Temuan AI & Sourcing &rarr;
+    </a>
+  </div>
+</div>
+
+<!-- Tab Navigasi Pemisah Halaman: Terdaftar (Web) vs Temuan AI -->
+<ul class="nav nav-pills mb-4 p-1 bg-light rounded border d-inline-flex">
+  <li class="nav-item">
+    <a class="nav-link active fw-semibold py-2 px-3" style="background-color: #3A7D8A;" href="{{ url_for('procurement.registered_suppliers') }}">
+      <i class="bi bi-shield-check me-1"></i> Mitra Terdaftar via Web ({{ total_registered }})
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link text-secondary fw-semibold py-2 px-3" href="{{ url_for('procurement.ai_discovery') }}">
+      <i class="bi bi-robot me-1"></i> Hasil Temuan AI & Sourcing ({{ ai_count }})
+    </a>
+  </li>
+</ul>
+
+<!-- Flash Messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+<!-- Top Summary Cards (4 Clean KPI Cards Khusus Mitra Terdaftar) -->
+<div class="row g-3 mb-4">
+  <div class="col-sm-6 col-xl-3">
+    <div class="card h-100 p-3 border-0 shadow-sm summary-card">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <span class="text-muted small fw-semibold text-uppercase">Mitra Terdaftar</span>
+        <div class="icon-circle" style="color: #D9730D; background-color: rgba(217, 115, 13, 0.12);"><i class="bi bi-building-check"></i></div>
+      </div>
+      <h3 class="fw-bold mb-1 text-dark">{{ total_registered }}</h3>
+      <div class="small text-muted">Registrasi mandiri portal rekanan</div>
+    </div>
+  </div>
+
+  <div class="col-sm-6 col-xl-3">
+    <div class="card h-100 p-3 border-0 shadow-sm summary-card">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <span class="text-muted small fw-semibold text-uppercase">Terverifikasi Resmi</span>
+        <div class="icon-circle text-success bg-success-subtle"><i class="bi bi-patch-check"></i></div>
+      </div>
+      <h3 class="fw-bold mb-1 text-dark">{{ verified_registered_count }}</h3>
+      <div class="small text-muted">Lolos validasi tim procurement</div>
+    </div>
+  </div>
+
+  <div class="col-sm-6 col-xl-3">
+    <div class="card h-100 p-3 border-0 shadow-sm summary-card">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <span class="text-muted small fw-semibold text-uppercase">Menunggu Kurasi</span>
+        <div class="icon-circle text-warning bg-warning-subtle"><i class="bi bi-hourglass-split"></i></div>
+      </div>
+      <h3 class="fw-bold mb-1 text-dark">{{ pending_registered_count }}</h3>
+      <div class="small text-muted">Perlu peninjauan dokumen</div>
+    </div>
+  </div>
+
+  <div class="col-sm-6 col-xl-3">
+    <div class="card h-100 p-3 border-0 shadow-sm summary-card">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <span class="text-muted small fw-semibold text-uppercase">Item Katalog Pasokan</span>
+        <div class="icon-circle text-primary bg-primary-subtle"><i class="bi bi-boxes"></i></div>
+      </div>
+      <h3 class="fw-bold mb-1 text-dark">{{ total_catalog_items }}</h3>
+      <div class="small text-muted">Komoditas yang diunggah mitra</div>
+    </div>
+  </div>
+</div>
+
+<!-- Toolbar Filter Khusus Mitra Terdaftar -->
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-body p-3">
+    <form method="get" action="{{ url_for('procurement.registered_suppliers') }}" class="row g-2 align-items-center">
+      
+      <!-- 1. Search Query -->
+      <div class="col-12 col-md-4">
+        <div class="input-group input-group-sm">
+          <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+          <input type="text" name="q" class="form-control border-start-0 ps-0" placeholder="Cari nama PT/CV, PIC, email, telp..." value="{{ filters.q }}">
+        </div>
+      </div>
+
+      <!-- 2. Kategori Pasokan -->
+      <div class="col-6 col-md-3">
+        <select name="product" class="form-select form-select-sm" onchange="this.form.submit()">
+          <option value="">Semua Kategori</option>
+          {% for cat in category_list %}
+            <option value="{{ cat.key }}" {% if filters.product == cat.key %}selected{% endif %}>{{ cat.label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- 3. Status Verifikasi -->
+      <div class="col-6 col-md-3">
+        <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
+          <option value="all" {% if filters.status == 'all' %}selected{% endif %}>Semua Status Verifikasi</option>
+          <option value="verified" {% if filters.status == 'verified' %}selected{% endif %}>Terverifikasi (Verified)</option>
+          <option value="pending" {% if filters.status == 'pending' %}selected{% endif %}>Menunggu Verifikasi (Pending)</option>
+        </select>
+      </div>
+
+      <!-- 4. Sorting & Reset -->
+      <div class="col-12 col-md-2 d-flex gap-1">
+        <select name="sort" class="form-select form-select-sm" onchange="this.form.submit()">
+          <option value="newest" {% if filters.sort == 'newest' %}selected{% endif %}>Terbaru Mendaftar</option>
+          <option value="name_asc" {% if filters.sort == 'name_asc' %}selected{% endif %}>Nama PT/CV (A - Z)</option>
+          <option value="fit_desc" {% if filters.sort == 'fit_desc' %}selected{% endif %}>Fit Score Tertinggi</option>
+        </select>
+        {% if filters.q or filters.product or filters.status != 'all' or filters.sort != 'newest' %}
+          <a href="{{ url_for('procurement.registered_suppliers') }}" class="btn btn-outline-secondary btn-sm" title="Reset Filter"><i class="bi bi-x-circle"></i></a>
+        {% endif %}
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Tabel Direktori Mitra Terdaftar -->
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-header bg-white py-3 d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2">
+    <div>
+      <h6 class="mb-0 fw-bold text-dark d-flex align-items-center gap-2">
+        <i class="bi bi-shield-check text-warning"></i> Direktori Mitra Pemasok Terdaftar (Web)
+      </h6>
+      <small class="text-muted">Menampilkan {{ supplier_items|length }} mitra dari total {{ pagination.total if pagination else total_registered }} pendaftar.</small>
+    </div>
+    {% if filters.product %}
+      <span class="badge" style="background-color: #3A7D8A; color: white;">
+        Kategori: {{ filters.product|title }}
+      </span>
+    {% endif %}
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th style="min-width: 220px;" class="ps-3">Perusahaan & Legalitas</th>
+          <th>Kategori & Komoditas</th>
+          <th>Wilayah / Lokasi</th>
+          <th>PIC & Kontak WhatsApp</th>
+          <th>Akun Pendaftar</th>
+          <th>Kelengkapan</th>
+          <th>Katalog Produk</th>
+          <th>Status Rekanan</th>
+          <th class="text-end pe-3" style="min-width: 140px;">Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for item in supplier_items %}
+      {% set s = item.supplier %}
+      {% set creator = item.creator %}
+      {% set profile = item.profile %}
+      <tr>
+        <!-- 1. Perusahaan & Legalitas -->
+        <td class="ps-3">
+          <div class="d-flex align-items-start gap-2">
+            <div>
+              <a class="fw-bold text-decoration-none text-dark d-block hover-primary" href="{{ url_for('procurement.detail', supplier_id=s.id) }}">
+                {{ s.company_name }}
+              </a>
+              <div class="d-flex flex-wrap align-items-center gap-1 mt-1">
+                <span class="badge" style="background-color: #FEF3C7; color: #B45309; font-size: 0.65rem; border: 1px solid #FDE68A;">
+                  <i class="bi bi-shield-check me-1"></i>Mitra Web
+                </span>
+                {% if profile.get('business_entity') %}
+                  <span class="badge bg-secondary-subtle text-dark" style="font-size: 0.65rem;">
+                    {{ profile.get('business_entity') }}
+                  </span>
+                {% endif %}
+                {% if profile.get('npwp') or profile.get('nib') %}
+                  <span class="badge bg-light text-secondary border font-monospace" style="font-size: 0.62rem;">
+                    Legalitas OK
+                  </span>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </td>
+
+        <!-- 2. Kategori & Material -->
+        <td>
+          <span class="badge bg-light text-dark border">{{ s.product|title }}</span>
+          <div class="small text-muted mt-1 text-truncate" style="max-width: 180px;" title="{{ s.material or '-' }}">
+            {{ s.material or 'Material umum' }}
+          </div>
+        </td>
+
+        <!-- 3. Wilayah -->
+        <td>
+          <div class="small text-dark d-flex align-items-center gap-1">
+            <i class="bi bi-geo-alt text-danger"></i> {{ s.region or 'Indonesia' }}
+          </div>
+        </td>
+
+        <!-- 4. PIC & Kontak WhatsApp -->
+        <td>
+          {% if s.contact_phone %}
+            {% set clean_phone = s.contact_phone|replace(' ', '')|replace('-', '')|replace('+', '') %}
+            {% if clean_phone.startswith('0') %}
+              {% set wa_num = '62' ~ clean_phone[1:] %}
+            {% else %}
+              {% set wa_num = clean_phone %}
+            {% endif %}
+            {% set wa_msg = "Halo " ~ s.company_name ~ ", kami dari Tim Pengadaan Syamanah ingin berdiskusi mengenai pasokan Anda." %}
+            <div class="d-flex align-items-center gap-1">
+              <a href="https://wa.me/{{ wa_num }}?text={{ wa_msg|urlencode }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-success py-0 px-2 fw-semibold" title="Chat WhatsApp PIC">
+                <i class="bi bi-whatsapp me-1"></i>{{ s.contact_phone }}
+              </a>
+            </div>
+          {% else %}
+            <span class="text-muted small">-</span>
+          {% endif %}
+          {% if profile.get('pic_name') %}
+            <div class="small text-secondary mt-1"><i class="bi bi-person me-1"></i>{{ profile.get('pic_name') }}</div>
+          {% endif %}
+        </td>
+
+        <!-- 5. Akun Pendaftar -->
+        <td>
+          <div class="small fw-semibold text-dark text-truncate" style="max-width: 160px;" title="{{ creator.email if creator else '-' }}">
+            {{ creator.email if creator else '-' }}
+          </div>
+          <div class="small text-muted">
+            {{ s.created_at.strftime('%d %b %Y') if s.created_at else '-' }}
+          </div>
+        </td>
+
+        <!-- 6. Kelengkapan Profil -->
+        <td>
+          <div class="d-flex align-items-center gap-2" style="min-width: 90px;">
+            <div class="progress flex-grow-1" style="height: 6px;">
+              <div class="progress-bar {% if item.completeness >= 80 %}bg-success{% elif item.completeness >= 50 %}bg-primary{% else %}bg-warning{% endif %}" style="width: {{ item.completeness }}%;"></div>
+            </div>
+            <span class="small fw-semibold">{{ item.completeness }}%</span>
+          </div>
+        </td>
+
+        <!-- 7. Katalog Produk -->
+        <td>
+          {% if item.catalog_count > 0 %}
+            <a href="{{ url_for('procurement.detail', supplier_id=s.id) }}" class="badge text-decoration-none" style="background-color: #3A7D8A; color: white;">
+              <i class="bi bi-boxes me-1"></i>{{ item.catalog_count }} Item
+            </a>
+          {% else %}
+            <span class="badge bg-light text-muted border">Belum ada</span>
+          {% endif %}
+        </td>
+
+        <!-- 8. Status Verifikasi -->
+        <td>
+          {% if s.verification_status == 'verified' %}
+            <span class="badge bg-success-subtle text-success border border-success-subtle fw-semibold">
+              <i class="bi bi-patch-check-fill me-1"></i>Verified
+            </span>
+          {% else %}
+            <span class="badge bg-warning-subtle text-warning border border-warning-subtle fw-semibold">
+              <i class="bi bi-clock me-1"></i>Pending
+            </span>
+          {% endif %}
+        </td>
+
+        <!-- 9. Aksi -->
+        <td class="text-end pe-3">
+          <div class="d-flex justify-content-end align-items-center gap-1">
+            <a href="{{ url_for('procurement.detail', supplier_id=s.id) }}" class="btn btn-outline-primary btn-sm py-1 px-2" title="Lihat Profil & Katalog Produk">
+              <i class="bi bi-eye me-1"></i>Detail
+            </a>
+            
+            <form method="post" action="{{ url_for('procurement.verify_supplier', supplier_id=s.id) }}" class="d-inline">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="next" value="{{ request.url }}">
+              {% if s.verification_status == 'verified' %}
+                <button type="submit" class="btn btn-outline-secondary btn-sm py-1 px-2" title="Batalkan Verifikasi">
+                  <i class="bi bi-x-circle"></i>
+                </button>
+              {% else %}
+                <button type="submit" class="btn btn-success btn-sm py-1 px-2" title="Verifikasi Rekanan Ini">
+                  <i class="bi bi-check-circle"></i>
+                </button>
+              {% endif %}
+            </form>
+
+            <form method="post" action="{{ url_for('procurement.delete', supplier_id=s.id) }}" onsubmit="return confirm('Hapus mitra supplier {{ s.company_name }}?');" class="d-inline">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="next" value="{{ request.url }}">
+              <button class="btn btn-outline-danger btn-sm py-1 px-2" title="Hapus"><i class="bi bi-trash"></i></button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      {% else %}
+      <tr>
+        <td colspan="9" class="text-center py-5 text-muted">
+          <i class="bi bi-shield-x fs-2 d-block mb-2"></i>
+          Tidak ada mitra supplier terdaftar yang sesuai dengan filter pencarian.
+        </td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Paginasi Responsif -->
+  {% if pagination and pagination.pages > 1 %}
+  <div class="card-footer bg-white d-flex justify-content-between align-items-center py-2">
+    <div class="small text-muted">
+      Halaman <strong>{{ pagination.page }}</strong> dari <strong>{{ pagination.pages }}</strong> (Total {{ pagination.total }} mitra)
+    </div>
+    <nav aria-label="Page navigation">
+      <ul class="pagination pagination-sm mb-0">
+        {% if pagination.has_prev %}
+          <li class="page-item">
+            <a class="page-link" href="{{ url_for('procurement.registered_suppliers', page=pagination.prev_num, q=filters.q, product=filters.product, status=filters.status, sort=filters.sort) }}">&laquo; Prev</a>
+          </li>
+        {% else %}
+          <li class="page-item disabled"><span class="page-link">&laquo; Prev</span></li>
+        {% endif %}
+
+        {% for p_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+          {% if p_num %}
+            {% if p_num == pagination.page %}
+              <li class="page-item active"><span class="page-link">{{ p_num }}</span></li>
+            {% else %}
+              <li class="page-item">
+                <a class="page-link" href="{{ url_for('procurement.registered_suppliers', page=p_num, q=filters.q, product=filters.product, status=filters.status, sort=filters.sort) }}">{{ p_num }}</a>
+              </li>
+            {% endif %}
+          {% else %}
+            <li class="page-item disabled"><span class="page-link">&hellip;</span></li>
+          {% endif %}
+        {% endfor %}
+
+        {% if pagination.has_next %}
+          <li class="page-item">
+            <a class="page-link" href="{{ url_for('procurement.registered_suppliers', page=pagination.next_num, q=filters.q, product=filters.product, status=filters.status, sort=filters.sort) }}">Next &raquo;</a>
+          </li>
+        {% else %}
+          <li class="page-item disabled"><span class="page-link">Next &raquo;</span></li>
+        {% endif %}
+      </ul>
+    </nav>
+  </div>
+  {% endif %}
+</div>
+
+{% endblock %}

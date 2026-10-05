@@ -1,0 +1,246 @@
+{% extends "base.html" %}
+{% block title %}Profil Perusahaan - Syamanah Tender{% endblock %}
+{% block content %}
+
+<!-- Header -->
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4 pb-3 border-bottom">
+  <div>
+    <div class="d-flex align-items-center gap-2 mb-1">
+      <span class="badge" style="background-color: #FEF3C7; color: #B45309; border: 1px solid #FDE68A;">
+        <i class="bi bi-shield-check me-1"></i> Syamanah Tender
+      </span>
+      <span class="text-muted small">&bull; Kredensial Mitra Rekanan</span>
+    </div>
+    <h3 class="fw-bold mb-1 text-dark">Profil Perusahaan Mitra</h3>
+    <p class="text-muted small mb-0">Lengkapi data usaha Anda untuk mempercepat verifikasi dan evaluasi tender pengadaan internal.</p>
+  </div>
+  <div class="d-flex flex-wrap gap-2 w-100 w-md-auto">
+    <a href="{{ url_for('supplier.catalog') }}" class="btn btn-primary btn-sm flex-fill flex-md-grow-0">
+      <i class="bi bi-boxes me-1"></i> Buka Katalog Produk
+    </a>
+  </div>
+</div>
+
+<!-- Flash Messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+<div class="row g-4 mb-4">
+  <!-- Left Column: Form -->
+  <div class="col-lg-8">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white py-3">
+        <h5 class="mb-0 fw-bold text-dark"><i class="bi bi-building-gear text-primary me-2"></i>Formulir Kelengkapan Profil Perusahaan</h5>
+      </div>
+      <div class="card-body p-4">
+        <form method="post" action="{{ url_for('supplier.profile') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+          <!-- Bagian 1: Identitas Legal Usaha -->
+          <h6 class="fw-bold text-primary border-bottom pb-2 mb-3"><i class="bi bi-buildings me-2"></i>1. Identitas Usaha & Kategori</h6>
+          <div class="row g-3 mb-4">
+            <div class="col-md-4">
+              <label class="form-label small fw-semibold">Bentuk Badan Usaha <span class="text-danger">*</span></label>
+              <select name="business_entity" class="form-select" required>
+                <option value="PT" {% if profile_data.get('business_entity') == 'PT' %}selected{% endif %}>PT (Perseroan Terbatas)</option>
+                <option value="CV" {% if profile_data.get('business_entity') == 'CV' %}selected{% endif %}>CV (Persekutuan Komanditer)</option>
+                <option value="UD" {% if profile_data.get('business_entity') == 'UD' %}selected{% endif %}>UD (Usaha Dagang)</option>
+                <option value="Koperasi" {% if profile_data.get('business_entity') == 'Koperasi' %}selected{% endif %}>Koperasi</option>
+                <option value="Perorangan" {% if profile_data.get('business_entity') == 'Perorangan' %}selected{% endif %}>Perorangan / UMKM Mandiri</option>
+              </select>
+            </div>
+            <div class="col-md-8">
+              <label class="form-label small fw-semibold">Nama Resmi Perusahaan / Usaha <span class="text-danger">*</span></label>
+              <input type="text" name="company_name" class="form-control" value="{{ supplier.company_name }}" placeholder="Contoh: Mitra Tekstil Mandiri" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold">Kategori Pasokan Utama <span class="text-danger">*</span></label>
+              <select name="product" class="form-select" required>
+                {% for cat in category_list %}
+                  <option value="{{ cat.key }}" {% if supplier.product == cat.key %}selected{% endif %}>{{ cat.label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold">Komoditas & Material Spesialisasi</label>
+              <input type="text" name="material" class="form-control" value="{{ supplier.material or '' }}" placeholder="Contoh: Kain Katun Combed, Benang Jahit, Kemasan Box">
+            </div>
+          </div>
+
+          <!-- Bagian 2: Alamat & Domisili -->
+          <h6 class="fw-bold text-primary border-bottom pb-2 mb-3"><i class="bi bi-geo-alt me-2"></i>2. Alamat & Lokasi Operasional</h6>
+          <div class="row g-3 mb-4">
+            <div class="col-md-12">
+              <label class="form-label small fw-semibold">Alamat Lengkap Kantor / Pabrik / Gudang</label>
+              <textarea name="address" class="form-control" rows="2" placeholder="Nama jalan, nomor, RT/RW, kelurahan, kecamatan...">{{ profile_data.get('address', '') }}</textarea>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-semibold">Kota / Kabupaten</label>
+              <input type="text" name="city" class="form-control" value="{{ profile_data.get('city', '') }}" placeholder="Contoh: Bandung">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-semibold">Provinsi</label>
+              <input type="text" name="province" class="form-control" value="{{ profile_data.get('province', '') }}" placeholder="Contoh: Jawa Barat">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-semibold">Cakupan Wilayah Pengiriman</label>
+              <input type="text" name="region" class="form-control" value="{{ supplier.region or 'Indonesia' }}" placeholder="Nasional / Pulau Jawa / Jabodetabek">
+            </div>
+          </div>
+
+          <!-- Bagian 3: Kontak PIC & Korespondensi -->
+          <h6 class="fw-bold text-primary border-bottom pb-2 mb-3"><i class="bi bi-person-lines-fill me-2"></i>3. Kontak PIC & Jalur Komunikasi</h6>
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold">Nama PIC / Penanggung Jawab <span class="text-danger">*</span></label>
+              <input type="text" name="pic_name" class="form-control" value="{{ profile_data.get('pic_name', current_user.name) }}" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold">Jabatan PIC</label>
+              <input type="text" name="pic_position" class="form-control" value="{{ profile_data.get('pic_position', 'Marketing / Sales') }}" placeholder="Contoh: Business Development / Owner">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold">Nomor WhatsApp / Telepon PIC <span class="text-danger">*</span></label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-whatsapp text-success"></i></span>
+                <input type="text" name="contact_phone" class="form-control" value="{{ supplier.contact_phone or '' }}" placeholder="Contoh: 081234567890" required>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold">Email Korespondensi Resmi <span class="text-danger">*</span></label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                <input type="email" name="contact_email" class="form-control" value="{{ supplier.contact_email or current_user.email }}" required>
+              </div>
+            </div>
+            <div class="col-md-12">
+              <label class="form-label small fw-semibold">Website / Katalog Online / Toko Digital</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-globe"></i></span>
+                <input type="url" name="website" class="form-control" value="{{ supplier.website or '' }}" placeholder="https://perusahaan-anda.com">
+              </div>
+            </div>
+          </div>
+
+          <!-- Bagian 4: Legalitas Usaha -->
+          <h6 class="fw-bold text-primary border-bottom pb-2 mb-3"><i class="bi bi-file-earmark-check me-2"></i>4. Legalitas & Perpajakan (Opsional)</h6>
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold">Nomor Pokok Wajib Pajak (NPWP)</label>
+              <input type="text" name="npwp" class="form-control font-monospace" value="{{ profile_data.get('npwp', '') }}" placeholder="Contoh: 01.234.567.8-901.000">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold">Nomor Induk Berusaha (NIB)</label>
+              <input type="text" name="nib" class="form-control font-monospace" value="{{ profile_data.get('nib', '') }}" placeholder="Contoh: 9120001234567">
+            </div>
+          </div>
+
+          <!-- Bagian 5: Profil Ringkas -->
+          <h6 class="fw-bold text-primary border-bottom pb-2 mb-3"><i class="bi bi-card-text me-2"></i>5. Tentang Perusahaan & Kapasitas Pasokan</h6>
+          <div class="mb-4">
+            <label class="form-label small fw-semibold">Deskripsi Singkat Profil Perusahaan</label>
+            <textarea name="description" class="form-control" rows="4" placeholder="Ceritakan latar belakang usaha, kapasitas produksi, pengalaman menyuplai pabrik, serta sertifikasi yang dimiliki...">{{ supplier.description or '' }}</textarea>
+          </div>
+
+          <div class="d-flex justify-content-end gap-2 pt-2 border-top">
+            <a href="{{ url_for('dashboard') }}" class="btn btn-light">Kembali ke Dashboard</a>
+            <button type="submit" class="btn btn-primary px-4 py-2">
+              <i class="bi bi-check-circle me-1"></i> Simpan & Perbarui Profil Perusahaan
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Column: Status & Checklist -->
+  <div class="col-lg-4">
+    <!-- Completeness Progress Card -->
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-white py-3">
+        <h6 class="mb-0 fw-bold text-dark"><i class="bi bi-patch-check-fill text-warning me-2"></i>Kelengkapan Profil Mitra</h6>
+      </div>
+      <div class="card-body p-3">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="small text-muted fw-semibold">Skor Kelengkapan:</span>
+          <span class="fs-5 fw-bold {% if completeness >= 80 %}text-success{% elif completeness >= 50 %}text-warning{% else %}text-danger{% endif %}">
+            {{ completeness }}%
+          </span>
+        </div>
+        <div class="progress mb-3" style="height: 10px;">
+          <div class="progress-bar {% if completeness >= 80 %}bg-success{% elif completeness >= 50 %}bg-warning{% else %}bg-danger{% endif %}" role="progressbar" style="width: {{ completeness }}%;" aria-valuenow="{{ completeness }}" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+        <p class="small text-muted mb-3">
+          {% if completeness >= 80 %}
+            Profil perusahaan Anda sangat lengkap dan siap diprioritaskan dalam proses kurasi pengadaan.
+          {% elif completeness >= 50 %}
+            Profil sudah cukup baik, lengkapi alamat detail dan nomor legalitas untuk mempercepat verifikasi.
+          {% else %}
+            Harap lengkapi nomor kontak PIC dan deskripsi usaha untuk memenuhi syarat pendaftaran rekanan resmi.
+          {% endif %}
+        </p>
+
+        <!-- Checklist -->
+        <div class="d-flex flex-column gap-2 small">
+          <div class="d-flex align-items-center justify-content-between p-2 rounded bg-light border">
+            <span><i class="bi {% if supplier.company_name %}bi-check-circle-fill text-success{% else %}bi-circle text-muted{% endif %} me-2"></i>Nama Perusahaan</span>
+            <span class="badge {% if supplier.company_name %}bg-success{% else %}bg-secondary{% endif %}">
+              {{ 'Lengkap' if supplier.company_name else 'Belum' }}
+            </span>
+          </div>
+          <div class="d-flex align-items-center justify-content-between p-2 rounded bg-light border">
+            <span><i class="bi {% if supplier.product %}bi-check-circle-fill text-success{% else %}bi-circle text-muted{% endif %} me-2"></i>Kategori Pasokan</span>
+            <span class="badge {% if supplier.product %}bg-success{% else %}bg-secondary{% endif %}">
+              {{ 'Lengkap' if supplier.product else 'Belum' }}
+            </span>
+          </div>
+          <div class="d-flex align-items-center justify-content-between p-2 rounded bg-light border">
+            <span><i class="bi {% if supplier.contact_phone %}bi-check-circle-fill text-success{% else %}bi-circle text-muted{% endif %} me-2"></i>WhatsApp PIC</span>
+            <span class="badge {% if supplier.contact_phone %}bg-success{% else %}bg-secondary{% endif %}">
+              {{ 'Lengkap' if supplier.contact_phone else 'Belum' }}
+            </span>
+          </div>
+          <div class="d-flex align-items-center justify-content-between p-2 rounded bg-light border">
+            <span><i class="bi {% if profile_data.get('address') %}bi-check-circle-fill text-success{% else %}bi-circle text-muted{% endif %} me-2"></i>Alamat Lengkap</span>
+            <span class="badge {% if profile_data.get('address') %}bg-success{% else %}bg-secondary{% endif %}">
+              {{ 'Lengkap' if profile_data.get('address') else 'Belum' }}
+            </span>
+          </div>
+          <div class="d-flex align-items-center justify-content-between p-2 rounded bg-light border">
+            <span><i class="bi {% if profile_data.get('npwp') or profile_data.get('nib') %}bi-check-circle-fill text-success{% else %}bi-circle text-muted{% endif %} me-2"></i>NPWP / NIB</span>
+            <span class="badge {% if profile_data.get('npwp') or profile_data.get('nib') %}bg-success{% else %}bg-secondary{% endif %}">
+              {{ 'Lengkap' if profile_data.get('npwp') or profile_data.get('nib') else 'Belum' }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vendor Status Box -->
+    <div class="card syamanah-hero-card">
+      <div class="card-body p-3">
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <span class="badge bg-success-subtle text-success border border-success-subtle">
+            <i class="bi bi-shield-check me-1"></i> ID: VND-{{ "%05d" % current_user.id }}
+          </span>
+        </div>
+        <h6 class="fw-bold mb-1">{{ supplier.company_name }}</h6>
+        <div class="small text-white-50 mb-3">{{ supplier.product|title }} &bull; {{ supplier.region or 'Indonesia' }}</div>
+        <hr class="border-white opacity-25 my-2">
+        <div class="small text-white-50">
+          <i class="bi bi-info-circle me-1"></i> Data profil perusahaan ini terhubung langsung ke database pengadaan internal tim Syamanah.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
