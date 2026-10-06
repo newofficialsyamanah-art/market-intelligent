@@ -209,12 +209,105 @@
               <span class="text-muted small">-</span>
               {% endif %}
             </td>
-            <td class="text-end pe-3">
-              <a href="{{ url_for('procurement.rfq_detail', rfq_id=r.id) }}" class="btn btn-sm btn-outline-dark px-3 shadow-sm">
-                Detail <i class="bi bi-arrow-right ms-1"></i>
+            <td class="text-end pe-3 text-nowrap">
+              <a href="{{ url_for('procurement.rfq_detail', rfq_id=r.id) }}" class="btn btn-sm btn-outline-dark px-2 shadow-sm" title="Lihat Detail RFQ">
+                <i class="bi bi-eye"></i> Detail
               </a>
+              <button type="button" class="btn btn-sm btn-outline-primary px-2 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalEditRFQ{{ r.id }}" title="Edit Permintaan">
+                <i class="bi bi-pencil-square"></i>
+              </button>
+              <form method="post" action="{{ url_for('procurement.delete_rfq', rfq_id=r.id) }}" class="d-inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus permanen permintaan RFQ {{ r.rfq_code }}? Data tidak dapat dikembalikan.');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-sm btn-outline-danger px-2 shadow-sm" title="Hapus RFQ">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </form>
             </td>
           </tr>
+
+          <!-- MODAL EDIT RFQ {{ r.id }} -->
+          <div class="modal fade" id="modalEditRFQ{{ r.id }}" tabindex="-1" aria-labelledby="modalEditRFQLabel{{ r.id }}" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+              <div class="modal-content border-0 shadow">
+                <div class="modal-header border-bottom bg-light">
+                  <div>
+                    <span class="badge bg-light text-secondary border font-monospace">{{ r.rfq_code }}</span>
+                    <h5 class="modal-title fw-bold mt-1" id="modalEditRFQLabel{{ r.id }}">Edit Permintaan RFQ</h5>
+                  </div>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="post" action="{{ url_for('procurement.edit_rfq', rfq_id=r.id) }}" enctype="multipart/form-data">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <div class="modal-body p-4 text-start">
+                    <div class="row g-3">
+                      <div class="col-md-12">
+                        <label class="form-label small fw-bold">Judul Kebutuhan Pengadaan <span class="text-danger">*</span></label>
+                        <input type="text" name="title" class="form-control" value="{{ r.title }}" required>
+                      </div>
+
+                      <div class="col-md-6">
+                        <label class="form-label small fw-bold">Mitra Supplier</label>
+                        <input type="text" class="form-control bg-light" value="{{ r.supplier.company_name }}" readonly>
+                      </div>
+
+                      <div class="col-md-6">
+                        <label class="form-label small fw-bold">Kategori Kebutuhan</label>
+                        <select name="category" class="form-select">
+                          {% for cat in category_list %}
+                          <option value="{{ cat.key }}" {% if r.category == cat.key %}selected{% endif %}>{{ cat.label }}</option>
+                          {% endfor %}
+                        </select>
+                      </div>
+
+                      <div class="col-md-4">
+                        <label class="form-label small fw-bold">Target Kuantitas <span class="text-danger">*</span></label>
+                        <input type="number" name="target_quantity" class="form-control" min="1" value="{{ r.target_quantity }}" required>
+                      </div>
+
+                      <div class="col-md-3">
+                        <label class="form-label small fw-bold">Satuan Unit</label>
+                        <input type="text" name="unit" class="form-control" value="{{ r.unit or 'pcs' }}">
+                      </div>
+
+                      <div class="col-md-5">
+                        <label class="form-label small fw-bold">Estimasi Budget / Unit (Rp)</label>
+                        <input type="number" name="target_budget_unit" class="form-control" value="{{ r.target_budget_unit or '' }}" placeholder="Opsional">
+                      </div>
+
+                      <div class="col-md-6">
+                        <label class="form-label small fw-bold">Harapan Tanggal Pengiriman</label>
+                        <input type="date" name="target_delivery_date" class="form-control" value="{{ r.target_delivery_date.strftime('%Y-%m-%d') if r.target_delivery_date else '' }}">
+                      </div>
+
+                      <div class="col-md-6">
+                        <label class="form-label small fw-bold">Ganti Lampiran TOR (Opsional)</label>
+                        <input type="file" name="attachment" class="form-control" accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.zip">
+                        {% if r.rfq_attachment_url %}
+                          <div class="form-text small text-success"><i class="bi bi-check-circle me-1"></i>File terlampir saat ini aktif.</div>
+                        {% endif %}
+                      </div>
+
+                      <div class="col-md-12">
+                        <label class="form-label small fw-bold">Spesifikasi Teknis & Kriteria Barang/Jasa</label>
+                        <textarea name="specifications" rows="3" class="form-control">{{ r.specifications or '' }}</textarea>
+                      </div>
+
+                      <div class="col-md-12">
+                        <label class="form-label small fw-bold">Catatan Tambahan untuk Rekanan Supplier</label>
+                        <textarea name="notes" rows="2" class="form-control">{{ r.notes or '' }}</textarea>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="modal-footer border-top bg-light">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary btn-sm px-4 fw-semibold">
+                      <i class="bi bi-save me-1"></i> Simpan Perubahan
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
           {% else %}
           <tr>
             <td colspan="9" class="text-center py-5 text-muted">

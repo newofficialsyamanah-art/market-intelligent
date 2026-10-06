@@ -42,10 +42,13 @@
     </div>
 
     <!-- Top Action Buttons -->
-    <div class="d-flex gap-2">
+    <div class="d-flex flex-wrap gap-2">
       <a href="{{ url_for('procurement.rfq_list') }}" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1 shadow-sm">
         <i class="bi bi-arrow-left"></i> Kembali ke Daftar
       </a>
+      <button type="button" class="btn btn-outline-primary btn-sm d-flex align-items-center gap-1 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalEditRFQ">
+        <i class="bi bi-pencil-square"></i> Edit Permintaan
+      </button>
       {% if rfq.status == 'submitted' %}
       <button type="button" class="btn btn-success btn-sm d-flex align-items-center gap-1 shadow-sm px-3" data-bs-toggle="modal" data-bs-target="#modalAcceptRFQ">
         <i class="bi bi-check-circle"></i> Setujui Penawaran
@@ -54,10 +57,13 @@
         <i class="bi bi-x-circle"></i> Tolak
       </button>
       {% elif rfq.status == 'requested' %}
-      <button type="button" class="btn btn-outline-danger btn-sm d-flex align-items-center gap-1 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalCancelRFQ">
+      <button type="button" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalCancelRFQ">
         <i class="bi bi-slash-circle"></i> Batalkan Permintaan
       </button>
       {% endif %}
+      <button type="button" class="btn btn-outline-danger btn-sm d-flex align-items-center gap-1 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalDeleteRFQ">
+        <i class="bi bi-trash"></i> Hapus RFQ
+      </button>
     </div>
   </div>
 
@@ -461,8 +467,115 @@
         </div>
         <div class="modal-footer bg-light">
           <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Tutup</button>
-          <button type="submit" class="btn btn-dark btn-sm px-4">
-            Batalkan Permintaan
+<!-- MODAL: EDIT RFQ -->
+<div class="modal fade" id="modalEditRFQ" tabindex="-1" aria-labelledby="modalEditRFQLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header border-bottom bg-light">
+        <div>
+          <span class="badge bg-light text-secondary border font-monospace">{{ rfq.rfq_code }}</span>
+          <h5 class="modal-title fw-bold mt-1" id="modalEditRFQLabel">Edit Rincian Permintaan RFQ</h5>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="post" action="{{ url_for('procurement.edit_rfq', rfq_id=rfq.id) }}" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="modal-body p-4 text-start">
+          <div class="row g-3">
+            <div class="col-md-12">
+              <label class="form-label small fw-bold">Judul Kebutuhan Pengadaan <span class="text-danger">*</span></label>
+              <input type="text" name="title" class="form-control" value="{{ rfq.title }}" required>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label small fw-bold">Mitra Rekanan Supplier</label>
+              <input type="text" class="form-control bg-light" value="{{ rfq.supplier.company_name }}" readonly>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label small fw-bold">Kategori Kebutuhan</label>
+              <select name="category" class="form-select">
+                {% for cat in category_list %}
+                <option value="{{ cat.key }}" {% if rfq.category == cat.key %}selected{% endif %}>{{ cat.label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label small fw-bold">Target Kuantitas <span class="text-danger">*</span></label>
+              <input type="number" name="target_quantity" class="form-control" min="1" value="{{ rfq.target_quantity }}" required>
+            </div>
+
+            <div class="col-md-3">
+              <label class="form-label small fw-bold">Satuan Unit</label>
+              <input type="text" name="unit" class="form-control" value="{{ rfq.unit or 'pcs' }}">
+            </div>
+
+            <div class="col-md-5">
+              <label class="form-label small fw-bold">Estimasi Budget / Unit (Rp)</label>
+              <input type="number" name="target_budget_unit" class="form-control" value="{{ rfq.target_budget_unit or '' }}" placeholder="Opsional">
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label small fw-bold">Harapan Tanggal Pengiriman</label>
+              <input type="date" name="target_delivery_date" class="form-control" value="{{ rfq.target_delivery_date.strftime('%Y-%m-%d') if rfq.target_delivery_date else '' }}">
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label small fw-bold">Ganti Lampiran TOR (Opsional)</label>
+              <input type="file" name="attachment" class="form-control" accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.zip">
+              {% if rfq.rfq_attachment_url %}
+                <div class="form-text small text-success"><i class="bi bi-check-circle me-1"></i>Lampiran saat ini sudah ada.</div>
+              {% endif %}
+            </div>
+
+            <div class="col-md-12">
+              <label class="form-label small fw-bold">Spesifikasi Teknis & Kriteria Barang/Jasa</label>
+              <textarea name="specifications" rows="3" class="form-control">{{ rfq.specifications or '' }}</textarea>
+            </div>
+
+            <div class="col-md-12">
+              <label class="form-label small fw-bold">Catatan Tambahan untuk Rekanan Supplier</label>
+              <textarea name="notes" rows="2" class="form-control">{{ rfq.notes or '' }}</textarea>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer border-top bg-light">
+          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Batal</button>
+          <button type="submit" class="btn btn-primary btn-sm px-4 fw-semibold">
+            <i class="bi bi-save me-1"></i> Simpan Perubahan
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: HAPUS RFQ PERMANEN -->
+<div class="modal fade" id="modalDeleteRFQ" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title fw-bold"><i class="bi bi-exclamation-triangle-fill me-2"></i> Konfirmasi Hapus RFQ</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="post" action="{{ url_for('procurement.delete_rfq', rfq_id=rfq.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="modal-body p-4">
+          <p class="text-dark mb-2">Apakah Anda yakin ingin menghapus permintaan penawaran ini secara permanen?</p>
+          <div class="p-3 bg-light rounded border mb-3">
+            <div class="fw-bold text-danger font-monospace">{{ rfq.rfq_code }}</div>
+            <div class="text-dark small">{{ rfq.title }}</div>
+            <div class="text-muted small mt-1">Supplier: <strong>{{ rfq.supplier.company_name }}</strong></div>
+          </div>
+          <div class="alert alert-warning py-2 px-3 small mb-0">
+            <i class="bi bi-info-circle me-1"></i> <strong>Perhatian:</strong> Tindakan ini akan menghapus data permintaan dan berkas lampiran terkait secara permanen.
+          </div>
+        </div>
+        <div class="modal-footer bg-light">
+          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Batal</button>
+          <button type="submit" class="btn btn-danger btn-sm px-4 fw-bold">
+            <i class="bi bi-trash me-1"></i> Ya, Hapus Permanen
           </button>
         </div>
       </form>

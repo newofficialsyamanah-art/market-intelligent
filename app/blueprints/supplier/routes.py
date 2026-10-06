@@ -456,3 +456,45 @@ def submit_quotation(rfq_id):
     log_activity("submit_quotation", f"Supplier {supplier.company_name} mengirim penawaran untuk {rfq.rfq_code}")
     flash(f"Penawaran harga resmi untuk {rfq.rfq_code} berhasil dikirim ke tim Procurement Syamanah!", "success")
     return redirect(url_for("supplier.rfq_detail", rfq_id=rfq.id))
+
+
+@supplier_bp.route("/rfq/<int:rfq_id>/withdraw", methods=["POST"])
+@login_required
+@roles_required("supplier", "admin")
+def withdraw_quotation(rfq_id):
+    """Membatalkan/menarik kembali penawaran harga yang telah dikirim ke status 'requested'."""
+    supplier = _get_or_create_supplier_profile(current_user.id)
+    rfq = QuotationRequest.query.get_or_404(rfq_id)
+
+    if rfq.supplier_user_id != current_user.id and rfq.supplier_id != supplier.id and current_user.role != "admin":
+        flash("Anda tidak berwenang mengelola penawaran ini.", "danger")
+        return redirect(url_for("supplier.rfq_list"))
+
+    if rfq.status != "submitted":
+        flash("Hanya penawaran yang belum diputuskan yang dapat ditarik kembali.", "warning")
+        return redirect(url_for("supplier.rfq_detail", rfq_id=rfq.id))
+
+    static_root = os.path.join(current_app.root_path, "static")
+    if rfq.quotation_attachment_url:
+        file_path = os.path.join(static_root, rfq.quotation_attachment_url)
+        if os.path.exists(file_path):
+            try:
+                os.remove(file_path)
+            except Exception:
+                pass
+
+    rfq.quotation_price_unit = None
+    rfq.quotation_total_price = None
+    rfq.quotation_lead_time_days = None
+    rfq.quotation_valid_until = None
+    rfq.quotation_notes = None
+    rfq.quotation_attachment_url = None
+    rfq.responded_at = None
+    rfq.responded_by_id = None
+    rfq.status = "requested"
+
+    db.session.commit()
+    log_activity("withdraw_quotation", f"Supplier {supplier.company_name} menarik penawaran {rfq.rfq_code}")
+    flash(f"Penawaran untuk {rfq.rfq_code} berhasil ditarik kembali. Anda dapat memperbarui dan mengirim ulang penawaran.", "info")
+    return redirect(url_for("supplier.rfq_detail", rfq_id=rfq.id))
+

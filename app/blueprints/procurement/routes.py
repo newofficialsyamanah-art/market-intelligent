@@ -709,7 +709,7 @@ def create_rfq():
 def rfq_detail(rfq_id):
     """Melihat detail lengkap Request for Quotation dan penawaran dari Supplier."""
     rfq = QuotationRequest.query.get_or_404(rfq_id)
-    return render_template("procurement/rfq_detail.html", rfq=rfq)
+    return render_template("procurement/rfq_detail.html", rfq=rfq, category_list=CATEGORY_LIST)
 
 
 @procurement_bp.route("/rfq/<int:rfq_id>/decision", methods=["POST"])
@@ -747,3 +747,87 @@ def rfq_decision(rfq_id):
         flash(f"Permintaan penawaran {rfq.rfq_code} dibatalkan.", "secondary")
 
     return redirect(url_for("procurement.rfq_detail", rfq_id=rfq.id))
+
+
+@procurement_bp.route("/rfq/<int:rfq_id>/edit", methods=["POST"])
+@login_required
+@roles_required("admin", "business_analyst", "management", "procurement")
+def edit_rfq(rfq_id):
+    """Memperbarui rincian spesifikasi, target kuantitas, budget, atau lampiran TOR RFQ."""
+    rfq = QuotationRequest.query.get_or_404(rfq_id)
+
+    title = request.form.get("title", "").strip()
+    category = request.form.get("category", rfq.category).strip().lower()
+    target_quantity = request.form.get("target_quantity", rfq.target_quantity, type=int)
+    unit = request.form.get("unit", rfq.unit).strip()
+    target_budget_unit = request.form.get("target_budget_unit", type=float)
+    target_delivery_str = request.form.get("target_delivery_date", "").strip()
+    specifications = request.form.get("specifications", "").strip()
+    notes = request.form.get("notes", "").strip()
+
+    if not title:
+        flash("Judul permintaan pengadaan wajib diisi.", "danger")
+        return redirect(request.referrer or url_for("procurement.rfq_detail", rfq_id=rfq.id))
+
+    rfq.title = title
+    rfq.category = category
+    rfq.target_quantity = max(1, target_quantity or 1)
+    rfq.unit = unit or "pcs"
+    rfq.target_budget_unit = target_budget_unit
+    rfq.specifications = specifications
+    rfq.notes = notes
+
+    if target_delivery_str:
+        try:
+            rfq.target_delivery_date = datetime.strptime(target_delivery_str, "%Y-%m-%d").date()
+        except ValueError:
+            pass
+
+    # Handle update file lampiran TOR jika ada file baru diunggah
+    attachment_file = request.files.get("attachment")
+    if attachment_file and attachment_file.filename:
+        new_url = _save_rfq_file(attachment_file, prefix="rfq_spec")
+        if new_url:
+            rfq.rfq_attachment_url = new_url
+
+    rfq.updated_at = utc_now()
+    db.session.commit()
+
+    log_activity("edit_rfq", f"Procurement memperbarui data RFQ {rfq.rfq_code}")
+    flash(f"Permintaan RFQ {rfq.rfq_code} berhasil diperbarui!", "success")
+    return redirect(request.referrer or url_for("procurement.rfq_detail", rfq_id=rfq.id))
+
+
+@procurement_bp.route("/rfq/<int:rfq_id>/delete", methods=["POST"])
+@login_required
+@roles_required("admin", "management", "procurement")
+def delete_rfq(rfq_id):
+    """Menghapus permintaan RFQ secara permanen beserta lampiran berkas terkait."""
+    rfq = QuotationRequest.query.get_or_404(rfq_id)
+    rfq_code = rfq.rfq_code
+
+    # Hapus file attachment dari static storage jika ada
+    static_root = os.path.join(current_app.root_path, "static")
+    if rfq.rfq_attachment_url:
+        file_path = os.path.join(static_root, rfq.rfq_attachment_url)
+        if os.path.exists(file_path):
+            try:
+                os.remove(file_path)
+            except Exception:
+                pass
+
+    if rfq.quotation_attachment_url:
+        file_path = os.path.join(static_root, rfq.quotation_attachment_url)
+        if os.path.exists(file_path):
+            try:
+                os.remove(file_path)
+            except Exception:
+                pass
+
+    db.session.delete(rfq)
+    db.session.commit()
+
+    log_activity("delete_rfq", f"Procurement menghapus permanen RFQ {rfq_code}")
+    flash(f"Permintaan RFQ {rfq_code} berhasil dihapus permanen.", "success")
+    return redirect(url_for("procurement.rfq_list"))
+
