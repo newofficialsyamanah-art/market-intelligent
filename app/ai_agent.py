@@ -294,5 +294,5 @@ def recommend_products(market_summary: dict):
 def summarize_report(data: dict):
     """Use case: Membuat Laporan Market Intelligence (ringkasan naratif oleh AI)"""
     system = "Kamu adalah analis market intelligence. Buat ringkasan eksekutif singkat (3-6 kalimat) berbahasa Indonesia."
-    user = f"Data laporan: {json.dumps(data, ensure_ascii=False)}"
+    user = f"Data laporan: {json.dumps(data, ensure_ascii=False, default=str)}"
     return _chat_text(system, user, task_name="summarize_report")

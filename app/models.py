@@ -343,6 +343,53 @@ class SupplierProduct(db.Model):
     user = db.relationship("User", backref=db.backref("supplier_products", cascade="all, delete-orphan"))
 
 
+class QuotationRequest(db.Model):
+    """Permintaan Penawaran Harga (Request for Quotation / RFQ) dari Procurement ke Mitra Supplier."""
+    __tablename__ = "quotation_requests"
+
+    id = db.Column(db.Integer, primary_key=True)
+    rfq_code = db.Column(db.String(50), unique=True, nullable=False, index=True)
+    title = db.Column(db.String(255), nullable=False)
+    category = db.Column(db.String(100), default="raw material")
+    procurement_user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False, index=True)
+    supplier_id = db.Column(db.Integer, db.ForeignKey("procurement_suppliers.id", ondelete="CASCADE"), nullable=False, index=True)
+    supplier_user_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
+    product_id = db.Column(db.Integer, db.ForeignKey("supplier_products.id", ondelete="SET NULL"), nullable=True)
+
+    # Spesifikasi & Permintaan dari Procurement
+    target_quantity = db.Column(db.Integer, nullable=False, default=1)
+    unit = db.Column(db.String(50), default="pcs")
+    target_budget_unit = db.Column(db.Float, nullable=True)
+    target_delivery_date = db.Column(db.Date, nullable=True)
+    specifications = db.Column(db.Text, nullable=True)
+    notes = db.Column(db.Text, nullable=True)
+    rfq_attachment_url = db.Column(db.String(500), nullable=True)
+
+    # Tanggapan / Penawaran Resmi dari Supplier
+    quotation_price_unit = db.Column(db.Float, nullable=True)
+    quotation_total_price = db.Column(db.Float, nullable=True)
+    quotation_lead_time_days = db.Column(db.Integer, nullable=True)
+    quotation_valid_until = db.Column(db.Date, nullable=True)
+    quotation_notes = db.Column(db.Text, nullable=True)
+    quotation_attachment_url = db.Column(db.String(500), nullable=True)  # File penawaran PDF/DOCX/XLSX
+    responded_at = db.Column(db.DateTime, nullable=True)
+    responded_by_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
+
+    # Status & Keputusan (requested, submitted, accepted, rejected, cancelled)
+    status = db.Column(db.String(50), default="requested", index=True)
+    decision_notes = db.Column(db.Text, nullable=True)
+    decided_at = db.Column(db.DateTime, nullable=True)
+    decided_by_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
+
+    # Relasi
+    procurement_user = db.relationship("User", foreign_keys=[procurement_user_id], backref=db.backref("procurement_rfqs", lazy=True))
+    supplier_user = db.relationship("User", foreign_keys=[supplier_user_id], backref=db.backref("supplier_rfqs", lazy=True))
+    supplier = db.relationship("ProcurementSupplier", backref=db.backref("rfq_requests", cascade="all, delete-orphan", lazy=True))
+    product = db.relationship("SupplierProduct", backref=db.backref("rfq_requests", lazy=True))
+
+
 class Organization(db.Model):
     """
     MASTER ENTITY:

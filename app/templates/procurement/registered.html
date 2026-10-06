@@ -298,6 +298,10 @@
               <i class="bi bi-eye me-1"></i>Detail
             </a>
             
+            <a href="{{ url_for('procurement.rfq_list', supplier_id=s.id) }}" class="btn btn-warning btn-sm py-1 px-2 text-dark fw-medium" title="Kirim Permintaan Penawaran Harga (RFQ)">
+              <i class="bi bi-file-earmark-text me-1"></i>RFQ
+            </a>
+            
             <form method="post" action="{{ url_for('procurement.verify_supplier', supplier_id=s.id) }}" class="d-inline">
               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
               <input type="hidden" name="next" value="{{ request.url }}">

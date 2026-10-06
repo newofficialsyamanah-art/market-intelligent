@@ -66,7 +66,7 @@ def get_executive_overview() -> Dict[str, Any]:
 
     return {
         "total_orgs": total_orgs,
-        "avg_opportunity_score": round(avg_score, 1),
+        "avg_opportunity_score": round(float(avg_score or 0), 1),
         "high_priority_count": high_priority_count,
         "high_priority_pct": round(high_priority_pct, 1),
         "contactable_count": contactable_count,
@@ -96,7 +96,7 @@ def get_industry_analytics(limit: int = 10) -> List[Dict[str, Any]]:
         results.append({
             "industry": ind or "OTHER",
             "count": count,
-            "avg_score": round(avg_score or 0.0, 1),
+            "avg_score": round(float(avg_score or 0.0), 1),
         })
     return results
 

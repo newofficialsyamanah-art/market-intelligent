@@ -45,7 +45,7 @@ def generate_report():
     data = {
         "total_prospects": Prospect.query.count(),
         "total_campaigns": Campaign.query.count(),
-        "avg_score": round(db.session.query(func.avg(Prospect.score)).scalar() or 0, 1),
+        "avg_score": round(float(db.session.query(func.avg(Prospect.score)).scalar() or 0), 1),
         "industry_distribution": dict(
             db.session.query(Prospect.industry, func.count(Prospect.id))
             .filter(Prospect.industry.isnot(None)).group_by(Prospect.industry).all()
@@ -62,7 +62,7 @@ def generate_report():
 
     report = Report(
         title="Laporan Market Intelligence", report_type="market_intelligence",
-        content_json=json.dumps({"data": data, "ai_summary": summary}),
+        content_json=json.dumps({"data": data, "ai_summary": summary}, default=str),
         created_by=current_user.id,
     )
     db.session.add(report)

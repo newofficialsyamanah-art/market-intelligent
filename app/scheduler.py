@@ -206,11 +206,11 @@ def _task_social_enrichment() -> Dict[str, Any]:
     enriched_count = 0
     for org in orgs:
         res = connector.enrich_organization_socials(
-            org_name=org.name,
+            org_or_name=org,
             city=org.city or "",
             province=org.province or ""
         )
-        if res["social_json"]:
+        if res.get("social_json"):
             org.social_json = json.dumps(res["social_json"])
             enriched_count += 1
     db.session.commit()
@@ -456,13 +456,13 @@ def _generate_report():
     data = {
         "total_prospects": total_prospects,
         "total_campaigns": total_campaigns,
-        "avg_score": round(avg_score, 1),
+        "avg_score": round(float(avg_score), 1),
     }
     summary = ai_agent.summarize_report(data)
     report = Report(
         title="Laporan Market Intelligence Otomatis",
         report_type="scheduled_market_intelligence",
-        content_json=json.dumps({"data": data, "ai_summary": summary}),
+        content_json=json.dumps({"data": data, "ai_summary": summary}, default=str),
     )
     db.session.add(report)
     db.session.commit()

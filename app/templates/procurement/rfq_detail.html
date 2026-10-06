@@ -1,0 +1,473 @@
+{% extends "base.html" %}
+{% block title %}Detail Permintaan Quotation {{ rfq.rfq_code }} - Procurement Syamanah{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+  <!-- Breadcrumb & Header -->
+  <nav aria-label="breadcrumb" class="mb-2">
+    <ol class="breadcrumb small">
+      <li class="breadcrumb-item"><a href="{{ url_for('procurement.registered_suppliers') }}" class="text-decoration-none text-muted">Pengadaan</a></li>
+      <li class="breadcrumb-item"><a href="{{ url_for('procurement.rfq_list') }}" class="text-decoration-none text-muted">Permintaan Quotation</a></li>
+      <li class="breadcrumb-item active fw-bold text-dark" aria-current="page">{{ rfq.rfq_code }}</li>
+    </ol>
+  </nav>
+
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <div>
+      <div class="d-flex align-items-center gap-2 mb-1">
+        <span class="badge bg-light text-secondary border font-monospace">{{ rfq.rfq_code }}</span>
+        <span class="badge bg-secondary-subtle text-secondary small text-capitalize">{{ rfq.category }}</span>
+        {% if rfq.status == 'requested' %}
+          <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-2 py-1">
+            <i class="bi bi-clock-history me-1"></i> Menunggu Respon Supplier
+          </span>
+        {% elif rfq.status == 'submitted' %}
+          <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1">
+            <i class="bi bi-inbox-fill me-1"></i> Penawaran Masuk (Perlu Evaluasi)
+          </span>
+        {% elif rfq.status == 'accepted' %}
+          <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">
+            <i class="bi bi-check-circle-fill me-1"></i> Penawaran Disetujui
+          </span>
+        {% elif rfq.status == 'rejected' %}
+          <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1">
+            <i class="bi bi-x-circle-fill me-1"></i> Penawaran Ditolak
+          </span>
+        {% else %}
+          <span class="badge bg-light text-muted border px-2 py-1">Dibatalkan</span>
+        {% endif %}
+      </div>
+      <h3 class="fw-bold mb-1" style="color: #0f172a;">{{ rfq.title }}</h3>
+      <p class="text-muted small mb-0">Diterbitkan oleh: <span class="fw-semibold text-dark">{{ rfq.procurement_user.name }}</span> pada {{ rfq.created_at.strftime('%d %B %Y, %H:%M') }} WIB</p>
+    </div>
+
+    <!-- Top Action Buttons -->
+    <div class="d-flex gap-2">
+      <a href="{{ url_for('procurement.rfq_list') }}" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1 shadow-sm">
+        <i class="bi bi-arrow-left"></i> Kembali ke Daftar
+      </a>
+      {% if rfq.status == 'submitted' %}
+      <button type="button" class="btn btn-success btn-sm d-flex align-items-center gap-1 shadow-sm px-3" data-bs-toggle="modal" data-bs-target="#modalAcceptRFQ">
+        <i class="bi bi-check-circle"></i> Setujui Penawaran
+      </button>
+      <button type="button" class="btn btn-danger btn-sm d-flex align-items-center gap-1 shadow-sm px-3" data-bs-toggle="modal" data-bs-target="#modalRejectRFQ">
+        <i class="bi bi-x-circle"></i> Tolak
+      </button>
+      {% elif rfq.status == 'requested' %}
+      <button type="button" class="btn btn-outline-danger btn-sm d-flex align-items-center gap-1 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalCancelRFQ">
+        <i class="bi bi-slash-circle"></i> Batalkan Permintaan
+      </button>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Kolom Kiri: Rincian Permintaan & Respon Penawaran -->
+    <div class="col-lg-8">
+      <!-- Card: Penawaran dari Supplier (Jika sudah ada respon) -->
+      {% if rfq.status in ['submitted', 'accepted', 'rejected'] %}
+      <div class="card border-0 shadow-sm rounded-3 mb-4 bg-white overflow-hidden border-top border-4 {% if rfq.status == 'accepted' %}border-success{% elif rfq.status == 'rejected' %}border-danger{% else %}border-primary{% endif %}">
+        <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+          <div class="d-flex align-items-center gap-2">
+            <span class="badge {% if rfq.status == 'accepted' %}bg-success{% elif rfq.status == 'rejected' %}bg-danger{% else %}bg-primary{% endif %} p-2 rounded-circle">
+              <i class="bi bi-cash-stack fs-6 text-white"></i>
+            </span>
+            <div>
+              <h6 class="fw-bold mb-0 text-dark">Hasil Penawaran Resmi dari Supplier</h6>
+              <small class="text-muted">Dikirim pada: {{ rfq.responded_at.strftime('%d %B %Y, %H:%M') if rfq.responded_at else '-' }} WIB</small>
+            </div>
+          </div>
+          {% if rfq.status == 'submitted' %}
+          <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1 small">
+            Menunggu Persetujuan Anda
+          </span>
+          {% endif %}
+        </div>
+        <div class="card-body p-4">
+          <!-- Price Highlight Box -->
+          <div class="p-3 rounded-3 mb-4 d-flex flex-wrap justify-content-between align-items-center gap-3" style="background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%); border: 1px solid #a7f3d0;">
+            <div>
+              <span class="text-muted small d-block">Harga Penawaran Satuan</span>
+              <h3 class="fw-bold mb-0 text-success">Rp {{ "{:,.0f}".format(rfq.quotation_price_unit or 0) }} <span class="fs-6 text-muted fw-normal">/ {{ rfq.unit }}</span></h3>
+            </div>
+            <div class="text-end">
+              <span class="text-muted small d-block">Estimasi Total Penawaran</span>
+              <h4 class="fw-bold mb-0 text-dark">Rp {{ "{:,.0f}".format(rfq.quotation_total_price or ((rfq.quotation_price_unit or 0) * rfq.target_quantity)) }}</h4>
+              <small class="text-muted" style="font-size: 0.72rem;">Untuk kuantitas {{ "{:,}".format(rfq.target_quantity) }} {{ rfq.unit }}</small>
+            </div>
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="text-muted small d-block mb-1">Estimasi Waktu Pengerjaan / Pengiriman (Lead Time)</label>
+              <div class="fw-semibold text-dark d-flex align-items-center gap-1">
+                <i class="bi bi-truck text-muted"></i>
+                {% if rfq.quotation_lead_time_days %}
+                  {{ rfq.quotation_lead_time_days }} Hari Kerja
+                {% else %}
+                  <span class="text-muted fw-normal">Ready Stock / Segera</span>
+                {% endif %}
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label class="text-muted small d-block mb-1">Masa Berlaku Penawaran (Valid Until)</label>
+              <div class="fw-semibold text-dark d-flex align-items-center gap-1">
+                <i class="bi bi-calendar-event text-muted"></i>
+                {% if rfq.quotation_valid_until %}
+                  {{ rfq.quotation_valid_until.strftime('%d %B %Y') }}
+                {% else %}
+                  <span class="text-muted fw-normal">14 Hari dari tanggal submit</span>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          {% if rfq.quotation_notes %}
+          <div class="mb-3">
+            <label class="text-muted small d-block mb-1">Catatan & Syarat dari Supplier (Termin, Garansi, MOQ)</label>
+            <div class="p-3 bg-light rounded-3 text-dark small" style="white-space: pre-line;">
+              {{ rfq.quotation_notes }}
+            </div>
+          </div>
+          {% endif %}
+
+          <!-- Attachment File -->
+          {% if rfq.quotation_attachment_url %}
+          <div class="p-3 rounded-3 border bg-light d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-3">
+              <div class="bg-primary text-white p-2 rounded-3">
+                <i class="bi bi-file-earmark-pdf fs-4"></i>
+              </div>
+              <div>
+                <span class="fw-semibold text-dark d-block">Berkas Quotation Resmi Supplier</span>
+                <small class="text-muted">Dokumen PDF/Excel penawaran harga resmi perusahaan.</small>
+              </div>
+            </div>
+            <a href="{{ url_for('static', filename=rfq.quotation_attachment_url) }}" target="_blank" class="btn btn-primary btn-sm px-3 d-flex align-items-center gap-1 shadow-sm">
+              <i class="bi bi-download"></i> Unduh / Buka Dokumen
+            </a>
+          </div>
+          {% else %}
+          <div class="text-muted small fst-italic">
+            <i class="bi bi-info-circle me-1"></i> Supplier tidak menyertakan berkas lampiran tambahan.
+          </div>
+          {% endif %}
+
+          <!-- Keputusan Persetujuan / Penolakan jika sudah diputuskan -->
+          {% if rfq.status == 'accepted' %}
+          <div class="alert alert-success mt-4 mb-0 d-flex align-items-start gap-2 rounded-3">
+            <i class="bi bi-check-circle-fill fs-5 mt-1"></i>
+            <div>
+              <h6 class="fw-bold mb-1">Penawaran Resmi Diterima & Disetujui</h6>
+              <p class="small mb-1">{{ rfq.decision_notes }}</p>
+              <small class="text-muted" style="font-size: 0.72rem;">Diputuskan pada: {{ rfq.decided_at.strftime('%d %B %Y, %H:%M') if rfq.decided_at else '-' }} WIB</small>
+            </div>
+          </div>
+          {% elif rfq.status == 'rejected' %}
+          <div class="alert alert-danger mt-4 mb-0 d-flex align-items-start gap-2 rounded-3">
+            <i class="bi bi-x-circle-fill fs-5 mt-1"></i>
+            <div>
+              <h6 class="fw-bold mb-1">Penawaran Ditolak oleh Tim Procurement</h6>
+              <p class="small mb-1">{{ rfq.decision_notes }}</p>
+              <small class="text-muted" style="font-size: 0.72rem;">Diputuskan pada: {{ rfq.decided_at.strftime('%d %B %Y, %H:%M') if rfq.decided_at else '-' }} WIB</small>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Card: Rincian Permintaan Pengadaan dari Procurement -->
+      <div class="card border-0 shadow-sm rounded-3 mb-4 bg-white">
+        <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+          <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-card-checklist me-2 text-primary"></i>Rincian Kebutuhan Pengadaan (Spesifikasi Procurement)</h6>
+          <span class="badge bg-light text-secondary border font-monospace">{{ rfq.rfq_code }}</span>
+        </div>
+        <div class="card-body p-4">
+          <div class="row g-3 mb-3">
+            <div class="col-md-4">
+              <label class="text-muted small d-block mb-1">Kuantitas Permintaan</label>
+              <div class="fw-bold text-dark fs-5">
+                {{ "{:,}".format(rfq.target_quantity) }} <span class="fs-6 fw-normal text-muted">{{ rfq.unit }}</span>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <label class="text-muted small d-block mb-1">Target Budget Unit</label>
+              <div class="fw-bold text-dark fs-5">
+                {% if rfq.target_budget_unit %}
+                  Rp {{ "{:,.0f}".format(rfq.target_budget_unit) }}
+                {% else %}
+                  <span class="text-muted fs-6 fw-normal">-</span>
+                {% endif %}
+              </div>
+            </div>
+            <div class="col-md-4">
+              <label class="text-muted small d-block mb-1">Target Tanggal Pengiriman</label>
+              <div class="fw-bold text-dark fs-6 d-flex align-items-center gap-1 mt-1">
+                <i class="bi bi-calendar-check text-muted"></i>
+                {% if rfq.target_delivery_date %}
+                  {{ rfq.target_delivery_date.strftime('%d %B %Y') }}
+                {% else %}
+                  <span class="text-muted fw-normal">Sesuai kesepakatan</span>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          <hr class="text-muted opacity-25">
+
+          <div class="mb-3">
+            <label class="text-muted small d-block mb-1 fw-bold">Spesifikasi Teknis & Kebutuhan Barang/Jasa</label>
+            {% if rfq.specifications %}
+            <div class="p-3 bg-light rounded-3 text-dark small" style="white-space: pre-line;">
+              {{ rfq.specifications }}
+            </div>
+            {% else %}
+            <span class="text-muted small fst-italic">Tidak ada spesifikasi khusus (mengikuti standar supplier).</span>
+            {% endif %}
+          </div>
+
+          {% if rfq.notes %}
+          <div class="mb-3">
+            <label class="text-muted small d-block mb-1 fw-bold">Catatan dari Procurement</label>
+            <div class="p-3 bg-light rounded-3 text-dark small" style="white-space: pre-line;">
+              {{ rfq.notes }}
+            </div>
+          </div>
+          {% endif %}
+
+          <!-- Lampiran TOR Procurement jika ada -->
+          {% if rfq.rfq_attachment_url %}
+          <div class="p-3 rounded-3 border bg-light d-flex justify-content-between align-items-center mt-3">
+            <div class="d-flex align-items-center gap-3">
+              <div class="bg-secondary text-white p-2 rounded-3">
+                <i class="bi bi-file-earmark-arrow-down fs-4"></i>
+              </div>
+              <div>
+                <span class="fw-semibold text-dark d-block">Lampiran Spesifikasi / TOR Procurement</span>
+                <small class="text-muted">Dokumen acuan pengadaan yang diunggah tim Procurement Syamanah.</small>
+              </div>
+            </div>
+            <a href="{{ url_for('static', filename=rfq.rfq_attachment_url) }}" target="_blank" class="btn btn-outline-dark btn-sm px-3 d-flex align-items-center gap-1 shadow-sm">
+              <i class="bi bi-download"></i> Unduh Berkas TOR
+            </a>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Kolom Kanan: Data Supplier & Status Timeline -->
+    <div class="col-lg-4">
+      <!-- Card Supplier Target -->
+      <div class="card border-0 shadow-sm rounded-3 mb-4 bg-white">
+        <div class="card-header bg-white py-3 border-bottom">
+          <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-building me-2 text-primary"></i>Profil Rekanan Supplier</h6>
+        </div>
+        <div class="card-body p-4">
+          <h5 class="fw-bold mb-1 text-dark">{{ rfq.supplier.company_name }}</h5>
+          <div class="mb-3">
+            <span class="badge bg-secondary-subtle text-secondary small text-capitalize">{{ rfq.supplier.product }}</span>
+            {% if rfq.supplier.created_by %}
+            <span class="badge bg-success-subtle text-success small">
+              <i class="bi bi-check-circle"></i> Terdaftar Mandiri
+            </span>
+            {% else %}
+            <span class="badge bg-info-subtle text-info small">AI Discovery</span>
+            {% endif %}
+          </div>
+
+          <div class="small mb-3">
+            <div class="d-flex align-items-center gap-2 mb-2 text-muted">
+              <i class="bi bi-geo-alt"></i>
+              <span>{{ rfq.supplier.region or 'Indonesia' }}</span>
+            </div>
+            {% if rfq.supplier.contact_phone %}
+            <div class="d-flex align-items-center gap-2 mb-2 text-dark">
+              <i class="bi bi-telephone text-muted"></i>
+              <span class="font-monospace">{{ rfq.supplier.contact_phone }}</span>
+            </div>
+            {% endif %}
+            {% if rfq.supplier.contact_email %}
+            <div class="d-flex align-items-center gap-2 mb-2 text-dark">
+              <i class="bi bi-envelope text-muted"></i>
+              <span>{{ rfq.supplier.contact_email }}</span>
+            </div>
+            {% endif %}
+            {% if rfq.supplier.website %}
+            <div class="d-flex align-items-center gap-2 mb-2">
+              <i class="bi bi-globe text-muted"></i>
+              <a href="{{ rfq.supplier.website }}" target="_blank" class="text-truncate text-decoration-none" style="max-width: 220px;">
+                {{ rfq.supplier.website }}
+              </a>
+            </div>
+            {% endif %}
+          </div>
+
+          <!-- WhatsApp Chat Button -->
+          {% if rfq.supplier.contact_phone %}
+          {% set clean_phone = rfq.supplier.contact_phone | replace('+', '') | replace(' ', '') | replace('-', '') %}
+          {% if clean_phone.startswith('08') %}
+            {% set clean_phone = '628' ~ clean_phone[2:] %}
+          {% endif %}
+          <a href="https://wa.me/{{ clean_phone }}?text=Halo%20{{ rfq.supplier.company_name | urlencode }},%20kami%20dari%20tim%20Procurement%20Syamanah%20ingin%20menanyakan%20progres%20permintaan%20penawaran%20harga%20{{ rfq.rfq_code }}%20({{ rfq.title | urlencode }})." target="_blank" class="btn btn-outline-success btn-sm w-100 d-flex align-items-center justify-content-center gap-2 shadow-sm mb-2">
+            <i class="bi bi-whatsapp"></i> Chat WhatsApp PIC Supplier
+          </a>
+          {% endif %}
+
+          <a href="{{ url_for('procurement.detail', supplier_id=rfq.supplier.id) }}" class="btn btn-light btn-sm border w-100 text-center">
+            Lihat Portofolio Lengkap
+          </a>
+        </div>
+      </div>
+
+      <!-- Card Status Timeline -->
+      <div class="card border-0 shadow-sm rounded-3 bg-white">
+        <div class="card-header bg-white py-3 border-bottom">
+          <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-clock-history me-2 text-primary"></i>Riwayat Status RFQ</h6>
+        </div>
+        <div class="card-body p-4">
+          <ul class="list-unstyled mb-0 position-relative">
+            <!-- Step 1: Requested -->
+            <li class="d-flex gap-3 mb-3">
+              <div class="text-success"><i class="bi bi-check-circle-fill fs-5"></i></div>
+              <div>
+                <span class="fw-semibold text-dark small d-block">Permintaan Dibuat (RFQ)</span>
+                <small class="text-muted">{{ rfq.created_at.strftime('%d/%m/%Y, %H:%M') }} WIB</small>
+              </div>
+            </li>
+
+            <!-- Step 2: Submitted -->
+            <li class="d-flex gap-3 mb-3">
+              {% if rfq.status in ['submitted', 'accepted', 'rejected'] %}
+              <div class="text-success"><i class="bi bi-check-circle-fill fs-5"></i></div>
+              <div>
+                <span class="fw-semibold text-dark small d-block">Penawaran Diterima</span>
+                <small class="text-muted">{{ rfq.responded_at.strftime('%d/%m/%Y, %H:%M') if rfq.responded_at else '-' }} WIB</small>
+              </div>
+              {% else %}
+              <div class="text-muted opacity-50"><i class="bi bi-circle fs-5"></i></div>
+              <div>
+                <span class="text-muted small d-block">Menunggu Respon Supplier</span>
+                <small class="text-muted fst-italic">Belum diisi oleh supplier</small>
+              </div>
+              {% endif %}
+            </li>
+
+            <!-- Step 3: Decision -->
+            <li class="d-flex gap-3">
+              {% if rfq.status == 'accepted' %}
+              <div class="text-success"><i class="bi bi-check-circle-fill fs-5"></i></div>
+              <div>
+                <span class="fw-semibold text-success small d-block">Penawaran Disetujui</span>
+                <small class="text-muted">{{ rfq.decided_at.strftime('%d/%m/%Y, %H:%M') if rfq.decided_at else '-' }} WIB</small>
+              </div>
+              {% elif rfq.status == 'rejected' %}
+              <div class="text-danger"><i class="bi bi-x-circle-fill fs-5"></i></div>
+              <div>
+                <span class="fw-semibold text-danger small d-block">Penawaran Ditolak</span>
+                <small class="text-muted">{{ rfq.decided_at.strftime('%d/%m/%Y, %H:%M') if rfq.decided_at else '-' }} WIB</small>
+              </div>
+              {% else %}
+              <div class="text-muted opacity-50"><i class="bi bi-circle fs-5"></i></div>
+              <div>
+                <span class="text-muted small d-block">Keputusan Procurement</span>
+                <small class="text-muted fst-italic">Belum dievaluasi</small>
+              </div>
+              {% endif %}
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: SETUJUI PENAWARAN (ACCEPT) -->
+<div class="modal fade" id="modalAcceptRFQ" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title fw-bold"><i class="bi bi-check-circle me-1"></i> Konfirmasi Persetujuan Penawaran</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="post" action="{{ url_for('procurement.rfq_decision', rfq_id=rfq.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="action" value="accept">
+        <div class="modal-body p-4">
+          <p class="mb-3">Anda akan menyetujui penawaran harga dari <strong>{{ rfq.supplier.company_name }}</strong> sebesar <strong>Rp {{ "{:,.0f}".format(rfq.quotation_total_price or 0) }}</strong>.</p>
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Catatan Persetujuan (Opsional)</label>
+            <textarea name="decision_notes" rows="3" class="form-control" placeholder="Tuliskan catatan instruksi lanjut ke pembuatan PO atau kontrak pengadaan..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer bg-light">
+          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Batal</button>
+          <button type="submit" class="btn btn-success btn-sm px-4 fw-bold">
+            <i class="bi bi-check-lg me-1"></i> Setujui Penawaran Resmi
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: TOLAK PENAWARAN (REJECT) -->
+<div class="modal fade" id="modalRejectRFQ" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title fw-bold"><i class="bi bi-x-circle me-1"></i> Konfirmasi Penolakan Penawaran</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="post" action="{{ url_for('procurement.rfq_decision', rfq_id=rfq.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="action" value="reject">
+        <div class="modal-body p-4">
+          <p class="mb-3 text-muted">Berikan alasan penolakan agar supplier dapat memahami kriteria evaluasi (misal: harga melebihi anggaran, lead time terlalu lama, atau spesifikasi belum sesuai).</p>
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Alasan Penolakan <span class="text-danger">*</span></label>
+            <textarea name="decision_notes" rows="3" class="form-control" placeholder="Contoh: Harga yang diajukan di atas batas anggaran pengadaan atau lead time tidak sesuai deadline event..." required></textarea>
+          </div>
+        </div>
+        <div class="modal-footer bg-light">
+          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Batal</button>
+          <button type="submit" class="btn btn-danger btn-sm px-4 fw-bold">
+            <i class="bi bi-x-lg me-1"></i> Tolak Penawaran
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: BATALKAN PERMINTAAN (CANCEL) -->
+<div class="modal fade" id="modalCancelRFQ" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header bg-secondary text-white">
+        <h5 class="modal-title fw-bold"><i class="bi bi-slash-circle me-1"></i> Batalkan Permintaan RFQ</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="post" action="{{ url_for('procurement.rfq_decision', rfq_id=rfq.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="action" value="cancel">
+        <div class="modal-body p-4">
+          <p class="mb-3 text-muted">Apakah Anda yakin ingin membatalkan permintaan penawaran ini?</p>
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Alasan Pembatalan</label>
+            <textarea name="decision_notes" rows="2" class="form-control" placeholder="Contoh: Kebutuhan pengadaan ditarik atau digabung dengan proyek lain..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer bg-light">
+          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Tutup</button>
+          <button type="submit" class="btn btn-dark btn-sm px-4">
+            Batalkan Permintaan
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

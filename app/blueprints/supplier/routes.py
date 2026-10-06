@@ -1,16 +1,34 @@
 import os
 import time
+from datetime import datetime
 from werkzeug.utils import secure_filename
 from flask import Blueprint, flash, redirect, render_template, request, url_for, current_app
 from flask_login import current_user, login_required
 
 from app.extensions import db
-from app.models import ProcurementSupplier, SupplierProduct, User
+from app.models import ProcurementSupplier, SupplierProduct, QuotationRequest, User, utc_now
 from app.utils import log_activity, roles_required, allowed_file
 
 supplier_bp = Blueprint("supplier", __name__)
 
 ALLOWED_CATALOG_EXTENSIONS = {"png", "jpg", "jpeg", "webp", "pdf", "docx", "xlsx"}
+ALLOWED_QUOTE_EXTENSIONS = {"pdf", "docx", "doc", "xlsx", "xls", "png", "jpg", "jpeg", "zip"}
+
+
+def _save_quotation_attachment(file_storage, rfq_id):
+    """Menyimpan file lampiran quotation resmi dari supplier."""
+    if not file_storage or not file_storage.filename:
+        return None
+    if not allowed_file(file_storage.filename, ALLOWED_QUOTE_EXTENSIONS):
+        return None
+    filename = secure_filename(file_storage.filename)
+    timestamp = int(time.time())
+    unique_filename = f"quote_{rfq_id}_{current_user.id}_{timestamp}_{filename}"
+    upload_dir = os.path.join(current_app.config["UPLOAD_FOLDER"], "rfq")
+    os.makedirs(upload_dir, exist_ok=True)
+    target_path = os.path.join(upload_dir, unique_filename)
+    file_storage.save(target_path)
+    return f"uploads/rfq/{unique_filename}"
 
 CATEGORY_LIST = [
     {"key": "raw material", "label": "Raw Material", "badge": "bg-primary"},
@@ -306,3 +324,135 @@ def profile():
         completeness=completeness,
         category_list=CATEGORY_LIST,
     )
+
+
+# ==============================================================================
+# PERMINTAAN PENAWARAN HARGA (RFQ) MASUK DARI PROCUREMENT SYAMANAH
+# ==============================================================================
+
+@supplier_bp.route("/rfq")
+@login_required
+@roles_required("supplier", "admin")
+def rfq_list():
+    """Daftar Request for Quotation (RFQ) yang masuk ke supplier saat ini."""
+    supplier = _get_or_create_supplier_profile(current_user.id)
+    status_filter = request.args.get("status", "all").strip().lower()
+    search_q = request.args.get("q", "").strip()
+    page = request.args.get("page", 1, type=int)
+
+    query = QuotationRequest.query.filter(
+        db.or_(
+            QuotationRequest.supplier_user_id == current_user.id,
+            QuotationRequest.supplier_id == supplier.id
+        )
+    )
+
+    if status_filter and status_filter != "all":
+        query = query.filter(QuotationRequest.status == status_filter)
+
+    if search_q:
+        query = query.filter(
+            db.or_(
+                QuotationRequest.rfq_code.ilike(f"%{search_q}%"),
+                QuotationRequest.title.ilike(f"%{search_q}%"),
+                QuotationRequest.specifications.ilike(f"%{search_q}%"),
+            )
+        )
+
+    pagination = query.order_by(QuotationRequest.created_at.desc()).paginate(page=page, per_page=15, error_out=False)
+    rfqs = pagination.items
+
+    # Hitung metrik status
+    base_q = QuotationRequest.query.filter(
+        db.or_(
+            QuotationRequest.supplier_user_id == current_user.id,
+            QuotationRequest.supplier_id == supplier.id
+        )
+    )
+    total_count = base_q.count()
+    action_needed_count = base_q.filter_by(status="requested").count()
+    submitted_count = base_q.filter_by(status="submitted").count()
+    accepted_count = base_q.filter_by(status="accepted").count()
+    rejected_count = base_q.filter_by(status="rejected").count()
+
+    return render_template(
+        "supplier/rfq_list.html",
+        rfqs=rfqs,
+        pagination=pagination,
+        supplier=supplier,
+        metrics={
+            "total": total_count,
+            "action_needed": action_needed_count,
+            "submitted": submitted_count,
+            "accepted": accepted_count,
+            "rejected": rejected_count,
+        },
+        current_status=status_filter,
+        search_q=search_q,
+    )
+
+
+@supplier_bp.route("/rfq/<int:rfq_id>")
+@login_required
+@roles_required("supplier", "admin")
+def rfq_detail(rfq_id):
+    """Melihat detail permintaan penawaran harga dari Procurement Syamanah."""
+    supplier = _get_or_create_supplier_profile(current_user.id)
+    rfq = QuotationRequest.query.get_or_404(rfq_id)
+
+    # Validasi kepemilikan RFQ
+    if rfq.supplier_user_id != current_user.id and rfq.supplier_id != supplier.id and current_user.role != "admin":
+        flash("Anda tidak memiliki akses ke permintaan penawaran ini.", "danger")
+        return redirect(url_for("supplier.rfq_list"))
+
+    return render_template("supplier/rfq_detail.html", rfq=rfq, supplier=supplier)
+
+
+@supplier_bp.route("/rfq/<int:rfq_id>/submit", methods=["POST"])
+@login_required
+@roles_required("supplier", "admin")
+def submit_quotation(rfq_id):
+    """Mengirimkan penawaran harga resmi (dan lampiran file quotation) ke Procurement."""
+    supplier = _get_or_create_supplier_profile(current_user.id)
+    rfq = QuotationRequest.query.get_or_404(rfq_id)
+
+    if rfq.supplier_user_id != current_user.id and rfq.supplier_id != supplier.id and current_user.role != "admin":
+        flash("Anda tidak berwenang mengirim penawaran untuk RFQ ini.", "danger")
+        return redirect(url_for("supplier.rfq_list"))
+
+    price_unit = request.form.get("quotation_price_unit", type=float)
+    total_price = request.form.get("quotation_total_price", type=float)
+    lead_time_days = request.form.get("quotation_lead_time_days", type=int)
+    valid_until_str = request.form.get("quotation_valid_until", "").strip()
+    notes = request.form.get("quotation_notes", "").strip()
+
+    if not price_unit or price_unit <= 0:
+        flash("Harga penawaran per unit wajib diisi dengan angka valid.", "danger")
+        return redirect(url_for("supplier.rfq_detail", rfq_id=rfq.id))
+
+    valid_until = None
+    if valid_until_str:
+        try:
+            valid_until = datetime.strptime(valid_until_str, "%Y-%m-%d").date()
+        except ValueError:
+            valid_until = None
+
+    # Handle upload file quotation resmi
+    quote_file = request.files.get("quotation_attachment")
+    attachment_url = _save_quotation_attachment(quote_file, rfq.id)
+
+    rfq.quotation_price_unit = price_unit
+    rfq.quotation_total_price = total_price or (price_unit * rfq.target_quantity)
+    rfq.quotation_lead_time_days = lead_time_days
+    rfq.quotation_valid_until = valid_until
+    rfq.quotation_notes = notes
+    if attachment_url:
+        rfq.quotation_attachment_url = attachment_url
+    rfq.responded_at = utc_now()
+    rfq.responded_by_id = current_user.id
+    rfq.status = "submitted"
+
+    db.session.commit()
+    log_activity("submit_quotation", f"Supplier {supplier.company_name} mengirim penawaran untuk {rfq.rfq_code}")
+    flash(f"Penawaran harga resmi untuk {rfq.rfq_code} berhasil dikirim ke tim Procurement Syamanah!", "success")
+    return redirect(url_for("supplier.rfq_detail", rfq_id=rfq.id))

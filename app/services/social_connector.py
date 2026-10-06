@@ -317,19 +317,23 @@ Format output HANYA list JSON valid:
     @classmethod
     def enrich_organization_socials(
         cls,
-        org_or_name: Any,
+        org_or_name: Any = None,
         city: str = "",
         province: str = "",
-        existing_socials: Optional[Dict[str, str]] = None
+        existing_socials: Optional[Dict[str, str]] = None,
+        org_name: Any = None,
+        **kwargs
     ) -> Dict[str, Any]:
         """B. SOCIAL ENRICHMENT:
         Mencari dan memperkaya profil media sosial yang valid untuk Master Organization yang ada.
         Mendukung pemanggilan:
         - enrich_organization_socials(org)
         - enrich_organization_socials("Nama PT", "Kota", "Provinsi")
+        - enrich_organization_socials(org_name="Nama PT", city="Kota", province="Provinsi")
         """
         inst = cls() if isinstance(cls, type) else cls
-        return inst._enrich_organization_socials_impl(org_or_name, city, province, existing_socials)
+        target = org_or_name if org_or_name is not None else (org_name if org_name is not None else kwargs.get("org_name", ""))
+        return inst._enrich_organization_socials_impl(target, city, province, existing_socials)
 
     def _enrich_organization_socials_impl(
         self,
