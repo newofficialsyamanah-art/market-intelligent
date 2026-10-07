@@ -4,7 +4,7 @@ from flask import Blueprint, render_template, flash, redirect, url_for, request,
 from flask_login import login_required, current_user
 from sqlalchemy import func
 
-from app.extensions import db
+from app.extensions import db, csrf
 from app.models import Prospect, MarketAnalysis, Organization
 from app import ai_agent
 from app.utils import log_activity, roles_required
@@ -23,6 +23,7 @@ from app.services.market_size_service import (
     get_market_size_and_share,
     simulate_expansion,
     get_financial_summary,
+    get_syamanah_benchmark_report,
 )
 
 market_analysis_bp = Blueprint("market_analysis", __name__)
@@ -120,6 +121,7 @@ def market_size():
 
 
 @market_analysis_bp.route("/api/market-size-simulate", methods=["POST"])
+@csrf.exempt
 @login_required
 @roles_required("business_analyst", "management", "marketing")
 def api_simulate_market_size():
@@ -133,6 +135,15 @@ def api_simulate_market_size():
         "success": True,
         "data": result
     })
+
+
+@market_analysis_bp.route("/market-size/report")
+@login_required
+@roles_required("business_analyst", "management", "marketing")
+def market_size_report():
+    """Halaman Laporan Eksekutif Market Size & Market Share Versi Syamanah (Format Presentasi & Siap Cetak PDF)."""
+    data = get_syamanah_benchmark_report()
+    return render_template("market_analysis/market_size_report.html", **data)
 
 
 # ---------- Company Intelligence Explorer & Drill-Down (Phase 4) ----------

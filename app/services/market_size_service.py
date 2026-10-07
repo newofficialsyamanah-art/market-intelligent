@@ -70,6 +70,127 @@ SECTOR_SPEND_PER_PERSON = {
     "default": 280000,       # Blended average (~2 pcs @ Rp 140.000)
 }
 
+# Data Riset Pasar Eksternal E-Commerce Nasional (Berdasarkan Laporan Market Intelligence 17 Halaman)
+PDF_BENCHMARK_DATA = {
+    "report_period": "30 Hari Terakhir (Februari - Maret 2026)",
+    "menswear_macro": {
+        "title": "Menswear & Pakaian Pria Nasional",
+        "market_size_monthly_rp": 2342900000000,
+        "market_size_formatted": "Rp 2.342,9 Miliar (Rp 2,34 Triliun)",
+        "annual_projected_rp": 28114800000000,
+        "sellers_count": 27526,
+        "avg_revenue_per_store": 85100000,
+        "fashion_market_share_pct": 9.0,
+        "highlight": "Kategori pakaian pria menyumbang 9% dari total belanja fashion di platform digital Indonesia."
+    },
+    "jersey": {
+        "title": "Professional Sports Clothing (Jersey)",
+        "market_size_monthly_rp": 51900000000,
+        "market_size_formatted": "Rp 51,9 Miliar / bulan",
+        "annual_projected_rp": 622800000000,
+        "sellers_count": 1999,
+        "avg_store_revenue": 25900000,
+        "layer_hierarchy": [
+            {"layer": "Layer 1", "category": "Sports & Outdoor Apparel", "monthly_rp": 548500000000, "share_pct": 100.0},
+            {"layer": "Layer 2", "category": "Sports Clothing (Pakaian Olahraga)", "monthly_rp": 182700000000, "share_pct": 33.3},
+            {"layer": "Layer 3", "category": "Professional Sports Clothing (Jersey)", "monthly_rp": 51900000000, "share_pct": 9.46}
+        ],
+        "top_sellers": [
+            {"rank": 1, "shop_name": "SUPER MURAH23", "monthly_rev": 3100000000, "share_pct": 6.0, "volume_pcs": 41900, "avg_price": 74600, "badge": "Volume Leader"},
+            {"rank": 2, "shop_name": "SIKOCY OLSHOP", "monthly_rev": 3000000000, "share_pct": 5.8, "volume_pcs": 27600, "avg_price": 108600, "badge": "Mid-Range"},
+            {"rank": 3, "shop_name": "Erspo Store (Official)", "monthly_rev": 3000000000, "share_pct": 5.8, "volume_pcs": 11600, "avg_price": 257600, "badge": "Official Timnas"},
+            {"rank": 4, "shop_name": "gudangkaos tangerang", "monthly_rev": 2800000000, "share_pct": 5.4, "volume_pcs": 35000, "avg_price": 80000, "badge": "Fast Seller"},
+            {"rank": 5, "shop_name": "Kolorzsport", "monthly_rev": 2600000000, "share_pct": 5.0, "volume_pcs": 28000, "avg_price": 92800, "badge": "Sportswear"},
+            {"rank": 6, "shop_name": "Top Jersey ID", "monthly_rev": 2100000000, "share_pct": 4.0, "volume_pcs": 21000, "avg_price": 100000, "badge": "Futsal/Bola"},
+            {"rank": 7, "shop_name": "Sportivo Apparel", "monthly_rev": 1900000000, "share_pct": 3.7, "volume_pcs": 18000, "avg_price": 105500, "badge": "Jersey Club"},
+            {"rank": 8, "shop_name": "Garuda Jersey", "monthly_rev": 1500000000, "share_pct": 2.9, "volume_pcs": 16000, "avg_price": 93750, "badge": "Sublimasi"},
+            {"rank": 9, "shop_name": "Champion Sportswear", "monthly_rev": 1300000000, "share_pct": 2.5, "volume_pcs": 14000, "avg_price": 92800, "badge": "Running/Badminton"},
+            {"rank": 10, "shop_name": "Prima Jersey", "monthly_rev": 1200000000, "share_pct": 2.3, "volume_pcs": 12000, "avg_price": 100000, "badge": "Komunitas"}
+        ],
+        "top_10_share_pct": 39.5,
+        "price_segments": [
+            {"tier": "Budget (< Rp 50.000)", "share_pct": 21.6, "monthly_val": 11200000000, "status": "Jersey Polos / Sablon Standar"},
+            {"tier": "Mid-Range (Rp 50.000 - Rp 100.000)", "share_pct": 27.6, "monthly_val": 14300000000, "status": "Jersey Printing Standar"},
+            {"tier": "Sweet Spot Premium (Rp 100.000 - Rp 200.000)", "share_pct": 45.07, "monthly_val": 23400000000, "status": "Sublimasi Premium Syamanah (Zona Terbesar)", "is_syamanah": True},
+            {"tier": "Luxury / Authentic (> Rp 200.000)", "share_pct": 5.73, "monthly_val": 3000000000, "status": "Authentic Player Issue (Erspo)"}
+        ],
+        "channels": {
+            "video_pct": 49.9,
+            "live_pct": 36.8,
+            "mall_pct": 13.3,
+            "dominant_traffic": "Affiliate Content Creator (68% omzet disumbang oleh video affiliate)"
+        },
+        "syamanah_benchmark": {
+            "monthly_rev_rp": 3240000000,
+            "equivalent_rank": "Rank 1 Nasional (Sejajar dengan Super Murah23 & Erspo)",
+            "competitive_edge": "Full Custom Design B2B, Bebas Minimal Order Komunitas, Sublimasi Anti Luntur High Durability",
+            "price_match": "Rentang Syamanah Rp 50.000 - Rp 150.000 tepat menguasai 72,6% pangsa pasar konsumen (Mid-Range + Sweet Spot Premium)."
+        }
+    },
+    "jaket": {
+        "title": "Jackets & Coats (Outerwear Pria & Wanita)",
+        "market_size_monthly_rp": 187600000000,
+        "market_size_formatted": "Rp 187,6 Miliar / bulan",
+        "annual_projected_rp": 2251200000000,
+        "sellers_count": 4123,
+        "gender_split": [
+            {"segment": "Jaket Pria (Men Jackets)", "monthly_rp": 131200000000, "share_pct": 69.9},
+            {"segment": "Jaket Wanita (Women Jackets)", "monthly_rp": 56400000000, "share_pct": 30.1}
+        ],
+        "top_sellers": [
+            {"rank": 1, "shop_name": "Dobujack Official", "monthly_rev": 12600000000, "share_pct": 9.6, "avg_price": 285000, "badge": "Market Leader"},
+            {"rank": 2, "shop_name": "Screamous Official", "monthly_rev": 4100000000, "share_pct": 3.1, "avg_price": 320000, "badge": "Distro Streetwear"},
+            {"rank": 3, "shop_name": "3SECOND Men Official", "monthly_rev": 2000000000, "share_pct": 1.5, "avg_price": 389000, "badge": "Mall Retail Brand"},
+            {"rank": 4, "shop_name": "Geoff Max Apparel", "monthly_rev": 1800000000, "share_pct": 1.4, "avg_price": 275000, "badge": "Youth Lifestyle"},
+            {"rank": 5, "shop_name": "Roughneck 1991", "monthly_rev": 1600000000, "share_pct": 1.2, "avg_price": 290000, "badge": "Outdoor & Casual"}
+        ],
+        "sweet_spot": "Rp 200.000 - Rp 400.000 (Menyumbang nilai pasar terbesar Rp 28,2 Miliar)",
+        "channels": {
+            "video_pct": 55.0,
+            "live_pct": 32.0,
+            "mall_pct": 13.0,
+            "dominant_traffic": "Short Video Showcasing (Bahan anti air / windproof & fitting)"
+        },
+        "syamanah_benchmark": {
+            "pricing_range": "Rp 285.000 - Rp 500.000 (Median Rp 392.500)",
+            "positioning": "Premium Institutional Outerwear (Bomber korporat, Jaket Lapangan Tambang/Proyek, Varsity kampus)",
+            "competitive_edge": "Material water-repellent kualitas industri, furing quilting adem, bordir komputer presisi instansi."
+        }
+    },
+    "seragam": {
+        "title": "Workwear & Uniforms (Seragam Kerja & Sekolah)",
+        "market_size_monthly_rp": 19600000000,
+        "market_size_formatted": "Rp 19,6 Miliar / bulan",
+        "annual_projected_rp": 235200000000,
+        "sellers_count": 1692,
+        "segments": [
+            {"category": "Seragam Kerja Wanita", "monthly_rp": 10900000000, "share_pct": 55.6, "dominant_channel": "Live Streaming (51,4%)"},
+            {"category": "Seragam Kerja Pria", "monthly_rp": 7300000000, "share_pct": 37.2, "dominant_channel": "Live & Video (38,0%)"},
+            {"category": "Seragam Sekolah Laki-laki", "monthly_rp": 941800000, "share_pct": 4.8, "dominant_channel": "Mall / Katalog (35,1%)"},
+            {"category": "Seragam Sekolah Perempuan", "monthly_rp": 443200000, "share_pct": 2.3, "dominant_channel": "Mall / Katalog (34,0%)"}
+        ],
+        "top_sellers": [
+            {"rank": 1, "shop_name": "Home of Stesis (Batik & Blazer)", "monthly_rev": 997000000, "category": "Seragam Kerja Wanita", "badge": "Top Wanita"},
+            {"rank": 2, "shop_name": "3RZCollection (PDH/PNS/Medis)", "monthly_rev": 736000000, "category": "Seragam Kerja Pria & Wanita", "badge": "PNS & Medis"},
+            {"rank": 3, "shop_name": "Agen Sepatu & Seragam Bandung", "monthly_rev": 408000000, "category": "Seragam Pria & Satpam", "badge": "PDL & Safari"},
+            {"rank": 4, "shop_name": "Kemeja Tactical ID", "monthly_rev": 365000000, "category": "Kemeja PDL Lapangan", "badge": "Tactical"},
+            {"rank": 5, "shop_name": "Seragam Nusantara", "monthly_rev": 290000000, "category": "Seragam Sekolah & Guru", "badge": "Sekolah"}
+        ],
+        "sweet_spot": "Rp 140.000 - Rp 220.000 (Kemeja Syamanah di Rp 170.000 tepat di tengah rentang optimal)",
+        "channels": {
+            "live_pct": 51.4,
+            "video_pct": 28.6,
+            "mall_pct": 20.0,
+            "insight": "Seragam kerja wanita sangat dipengaruhi Live Streaming (fitting detail, jatuh kain, dan tes ukuran badan)."
+        },
+        "syamanah_benchmark": {
+            "monthly_rev_rp": 3240000000,
+            "comparison_multiplier": "4,4x lebih besar dari No. 1 Retail Online (Home of Stesis / 3RZCollection)",
+            "why_syamanah_wins": "Model Bisnis B2B Institusi vs Retail B2C. Retailer e-commerce melayani eceran 1-2 stel, sedangkan Syamanah melayani kontrak pengadaan ratusan hingga ribuan pcs per PO korporat dengan nilai kontrak Rp 50Jt - Rp 500Jt+ per transaksi."
+        }
+    }
+}
+
 
 def get_financial_summary() -> Dict[str, Any]:
     """Mengembalikan ringkasan omzet historis dan proyeksi tahunan Syamanah Group."""
@@ -245,11 +366,25 @@ def get_market_size_and_share(custom_avg_spend: Optional[int] = None) -> Dict[st
         "pricing": PRODUCT_PRICING,
         "type_breakdown": type_breakdown,
         "competitor_landscape": competitor_landscape,
+        "benchmarks": PDF_BENCHMARK_DATA,
         "assumptions": {
             "spend_per_person": default_spend,
             "avg_price_per_pcs": avg_price_per_pcs,
             "pcs_per_person": pcs_per_person,
         }
+    }
+
+
+def get_syamanah_benchmark_report() -> Dict[str, Any]:
+    """Mengembalikan data komprehensif Market Size & Market Share Versi Syamanah
+    yang membandingkan realitas internal finansial & 8.559 organisasi dengan data benchmark nasional PDF.
+    """
+    data = get_market_size_and_share()
+    return {
+        **data,
+        "report_generated_date": "Oktober 2026",
+        "company_name": "Syamanah Group",
+        "brands": ["Syamanah Apparel (B2B)", "Raffiz (Retail & Quick Order)"],
     }
 
 
