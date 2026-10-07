@@ -21,6 +21,11 @@
     </a>
   </li>
   <li class="nav-item">
+    <a class="nav-link" href="{{ url_for('market_analysis.market_size') }}">
+      <i class="bi bi-pie-chart-fill me-1"></i> Market Size & Share
+    </a>
+  </li>
+  <li class="nav-item">
     <a class="nav-link active" href="{{ url_for('market_analysis.explorer') }}">
       <i class="bi bi-funnel me-1"></i> Company Intelligence Explorer
     </a>
@@ -70,6 +75,22 @@
       <div class="small text-muted fw-semibold"><i class="bi bi-lightning-charge me-1 text-warning"></i> Tier WARM (B)</div>
       <div class="fs-5 fw-bold text-warning">{{ category_summary.tier_warm }}</div>
     </div>
+  </div>
+</div>
+
+<!-- Headcount & Member Maturity Banner -->
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3 p-2 px-3 bg-white rounded border shadow-sm">
+  <div class="d-flex align-items-center gap-2">
+    <span class="small fw-bold text-dark"><i class="bi bi-people-fill text-primary me-1"></i>Status Data Anggota/Karyawan:</span>
+    <a href="{{ url_for('market_analysis.explorer', size_status='actual') }}" class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 text-decoration-none" title="Filter hanya data aktual">
+      <i class="bi bi-patch-check-fill me-1"></i>Aktual Terverifikasi: <strong>{{ category_summary.size_actual }}</strong>
+    </a>
+    <a href="{{ url_for('market_analysis.explorer', size_status='estimated') }}" class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1 text-decoration-none" title="Filter hanya estimasi baseline">
+      <i class="bi bi-calculator me-1"></i>Estimasi Baseline: <strong>{{ category_summary.size_estimated }}</strong>
+    </a>
+  </div>
+  <div class="small text-muted">
+    <i class="bi bi-arrow-repeat text-primary me-1"></i>Baseline estimasi diperkaya berkala menjadi aktual via Cron Job & Web Discovery.
   </div>
 </div>
 {% endif %}
@@ -168,7 +189,12 @@
           <input class="form-check-input" type="checkbox" name="missing_employee_size" value="1" id="missEmpCheck" {% if filters.missing_employee_size == '1' %}checked{% endif %}>
           <label class="form-check-label small" for="missEmpCheck"><i class="bi bi-people text-danger me-1"></i>Tanpa Karyawan</label>
         </div>
-        <div class="ms-auto">
+        <div class="ms-auto d-flex gap-2">
+          <select name="size_status" class="form-select form-select-sm py-0" style="font-size: 0.8rem;">
+            <option value="">Semua Status Data Skala</option>
+            <option value="actual" {% if filters.size_status == 'actual' %}selected{% endif %}>🟢 Data Aktual Terverifikasi</option>
+            <option value="estimated" {% if filters.size_status == 'estimated' %}selected{% endif %}>📐 Estimasi Baseline</option>
+          </select>
           <select name="review_status" class="form-select form-select-sm py-0" style="font-size: 0.8rem;">
             <option value="">Semua Status Review</option>
             <option value="pending" {% if filters.review_status == 'pending' %}selected{% endif %}>Menunggu Review BA (Pending)</option>
@@ -196,6 +222,7 @@
           <th>Industri</th>
           <th>Lokasi</th>
           <th>Kanal Kontak</th>
+          <th>Skala / Anggota</th>
           <th>Peluang & Tier</th>
           <th>Product Fit</th>
           <th class="text-center">Aksi</th>
@@ -262,6 +289,22 @@
             </div>
           </td>
           <td>
+            <div class="d-flex flex-column gap-1">
+              <span class="small fw-bold text-dark">
+                <i class="bi bi-people-fill me-1 text-secondary"></i>{{ org.estimated_members or org.employee_size or '-' }} orang
+              </span>
+              {% if org.size_status == 'actual' %}
+              <span class="badge bg-success-subtle text-success border border-success-subtle d-inline-flex align-items-center" style="font-size: 0.7rem; width: fit-content;" title="Data Aktual Terverifikasi (Sumber: {{ org.size_source }})">
+                <i class="bi bi-patch-check-fill me-1"></i>Aktual
+              </span>
+              {% else %}
+              <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle d-inline-flex align-items-center" style="font-size: 0.7rem; width: fit-content;" title="Estimasi Baseline (Sumber: {{ org.size_source }})">
+                <i class="bi bi-calculator me-1"></i>Estimasi
+              </span>
+              {% endif %}
+            </div>
+          </td>
+          <td>
             <div class="d-flex align-items-center gap-2">
               <span class="badge {% if org.opportunity_score >= 80 %}bg-danger{% elif org.opportunity_score >= 65 %}bg-warning text-dark{% elif org.opportunity_score >= 50 %}bg-primary{% else %}bg-secondary{% endif %}">
                 Score: {{ org.opportunity_score or 0 }}
@@ -284,7 +327,7 @@
         </tr>
         {% else %}
         <tr>
-          <td colspan="7" class="text-center py-5 text-muted">
+          <td colspan="8" class="text-center py-5 text-muted">
             <i class="bi bi-building-exclamation fs-1 d-block mb-2"></i>
             Tidak ada entitas master yang sesuai dengan kriteria filter Anda.
           </td>

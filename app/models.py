@@ -419,6 +419,9 @@ class Organization(db.Model):
     source_id = db.Column(db.Integer, db.ForeignKey("data_sources.id"), nullable=True)
     source_type = db.Column(db.String(50), default="bps")
     employee_size = db.Column(db.String(50), nullable=True)
+    estimated_members = db.Column(db.Integer, nullable=True)  # Estimasi numerik anggota/karyawan untuk kalkulasi
+    size_status = db.Column(db.String(20), default="estimated", index=True)  # 'estimated' vs 'actual'
+    size_source = db.Column(db.String(50), default="heuristic", nullable=True)  # 'heuristic', 'linkedin', 'dapodik', 'manual_verified', etc.
     sport = db.Column(db.String(100), nullable=True)
     organization_subtype = db.Column(db.String(100), nullable=True)
     ai_scoring_json = db.Column(db.Text, nullable=True)
@@ -496,6 +499,15 @@ class Organization(db.Model):
     @property
     def ai_evidence(self):
         return self.get_ai_scoring().get("evidence_used", [])
+
+    @property
+    def is_actual_size(self) -> bool:
+        return (self.size_status or "").lower() == "actual"
+
+    @property
+    def size_badge_label(self) -> str:
+        return "Aktual Terverifikasi" if self.is_actual_size else "Estimasi Baseline"
+
 
 
 class Event(db.Model):

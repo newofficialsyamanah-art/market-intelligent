@@ -296,6 +296,7 @@ def search_master_organizations(
     missing_address: bool = False,
     missing_employee_size: bool = False,
     review_status: str = "",
+    size_status: str = "",
     page: int = 1,
     per_page: int = 25
 ) -> Tuple[List[Organization], int, int]:
@@ -377,6 +378,12 @@ def search_master_organizations(
     if review_status:
         if review_status == "pending":
             query = query.join(DuplicateCandidate, DuplicateCandidate.organization_id == Organization.id).filter(DuplicateCandidate.status == "pending")
+
+    if size_status:
+        if size_status == "actual":
+            query = query.filter(Organization.size_status == "actual")
+        elif size_status == "estimated":
+            query = query.filter(or_(Organization.size_status.is_(None), Organization.size_status == "estimated"))
 
     total_count = query.count()
     total_pages = max(1, (total_count + per_page - 1) // per_page)

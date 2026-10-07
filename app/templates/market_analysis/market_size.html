@@ -1,0 +1,638 @@
+{% extends "base.html" %}
+{% block title %}Market Size & Market Share Analytics - SYAMANAH{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+  <div>
+    <h3 class="mb-0"><i class="bi bi-pie-chart-fill text-primary me-2"></i>Market Size & Market Share Analytics</h3>
+    <p class="text-muted small mb-0">Pemetaan Potensi Pasar Apparel B2B (TAM, SAM, SOM), Penetrasi Pasar Riil Syamanah, dan Analisis Pertumbuhan.</p>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{{ url_for('market_analysis.explorer') }}" class="btn btn-outline-primary btn-sm">
+      <i class="bi bi-building me-1"></i> Eksplorasi 8.559 Akun
+    </a>
+    <button onclick="window.print()" class="btn btn-outline-secondary btn-sm">
+      <i class="bi bi-printer me-1"></i> Cetak Laporan
+    </button>
+  </div>
+</div>
+
+<!-- Navigation Tabs -->
+<ul class="nav nav-pills mb-4 border-bottom pb-2">
+  <li class="nav-item">
+    <a class="nav-link" href="{{ url_for('market_analysis.index') }}">
+      <i class="bi bi-graph-up me-1"></i> Market & Sektor Analytics
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link active" href="{{ url_for('market_analysis.market_size') }}">
+      <i class="bi bi-pie-chart-fill me-1"></i> Market Size & Share
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="{{ url_for('market_analysis.explorer') }}">
+      <i class="bi bi-funnel me-1"></i> Company Intelligence Explorer
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="{{ url_for('market_analysis.history') }}">
+      <i class="bi bi-clock-history me-1"></i> Riwayat AI Recommendation
+    </a>
+  </li>
+</ul>
+
+<!-- Row 1: Executive KPI Cards -->
+<div class="row g-3 mb-4">
+  <!-- TAM Card -->
+  <div class="col-xl-3 col-md-6">
+    <div class="card h-100 border-0 shadow-sm p-3 border-start border-4 border-primary bg-white">
+      <div class="d-flex justify-content-between align-items-start mb-2">
+        <div>
+          <span class="badge bg-primary-subtle text-primary border border-primary-subtle small mb-1">Total Addressable Market</span>
+          <h6 class="text-muted small mb-0 fw-semibold">TAM (Seluruh Pasar Terdata)</h6>
+        </div>
+        <div class="bg-primary-subtle text-primary p-2 rounded-circle">
+          <i class="bi bi-globe fs-5"></i>
+        </div>
+      </div>
+      <h3 class="fw-bold text-dark mb-1">Rp {{ (tam.value_rp / 1e9)|round(1) }} <small class="fs-6 text-muted">Miliar/thn</small></h3>
+      <div class="small text-muted mb-2">
+        <i class="bi bi-people me-1"></i><strong>{{ "{:,}".format(tam.people) }}</strong> anggota & karyawan
+      </div>
+      <div class="small text-secondary pt-2 border-top">
+        <i class="bi bi-buildings me-1 text-primary"></i><strong>{{ "{:,}".format(tam.orgs) }}</strong> organisasi se-Indonesia ({{ "{:,}".format(tam.pcs) }} pcs/thn)
+      </div>
+    </div>
+  </div>
+
+  <!-- SAM Card -->
+  <div class="col-xl-3 col-md-6">
+    <div class="card h-100 border-0 shadow-sm p-3 border-start border-4 border-info bg-white">
+      <div class="d-flex justify-content-between align-items-start mb-2">
+        <div>
+          <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle small mb-1">Serviceable Addressable</span>
+          <h6 class="text-muted small mb-0 fw-semibold">SAM (Target Relevan Syamanah)</h6>
+        </div>
+        <div class="bg-info-subtle text-info p-2 rounded-circle">
+          <i class="bi bi-bullseye fs-5"></i>
+        </div>
+      </div>
+      <h3 class="fw-bold text-dark mb-1">Rp {{ (sam.value_rp / 1e9)|round(1) }} <small class="fs-6 text-muted">Miliar/thn</small></h3>
+      <div class="small text-muted mb-2">
+        <i class="bi bi-people me-1"></i><strong>{{ "{:,}".format(sam.people) }}</strong> orang target (Tier A, B, C)
+      </div>
+      <div class="small text-secondary pt-2 border-top">
+        <i class="bi bi-percent me-1 text-info"></i>Mencakup <strong>32,4%</strong> dari total pasar nasional
+      </div>
+    </div>
+  </div>
+
+  <!-- SOM Card -->
+  <div class="col-xl-3 col-md-6">
+    <div class="card h-100 border-0 shadow-sm p-3 border-start border-4 border-warning bg-white">
+      <div class="d-flex justify-content-between align-items-start mb-2">
+        <div>
+          <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle small mb-1">Serviceable Obtainable</span>
+          <h6 class="text-muted small mb-0 fw-semibold">SOM (Pasar Sasaran Inti)</h6>
+        </div>
+        <div class="bg-warning-subtle text-warning-emphasis p-2 rounded-circle">
+          <i class="bi bi-crosshair fs-5"></i>
+        </div>
+      </div>
+      <h3 class="fw-bold text-dark mb-1">Rp {{ (som.value_rp / 1e9)|round(1) }} <small class="fs-6 text-muted">Miliar/thn</small></h3>
+      <div class="small text-muted mb-2">
+        <i class="bi bi-fire text-danger me-1"></i><strong>{{ "{:,}".format(som.people) }}</strong> orang di Tier A (Hot) & B (Warm)
+      </div>
+      <div class="small text-secondary pt-2 border-top">
+        <i class="bi bi-check2-circle me-1 text-warning"></i>Prioritas closing tinggi ({{ som.orgs }} entitas aktif)
+      </div>
+    </div>
+  </div>
+
+  <!-- Realized Revenue & Share Card -->
+  <div class="col-xl-3 col-md-6">
+    <div class="card h-100 border-0 shadow-sm p-3 border-start border-4 border-success bg-white">
+      <div class="d-flex justify-content-between align-items-start mb-2">
+        <div>
+          <span class="badge bg-success-subtle text-success border border-success-subtle small mb-1">Realisasi Riil 2026</span>
+          <h6 class="text-muted small mb-0 fw-semibold">Omzet Syamanah Group</h6>
+        </div>
+        <div class="bg-success-subtle text-success p-2 rounded-circle">
+          <i class="bi bi-cash-stack fs-5"></i>
+        </div>
+      </div>
+      <h3 class="fw-bold text-success mb-1">Rp {{ (financials.projected_annual_group / 1e9)|round(1) }} <small class="fs-6 text-muted">Miliar (Run-Rate)</small></h3>
+      <div class="small text-muted mb-2">
+        <i class="bi bi-check-all text-success me-1"></i>Realisasi 9 Bln: <strong>Rp {{ (financials.total_group_9mo / 1e9)|round(2) }} M</strong>
+      </div>
+      <div class="small text-success fw-semibold pt-2 border-top">
+        <i class="bi bi-award me-1"></i>Pangsa Pasar vs SAM: <strong>{{ market_share.vs_sam_pct }}%</strong>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Row 2: Funnel Pasar & Lanskap Pangsa Pasar Kompetitor -->
+<div class="row g-3 mb-4">
+  <!-- Funnel Market Size -->
+  <div class="col-lg-7">
+    <div class="card border-0 shadow-sm p-4 h-100 bg-white">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-funnel-fill text-primary me-2"></i>Funnel Ukuran Pasar & Posisi Syamanah</h5>
+          <small class="text-muted">Perbandingan TAM, SAM, SOM terhadap realisasi omzet tahunan Syamanah Group.</small>
+        </div>
+      </div>
+
+      <!-- Funnel Progress Bars -->
+      <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-1">
+          <span class="fw-bold small text-dark"><i class="bi bi-globe text-primary me-1"></i>TAM (Total Pasar Seragam Terdata)</span>
+          <span class="fw-bold text-primary">Rp {{ (tam.value_rp / 1e9)|round(1) }} Miliar <small class="text-muted fw-normal">(100%)</small></span>
+        </div>
+        <div class="progress mb-3" style="height: 22px;">
+          <div class="progress-bar bg-primary" role="progressbar" style="width: 100%;">1.073.360 Orang (8.559 Akun)</div>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mb-1">
+          <span class="fw-bold small text-dark"><i class="bi bi-bullseye text-info me-1"></i>SAM (Pasar Relevan Lini Syamanah)</span>
+          <span class="fw-bold text-info">Rp {{ (sam.value_rp / 1e9)|round(1) }} Miliar <small class="text-muted fw-normal">(32,4% dari TAM)</small></span>
+        </div>
+        <div class="progress mb-3" style="height: 22px;">
+          <div class="progress-bar bg-info" role="progressbar" style="width: 32.4%;">347.550 Orang (Tier A, B, C)</div>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mb-1">
+          <span class="fw-bold small text-dark"><i class="bi bi-crosshair text-warning me-1"></i>SOM (Target Inti Closing Cepat)</span>
+          <span class="fw-bold text-warning">Rp {{ (som.value_rp / 1e9)|round(1) }} Miliar <small class="text-muted fw-normal">(12,0% dari TAM)</small></span>
+        </div>
+        <div class="progress mb-3" style="height: 22px;">
+          <div class="progress-bar bg-warning text-dark fw-semibold" role="progressbar" style="width: 12.0%;">128.875 Orang (Tier A & B)</div>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mb-1">
+          <span class="fw-bold small text-success"><i class="bi bi-cash-stack text-success me-1"></i>Omzet Proyeksi Syamanah 2026</span>
+          <span class="fw-bold text-success">Rp {{ (financials.projected_annual_group / 1e9)|round(1) }} Miliar <small class="text-muted fw-normal">(Penetrasi SAM: {{ market_share.vs_sam_pct }}%)</small></span>
+        </div>
+        <div class="progress mb-2" style="height: 24px;">
+          <div class="progress-bar bg-success fw-bold" role="progressbar" style="width: 13%;">Rp 38,9 M (Syamanah + Raffiz)</div>
+        </div>
+      </div>
+
+      <!-- Opportunity Callout -->
+      <div class="p-3 bg-light rounded border d-flex justify-content-between align-items-center">
+        <div>
+          <div class="small fw-bold text-dark"><i class="bi bi-lightbulb-fill text-warning me-1"></i>Peluang Pertumbuhan di SAM (Unaddressed Market):</div>
+          <div class="small text-muted">Masih ada <strong>Rp {{ (market_share.unaddressed_sam_rp / 1e9)|round(1) }} Miliar ({{ market_share.unaddressed_sam_pct }}%)</strong> potensi pasar di Tier C (692 organisasi) yang belum tergarap.</div>
+        </div>
+        <a href="{{ url_for('market_analysis.explorer', priority_tier='C - POTENTIAL') }}" class="btn btn-primary btn-sm text-nowrap ms-2">
+          Targetkan Tier C &rarr;
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Competitor Landscape Donut -->
+  <div class="col-lg-5">
+    <div class="card border-0 shadow-sm p-4 h-100 bg-white">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-pie-chart text-success me-2"></i>Pangsa Pasar & Lanskap Kompetisi</h5>
+          <small class="text-muted">Estimasi struktur penguasaan pasar B2B apparel Indonesia.</small>
+        </div>
+      </div>
+
+      <div style="height: 230px;" class="d-flex align-items-center justify-content-center mb-3">
+        <canvas id="competitorChart"></canvas>
+      </div>
+
+      <!-- Breakdown Table -->
+      <div class="table-responsive">
+        <table class="table table-sm table-borderless align-middle mb-0 small">
+          <tbody>
+            {% for comp in competitor_landscape %}
+            <tr class="border-top">
+              <td>
+                <span class="badge bg-{{ comp.badge_color }} me-1">&bull;</span>
+                <strong class="{% if comp.is_syamanah %}text-success{% else %}text-dark{% endif %}">{{ comp.player }}</strong>
+                <div class="text-muted" style="font-size: 0.72rem;">{{ comp.type }}</div>
+              </td>
+              <td class="text-end fw-bold">
+                Rp {{ (comp.revenue_rp / 1e9)|round(1) }} M
+                <div class="text-muted" style="font-size: 0.72rem;">{{ comp.share_pct }}%</div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Row 3: Analisis Musiman (Seasonality Curve) & Tren Penjualan 2026 -->
+<div class="row g-3 mb-4">
+  <div class="col-12">
+    <div class="card border-0 shadow-sm p-4 bg-white">
+      <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+        <div>
+          <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-graph-up-arrow text-primary me-2"></i>Tren Penjualan Bulanan & Pola Musiman 2026 (Seasonality)</h5>
+          <small class="text-muted">Pergerakan omzet riil Brand Syamanah vs Brand Raffiz (Januari – September 2026).</small>
+        </div>
+        <div class="d-flex gap-2">
+          <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">
+            <i class="bi bi-fire me-1"></i>Puncak Tertinggi: <strong>Juli (Rp 4,94 M)</strong>
+          </span>
+          <span class="badge bg-info-subtle text-info border border-info-subtle px-2 py-1">
+            <i class="bi bi-calendar-check me-1"></i>Rata-rata: <strong>Rp 3,24 M / bln</strong>
+          </span>
+        </div>
+      </div>
+
+      <div style="height: 310px;" class="mb-3">
+        <canvas id="revenueTrendChart"></canvas>
+      </div>
+
+      <!-- Seasonality Insights Box -->
+      <div class="row g-2 pt-2 border-top">
+        <div class="col-md-4">
+          <div class="p-2 px-3 rounded bg-light border">
+            <span class="fw-bold small text-danger"><i class="bi bi-arrow-up-circle-fill me-1"></i>Musim Puncak (Juli – September):</span>
+            <p class="small text-muted mb-0 mt-1">Omzet melonjak drastis hingga <strong>Rp 4,94 Miliar di bulan Juli</strong> karena tahun ajaran baru sekolah/kampus dan event Agustus/Q3.</p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="p-2 px-3 rounded bg-light border">
+            <span class="fw-bold small text-warning"><i class="bi bi-arrow-down-circle-fill me-1"></i>Musim Rendah (Maret):</span>
+            <p class="small text-muted mb-0 mt-1">Omzet menyentuh titik terendah di <strong>Maret (Rp 1,48 Miliar)</strong> bertepatan dengan momentum persiapan Ramadan dan jeda tender.</p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="p-2 px-3 rounded bg-light border">
+            <span class="fw-bold small text-success"><i class="bi bi-lightbulb me-1"></i>Rekomendasi Rantai Pasok:</span>
+            <p class="small text-muted mb-0 mt-1">Lakukan <strong>pre-ordering & stocking bahan baku kain pada bulan Mei–Juni</strong> sebelum lonjakan order massal di bulan Juli.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Row 4: Matriks Harga Produk & Potensi per Kategori Organisasi -->
+<div class="row g-3 mb-4">
+  <!-- Matriks Harga Produk -->
+  <div class="col-lg-6">
+    <div class="card border-0 shadow-sm p-4 h-100 bg-white">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-tags-fill text-primary me-2"></i>Matriks Harga Produk Syamanah</h5>
+          <small class="text-muted">Katalog harga satuan produk utama yang membentuk nilai pesanan seragam.</small>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light small">
+            <tr>
+              <th>Lini Produk</th>
+              <th>Kategori</th>
+              <th class="text-center">Rentang Harga</th>
+              <th class="text-end">Harga Acuan</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p_key, p in pricing.items() %}
+            <tr>
+              <td>
+                <div class="fw-bold text-dark">{{ p.name }}</div>
+                <div class="small text-muted" style="font-size: 0.72rem;">{{ p.description }}</div>
+              </td>
+              <td><span class="badge bg-secondary-subtle text-secondary-emphasis">{{ p.category }}</span></td>
+              <td class="text-center small">
+                {% if p.min_price == p.max_price %}
+                  Rp {{ "{:,}".format(p.min_price) }}
+                {% else %}
+                  Rp {{ "{:,}".format(p.min_price) }} - {{ "{:,}".format(p.max_price) }}
+                {% endif %}
+              </td>
+              <td class="text-end fw-bold text-primary">
+                Rp {{ "{:,}".format(p.median_price) }}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="mt-3 p-2 px-3 bg-light rounded border small text-muted">
+        <i class="bi bi-info-circle me-1 text-primary"></i>Rata-rata tertimbang harga seragam Syamanah (blended AOV) berada di kisaran <strong>Rp 140.000 / helai</strong>.
+      </div>
+    </div>
+  </div>
+
+  <!-- Potensi per Kategori Sektor -->
+  <div class="col-lg-6">
+    <div class="card border-0 shadow-sm p-4 h-100 bg-white">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-diagram-3-fill text-success me-2"></i>Potensi Pasar per Sektor Organisasi</h5>
+          <small class="text-muted">Nilai kebutuhan pakaian tahunan per kelompok entitas.</small>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light small">
+            <tr>
+              <th>Kelompok Sektor</th>
+              <th class="text-center">Organisasi</th>
+              <th class="text-center">Total Orang</th>
+              <th class="text-end">Nilai Pasar</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in type_breakdown %}
+            <tr>
+              <td>
+                <i class="bi {{ item.icon }} text-{{ item.color }} me-2"></i>
+                <span class="fw-semibold text-dark">{{ item.label }}</span>
+              </td>
+              <td class="text-center fw-bold">{{ item.org_count }}</td>
+              <td class="text-center text-muted small">{{ "{:,}".format(item.people_count) }}</td>
+              <td class="text-end fw-bold text-success">{{ item.market_value_formatted }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="mt-3 p-2 px-3 bg-light rounded border small text-muted">
+        <i class="bi bi-shield-check me-1 text-success"></i>Sektor Korporasi & Pabrik menyumbang nilai pasar terbesar karena frekuensi pengadaan rutin tahunan.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Row 5: Simulator Interaktif Skenario Pertumbuhan (What-If Calculator) -->
+<div class="row g-3 mb-4">
+  <div class="col-12">
+    <div class="card border-0 shadow-sm p-4 bg-white border-top border-4 border-primary">
+      <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+        <div>
+          <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-calculator-fill text-primary me-2"></i>Simulator Interaktif Skenario Pertumbuhan (What-If Analysis)</h5>
+          <p class="text-muted small mb-0">Simulasikan dampak penambahan penetrasi pasar Tier C dan penyesuaian harga terhadap proyeksi omzet Syamanah.</p>
+        </div>
+        <span class="badge bg-primary px-3 py-2 fw-semibold">Interactive Forecasting Model</span>
+      </div>
+
+      <div class="row g-4 align-items-center">
+        <!-- Controls -->
+        <div class="col-lg-6">
+          <div class="mb-4">
+            <div class="d-flex justify-content-between mb-2">
+              <label for="sliderTierC" class="form-label small fw-bold text-dark mb-0">
+                Target Tambahan Penetrasi di Tier C (Potential Accounts)
+              </label>
+              <span class="badge bg-primary fs-6" id="badgeTierCVal">+5%</span>
+            </div>
+            <input type="range" class="form-range" id="sliderTierC" min="1" max="25" step="1" value="5">
+            <div class="d-flex justify-content-between small text-muted">
+              <span>+1% (+2.180 orang)</span>
+              <span>+10% (+21.800 orang)</span>
+              <span>+25% (+54.600 orang)</span>
+            </div>
+          </div>
+
+          <div class="mb-2">
+            <div class="d-flex justify-content-between mb-2">
+              <label for="sliderPrice" class="form-label small fw-bold text-dark mb-0">
+                Penyesuaian Harga Rata-rata / Up-Selling Margin
+              </label>
+              <span class="badge bg-secondary fs-6" id="badgePriceVal">0%</span>
+            </div>
+            <input type="range" class="form-range" id="sliderPrice" min="-15" max="25" step="5" value="0">
+            <div class="d-flex justify-content-between small text-muted">
+              <span>-15% (Diskon Volume)</span>
+              <span>0% (Harga Saat Ini)</span>
+              <span>+25% (Premium Material)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Simulation Result Box -->
+        <div class="col-lg-6">
+          <div class="card border-0 bg-primary-subtle p-3 rounded-3">
+            <h6 class="fw-bold text-primary mb-3"><i class="bi bi-speedometer2 me-1"></i>Hasil Proyeksi Dampak Bisnis:</h6>
+            <div class="row g-2 mb-3">
+              <div class="col-6">
+                <div class="bg-white p-2 rounded shadow-sm">
+                  <div class="small text-muted">Tambahan Omzet Baru</div>
+                  <h4 class="fw-bold text-success mb-0" id="resAddRevenue">+Rp 3,06 Miliar</h4>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="bg-white p-2 rounded shadow-sm">
+                  <div class="small text-muted">Pertumbuhan Omzet</div>
+                  <h4 class="fw-bold text-primary mb-0" id="resGrowthPct">+7,87%</h4>
+                </div>
+              </div>
+            </div>
+            <div class="bg-white p-3 rounded shadow-sm">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="small text-muted">Omzet Proyeksi Saat Ini:</span>
+                <span class="fw-semibold text-secondary">Rp 38,90 Miliar</span>
+              </div>
+              <div class="d-flex justify-content-between align-items-center border-top pt-2">
+                <span class="fw-bold text-dark">Target Omzet Baru Pasca-Ekspansi:</span>
+                <h4 class="fw-bold text-success mb-0" id="resNewTotal">Rp 41,96 Miliar</h4>
+              </div>
+              <div class="small text-muted mt-2 pt-2 border-top">
+                <i class="bi bi-people-fill text-primary me-1"></i>Melayani tambahan <strong id="resPeopleServed">10.933</strong> orang dari <strong id="resOrgsServed">34</strong> akun organisasi baru.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Row 6: Strategic Recommendations for Management -->
+<div class="row g-3 mb-4">
+  <div class="col-12">
+    <div class="card border-0 shadow-sm p-4 bg-white">
+      <h5 class="fw-bold mb-3 text-dark"><i class="bi bi-clipboard-check-fill text-success me-2"></i>Rekomendasi Rencana Aksi Strategis untuk Manajemen</h5>
+      <div class="row g-3">
+        <div class="col-md-4">
+          <div class="p-3 border rounded h-100 bg-white">
+            <div class="badge bg-primary mb-2">Strategi 1: Ekspansi Tier C</div>
+            <h6 class="fw-bold text-dark">Konversi 692 Akun Tier C (Potential)</h6>
+            <p class="small text-muted mb-0">Pasar Tier A dan B Syamanah sudah sangat jenuh (Market Share > 100% dari SOM). Mesin pertumbuhan berikutnya berada di <strong>692 organisasi Tier C (218 ribu orang)</strong> yang memiliki sisa potensi Rp 58 Miliar.</p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="p-3 border rounded h-100 bg-white">
+            <div class="badge bg-warning text-dark mb-2">Strategi 2: Antisipasi Musiman</div>
+            <h6 class="fw-bold text-dark">Kunci Pengadaan Bahan Baku di Mei–Juni</h6>
+            <p class="small text-muted mb-0">Lonjakan penjualan selalu terjadi di <strong>Juli (Rp 4,94 M)</strong> dan Agustus. Tim procurement harus mengunci kontrak vendor kain di bulan Mei agar kapasitas jahit tidak overload saat pesanan massal masuk.</p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="p-3 border rounded h-100 bg-white">
+            <div class="badge bg-success mb-2">Strategi 3: Cross-Selling</div>
+            <h6 class="fw-bold text-dark">Up-Selling Jaket (Rp 390k) & Kemeja (Rp 170k)</h6>
+            <p class="small text-muted mb-0">Untuk klien komunitas yang biasa membeli jersey (Rp 100k), tawarkan paket bundling Jaket (Rp 390k) dan Polo (Rp 120k) untuk meningkatkan rata-rata nilai transaksi (*basket size* per akun).</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // 1. Data Trend Omzet Bulanan
+  const monthlyData = {{ financials.monthly_breakdown|tojson }};
+  const monthLabels = monthlyData.map(m => m.month);
+  const syamanahVals = monthlyData.map(m => m.syamanah / 1e6); // Dalam Juta Rupiah
+  const raffizVals = monthlyData.map(m => m.raffiz / 1e6);
+  const totalVals = monthlyData.map(m => m.total / 1e6);
+
+  new Chart(document.getElementById('revenueTrendChart'), {
+    type: 'bar',
+    data: {
+      labels: monthLabels,
+      datasets: [
+        {
+          label: 'Brand Syamanah (Juta Rp)',
+          data: syamanahVals,
+          backgroundColor: '#3b82f6',
+          borderRadius: 4,
+          order: 2
+        },
+        {
+          label: 'Brand Raffiz (Juta Rp)',
+          data: raffizVals,
+          backgroundColor: '#10b981',
+          borderRadius: 4,
+          order: 3
+        },
+        {
+          label: 'Grand Total Trend (Juta Rp)',
+          data: totalVals,
+          type: 'line',
+          borderColor: '#f59e0b',
+          backgroundColor: '#f59e0b',
+          borderWidth: 2,
+          pointRadius: 4,
+          fill: false,
+          tension: 0.3,
+          order: 1
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'top', labels: { boxWidth: 12, font: { size: 11 } } },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              return context.dataset.label + ': Rp ' + Number(context.raw).toLocaleString('id-ID', {maximumFractionDigits: 1}) + ' Juta';
+            }
+          }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            callback: function(value) { return 'Rp ' + value.toLocaleString() + ' Jt'; }
+          }
+        }
+      }
+    }
+  });
+
+  // 2. Competitor Landscape Donut Chart
+  const compData = {{ competitor_landscape|tojson }};
+  const compLabels = compData.map(c => c.player);
+  const compShares = compData.map(c => c.share_pct);
+
+  new Chart(document.getElementById('competitorChart'), {
+    type: 'doughnut',
+    data: {
+      labels: compLabels,
+      datasets: [{
+        data: compShares,
+        backgroundColor: ['#10b981', '#f59e0b', '#94a3b8'],
+        borderWidth: 2
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              return context.label + ': ' + context.raw + '%';
+            }
+          }
+        }
+      }
+    }
+  });
+
+  // 3. Interactive What-If Simulator Sliders
+  const sliderTierC = document.getElementById('sliderTierC');
+  const sliderPrice = document.getElementById('sliderPrice');
+  const badgeTierC = document.getElementById('badgeTierCVal');
+  const badgePrice = document.getElementById('badgePriceVal');
+
+  const resAddRevenue = document.getElementById('resAddRevenue');
+  const resGrowthPct = document.getElementById('resGrowthPct');
+  const resNewTotal = document.getElementById('resNewTotal');
+  const resPeopleServed = document.getElementById('resPeopleServed');
+  const resOrgsServed = document.getElementById('resOrgsServed');
+
+  function updateSimulation() {
+    const tierC = parseFloat(sliderTierC.value);
+    const price = parseFloat(sliderPrice.value);
+
+    badgeTierC.textContent = '+' + tierC + '%';
+    badgePrice.textContent = (price > 0 ? '+' : '') + price + '%';
+
+    fetch('{{ url_for("market_analysis.api_simulate_market_size") }}', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': '{{ csrf_token() }}'
+      },
+      body: JSON.stringify({
+        additional_tier_c_pct: tierC,
+        price_change_pct: price
+      })
+    })
+    .then(r => r.json())
+    .then(res => {
+      if (res.success && res.data) {
+        const d = res.data;
+        resAddRevenue.textContent = '+Rp ' + (d.additional_revenue / 1e9).toFixed(2) + ' Miliar';
+        resGrowthPct.textContent = '+' + d.growth_pct.toFixed(2) + '%';
+        resNewTotal.textContent = 'Rp ' + (d.new_annual_projected / 1e9).toFixed(2) + ' Miliar';
+        resPeopleServed.textContent = Number(d.additional_people_served).toLocaleString('id-ID');
+        resOrgsServed.textContent = Number(d.additional_orgs_served).toLocaleString('id-ID');
+      }
+    })
+    .catch(err => console.error('Sim error:', err));
+  }
+
+  sliderTierC.addEventListener('input', updateSimulation);
+  sliderPrice.addEventListener('input', updateSimulation);
+});
+</script>
+{% endblock %}

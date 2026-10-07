@@ -152,8 +152,34 @@
           {% endif %}
         </dd>
 
-        <dt class="col-sm-4 text-muted">Estimasi Karyawan</dt>
-        <dd class="col-sm-8">{{ org.employee_size or '-' }}</dd>
+        <dt class="col-sm-4 text-muted">Jumlah Anggota / Karyawan</dt>
+        <dd class="col-sm-8">
+          <div class="d-flex flex-wrap align-items-center gap-2">
+            <span class="fs-6 fw-bold text-dark">
+              <i class="bi bi-people-fill text-primary me-1"></i>{{ org.estimated_members or org.employee_size or '-' }} orang
+            </span>
+            {% if org.employee_size and org.estimated_members %}
+              <span class="badge bg-light text-dark border">Rentang: {{ org.employee_size }}</span>
+            {% endif %}
+            {% if org.size_status == 'actual' %}
+              <span class="badge bg-success-subtle text-success border border-success-subtle">
+                <i class="bi bi-patch-check-fill me-1"></i>Aktual Terverifikasi
+              </span>
+            {% else %}
+              <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle">
+                <i class="bi bi-calculator me-1"></i>Estimasi Baseline
+              </span>
+            {% endif %}
+            {% if org.size_source %}
+              <span class="badge bg-light text-secondary border small" title="Sumber Data">
+                Sumber: {{ org.size_source }}
+              </span>
+            {% endif %}
+            <button type="button" class="btn btn-outline-primary btn-sm py-0 px-2 ms-auto" data-bs-toggle="modal" data-bs-target="#editSizeModal" title="Ubah atau Verifikasi Aktual">
+              <i class="bi bi-pencil me-1"></i>Edit / Verifikasi Aktual
+            </button>
+          </div>
+        </dd>
 
         <dt class="col-sm-4 text-muted">Deskripsi Singkat</dt>
         <dd class="col-sm-8 text-secondary">{{ org.description or '-' }}</dd>
@@ -573,4 +599,62 @@
   </div>
 </div>
 {% endif %}
+
+<!-- Modal Edit / Verifikasi Data Skala Anggota & Karyawan -->
+<div class="modal fade" id="editSizeModal" tabindex="-1" aria-labelledby="editSizeModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="{{ url_for('market_analysis.update_org_size', org_id=org.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold" id="editSizeModalLabel">
+            <i class="bi bi-people-fill text-primary me-2"></i>Perbarui / Verifikasi Skala Karyawan
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p class="small text-muted mb-3">
+            Perbarui data jumlah anggota/karyawan untuk <strong>{{ org.name }}</strong>. Jika Anda menetapkan status sebagai <strong>Aktual Terverifikasi</strong>, nilai ini akan dikunci dari penimpaan estimasi baseline.
+          </p>
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Jumlah Anggota / Karyawan (Angka Pasti)</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-hash"></i></span>
+              <input type="number" name="estimated_members" class="form-control" placeholder="Contoh: 150" value="{{ org.estimated_members or '' }}" min="1">
+              <span class="input-group-text">orang</span>
+            </div>
+            <div class="form-text small">Angka ini digunakan untuk kalkulasi potensi pasar dan pengadaan seragam.</div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Rentang Skala (Tier)</label>
+            <select name="employee_size" class="form-select">
+              <option value="" {% if not org.employee_size %}selected{% endif %}>Otomatis dari angka di atas</option>
+              <option value="1-10" {% if org.employee_size == '1-10' %}selected{% endif %}>1-10 orang (Mikro)</option>
+              <option value="11-50" {% if org.employee_size == '11-50' %}selected{% endif %}>11-50 orang (Kecil)</option>
+              <option value="51-200" {% if org.employee_size == '51-200' %}selected{% endif %}>51-200 orang (Menengah)</option>
+              <option value="201-500" {% if org.employee_size == '201-500' %}selected{% endif %}>201-500 orang (Menengah-Besar)</option>
+              <option value="501-1000" {% if org.employee_size == '501-1000' %}selected{% endif %}>501-1000 orang (Besar)</option>
+              <option value="1000+" {% if org.employee_size == '1000+' %}selected{% endif %}>1000+ orang (Enterprise / Kampus)</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Status Validasi</label>
+            <select name="size_status" class="form-select">
+              <option value="actual" {% if org.size_status == 'actual' %}selected{% endif %}>🟢 Aktual Terverifikasi (Data Valid Riil)</option>
+              <option value="estimated" {% if org.size_status != 'actual' %}selected{% endif %}>📐 Estimasi Baseline (Masih Perkiraan)</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Sumber Validasi</label>
+            <input type="text" name="size_source" class="form-control" placeholder="Contoh: LinkedIn PIC, Laporan Tahunan, Dapodik, Telepon PIC" value="{{ org.size_source or 'manual_verified' }}">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="submit" class="btn btn-primary"><i class="bi bi-check2-circle me-1"></i>Simpan Perubahan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 {% endblock %}

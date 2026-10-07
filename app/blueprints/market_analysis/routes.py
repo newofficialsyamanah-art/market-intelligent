@@ -1,6 +1,6 @@
 import json
 from collections import Counter
-from flask import Blueprint, render_template, flash, redirect, url_for, request, abort
+from flask import Blueprint, render_template, flash, redirect, url_for, request, abort, jsonify
 from flask_login import login_required, current_user
 from sqlalchemy import func
 
@@ -18,6 +18,11 @@ from app.services.intelligence_analytics import (
     get_white_space_clusters,
     search_master_organizations,
     get_organization_detail,
+)
+from app.services.market_size_service import (
+    get_market_size_and_share,
+    simulate_expansion,
+    get_financial_summary,
 )
 
 market_analysis_bp = Blueprint("market_analysis", __name__)
@@ -100,6 +105,36 @@ def index():
     )
 
 
+# ---------- Market Size (TAM/SAM/SOM) & Market Share Analytics ----------
+
+@market_analysis_bp.route("/market-size")
+@login_required
+@roles_required("business_analyst", "management", "marketing")
+def market_size():
+    """Halaman Analisis Komprehensif Market Size (TAM, SAM, SOM) & Market Share Syamanah."""
+    spend_raw = request.args.get("spend_per_person", "").strip()
+    custom_spend = int(spend_raw) if spend_raw.isdigit() and int(spend_raw) > 0 else None
+    
+    data = get_market_size_and_share(custom_avg_spend=custom_spend)
+    return render_template("market_analysis/market_size.html", **data)
+
+
+@market_analysis_bp.route("/api/market-size-simulate", methods=["POST"])
+@login_required
+@roles_required("business_analyst", "management", "marketing")
+def api_simulate_market_size():
+    """API endpoint interaktif untuk simulator skenario pertumbuhan pasar (What-If Analysis)."""
+    payload = request.get_json() or {}
+    tier_c_pct = float(payload.get("additional_tier_c_pct", 5.0))
+    price_change_pct = float(payload.get("price_change_pct", 0.0))
+
+    result = simulate_expansion(additional_tier_c_pct=tier_c_pct, price_change_pct=price_change_pct)
+    return jsonify({
+        "success": True,
+        "data": result
+    })
+
+
 # ---------- Company Intelligence Explorer & Drill-Down (Phase 4) ----------
 
 @market_analysis_bp.route("/explorer")
@@ -122,6 +157,7 @@ def explorer():
     missing_address = request.args.get("missing_address") == "1"
     missing_employee_size = request.args.get("missing_employee_size") == "1"
     review_status = request.args.get("review_status", "").strip()
+    size_status = request.args.get("size_status", "").strip()
     page = request.args.get("page", 1, type=int)
 
     min_score = int(min_score_raw) if min_score_raw.isdigit() else None
@@ -141,6 +177,7 @@ def explorer():
         missing_address=missing_address,
         missing_employee_size=missing_employee_size,
         review_status=review_status,
+        size_status=size_status,
         page=page,
         per_page=25,
     )
@@ -171,6 +208,8 @@ def explorer():
         "mahasiswa": Organization.query.filter(Organization.organization_type.in_(["student_organization", "student_org"])).count(),
         "tier_hot": Organization.query.filter(Organization.priority_tier == "A - HOT").count(),
         "tier_warm": Organization.query.filter(Organization.priority_tier == "B - WARM").count(),
+        "size_actual": Organization.query.filter_by(size_status="actual").count(),
+        "size_estimated": Organization.query.filter(db.or_(Organization.size_status.is_(None), Organization.size_status != "actual")).count(),
     }
 
     return render_template(
@@ -195,6 +234,7 @@ def explorer():
             "missing_address": "1" if missing_address else "",
             "missing_employee_size": "1" if missing_employee_size else "",
             "review_status": review_status,
+            "size_status": size_status,
         },
         all_industries=all_industries,
         all_sports=all_sports,
@@ -223,6 +263,44 @@ def org_detail(org_id: int):
         legacy_prospects_count=detail["legacy_prospects_count"],
         participations=detail.get("participations", []),
     )
+
+
+@market_analysis_bp.route("/organization/<int:org_id>/update_size", methods=["POST"])
+@login_required
+@roles_required("business_analyst", "marketing", "management", "admin")
+def update_org_size(org_id: int):
+    """Update atau verifikasi manual jumlah anggota/karyawan organisasi menjadi Aktual."""
+    import re
+    from app.services.org_size_estimator import determine_tier_from_number
+
+    org = db.session.get(Organization, org_id)
+    if not org:
+        flash("Entitas organisasi tidak ditemukan.", "danger")
+        return redirect(url_for("market_analysis.explorer"))
+
+    raw_members = request.form.get("estimated_members", "").strip()
+    employee_size = request.form.get("employee_size", "").strip()
+    size_status = request.form.get("size_status", "actual").strip()
+    size_source = request.form.get("size_source", "manual_verified").strip()
+
+    try:
+        if raw_members:
+            clean_num = int(re.sub(r"[^\d]", "", raw_members))
+            org.estimated_members = clean_num
+            if not employee_size:
+                org.employee_size = determine_tier_from_number(clean_num)
+        if employee_size:
+            org.employee_size = employee_size
+
+        org.size_status = size_status
+        org.size_source = size_source
+        db.session.commit()
+        flash(f"Data skala & jumlah anggota/karyawan {org.name} berhasil diperbarui ({org.size_badge_label})!", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Gagal memperbarui data: {e}", "danger")
+
+    return redirect(url_for("market_analysis.org_detail", org_id=org.id))
 
 
 # ---------- Rekomendasi Potensi Produk (AI Agent) ----------

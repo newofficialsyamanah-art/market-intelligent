@@ -67,6 +67,7 @@ TASK_TYPES = {
     "department_contact_scraping",
     "procurement_sourcing",
     "company_enrichment",
+    "headcount_enrichment",
     # Legacy compatibility tasks
     "scraping",
     "ai_classification",
@@ -373,6 +374,59 @@ def _task_company_enrichment() -> Dict[str, Any]:
     }
 
 
+def _task_headcount_enrichment() -> Dict[str, Any]:
+    """Enrichment berkala headcount & anggota organisasi dari baseline estimasi ke data aktual terverifikasi."""
+    import requests
+    from bs4 import BeautifulSoup
+    from app.services.org_size_estimator import parse_actual_headcount
+
+    # Prioritaskan organisasi berstatus 'estimated' yang memiliki website / domain
+    candidates = Organization.query.filter(
+        Organization.size_status != "actual",
+        db.or_(
+            Organization.website.isnot(None),
+            Organization.domain.isnot(None),
+            Organization.source_url.isnot(None)
+        )
+    ).order_by(Organization.opportunity_score.desc()).limit(15).all()
+
+    actual_updated = 0
+    for org in candidates:
+        target_url = org.website or (f"https://{org.domain}" if org.domain else org.source_url)
+        if not target_url:
+            continue
+        if not target_url.startswith("http"):
+            target_url = f"https://{target_url}"
+
+        try:
+            resp = requests.get(
+                target_url,
+                timeout=6,
+                headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) SyamanahMarketIntelligence/1.0"}
+            )
+            if resp.status_code == 200:
+                soup = BeautifulSoup(resp.text, "html.parser")
+                page_text = " ".join(soup.get_text(" ").split())
+                parsed = parse_actual_headcount(page_text)
+                if parsed:
+                    num, tier = parsed
+                    org.estimated_members = num
+                    org.employee_size = tier
+                    org.size_status = "actual"
+                    org.size_source = "official_website"
+                    actual_updated += 1
+        except Exception:
+            continue
+
+    db.session.commit()
+    return {
+        "detail": f"Headcount Enrichment: {actual_updated} organisasi ditingkatkan ke status Aktual dari {len(candidates)} kandidat diperiksa",
+        "processed": len(candidates),
+        "success": actual_updated,
+        "failed": len(candidates) - actual_updated
+    }
+
+
 # =========================================================================
 # LEGACY TASKS (Preserved for compatibility)
 # =========================================================================
@@ -511,6 +565,8 @@ def _run_task(task_type: str) -> Dict[str, Any]:
         return _task_procurement_sourcing()
     if task_type == "company_enrichment":
         return _task_company_enrichment()
+    if task_type == "headcount_enrichment":
+        return _task_headcount_enrichment()
     # Legacy
     if task_type == "scraping":
         return _scrape_sources()

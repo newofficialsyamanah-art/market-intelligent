@@ -326,7 +326,27 @@ class CompanyEnrichmentService:
         json_ld_phones = [normalize_phone(p) for p in extracted["phones"] if normalize_phone(p)]
         extracted["phones"] = list(dict.fromkeys(json_ld_phones + clean_phones))[:3]
 
-        # 4. Deskripsi / Meta Description
+        # 4. Ekstraksi Employee Headcount (Actual)
+        from app.services.org_size_estimator import parse_actual_headcount, determine_tier_from_number
+        actual_headcount = None
+        if extracted.get("employee_size"):
+            try:
+                emp_num = int(re.sub(r"[^\d]", "", str(extracted["employee_size"])))
+                if 5 <= emp_num <= 500000:
+                    actual_headcount = emp_num
+                    extracted["employee_size"] = determine_tier_from_number(emp_num)
+            except Exception:
+                pass
+
+        if not actual_headcount:
+            parsed_headcount = parse_actual_headcount(page_text)
+            if parsed_headcount:
+                actual_headcount, tier = parsed_headcount
+                extracted["employee_size"] = tier
+
+        extracted["actual_headcount"] = actual_headcount
+
+        # 5. Deskripsi / Meta Description
         meta_desc = soup.select_one('meta[name="description"], meta[property="og:description"]')
         if meta_desc and meta_desc.get("content"):
             extracted["description"] = meta_desc["content"].strip()[:500]
@@ -526,6 +546,29 @@ class CompanyEnrichmentService:
                 org.description = desc_val
             fields_store["description"] = {"value": desc_val, "source": "official_website", "source_url": verified_url, "confidence": "high", "discovered_at": now_str}
             res.fields_updated.append("description")
+            is_modified = True
+
+        # --- G. Employee Size / Headcount (Phase 2 Actual Upgrade) ---
+        if page_intel.get("actual_headcount") or page_intel.get("employee_size"):
+            actual_count = page_intel.get("actual_headcount")
+            tier_str = page_intel.get("employee_size")
+            if not dry_run:
+                if actual_count:
+                    org.estimated_members = actual_count
+                if tier_str:
+                    org.employee_size = tier_str
+                org.size_status = "actual"
+                org.size_source = "official_website"
+            fields_store["employee_size"] = {
+                "value": tier_str,
+                "numeric": actual_count,
+                "status": "actual",
+                "source": "official_website",
+                "source_url": verified_url,
+                "confidence": "high",
+                "discovered_at": now_str
+            }
+            res.fields_updated.append("employee_size")
             is_modified = True
 
         # Simpan kembali provenance terstruktur
