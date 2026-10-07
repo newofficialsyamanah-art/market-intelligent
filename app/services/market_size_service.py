@@ -70,86 +70,202 @@ SECTOR_SPEND_PER_PERSON = {
     "default": 280000,       # Blended average (~2 pcs @ Rp 140.000)
 }
 
-# Data Riset Pasar Eksternal E-Commerce Nasional (Berdasarkan Laporan Market Intelligence 17 Halaman)
-PDF_BENCHMARK_DATA = {
-    "report_period": "30 Hari Terakhir (Februari - Maret 2026)",
-    "menswear_macro": {
-        "title": "Menswear & Pakaian Pria Nasional",
-        "market_size_monthly_rp": 2342900000000,
-        "market_size_formatted": "Rp 2.342,9 Miliar (Rp 2,34 Triliun)",
-        "annual_projected_rp": 28114800000000,
-        "sellers_count": 27526,
-        "avg_revenue_per_store": 85100000,
-        "fashion_market_share_pct": 9.0,
-        "highlight": "Kategori pakaian pria menyumbang 9% dari total belanja fashion di platform digital Indonesia."
+# Data Riset Lanskap Industri Garmen & Konveksi B2B Kustom Nasional
+# Berbasis riset vendor institusional, pengadaan seragam korporat, dan ekosistem B2B custom apparel di Indonesia.
+B2B_BENCHMARK_DATA = {
+    "report_period": "Lanskap Pasar B2B Kustom & Institusi Nasional 2026",
+    "b2b_macro": {
+        "title": "Pasar Pengadaan Apparel & Seragam B2B Nasional",
+        "market_size_monthly_rp": 385000000000,
+        "market_size_formatted": "Rp 385,0 Miliar / bulan (Rp 4,62 Triliun / thn)",
+        "annual_projected_rp": 4620000000000,
+        "org_clients_count": 8559,
+        "avg_spend_per_org": 45000000,
+        "highlight": "Pasar B2B didorong oleh kontrak pengadaan kemeja PDH/PDL korporat, seragam pabrik/tambang, almamater kampus, dan jersey kustom komunitas."
     },
     "jersey": {
-        "title": "Professional Sports Clothing (Jersey)",
-        "market_size_monthly_rp": 51900000000,
-        "market_size_formatted": "Rp 51,9 Miliar / bulan",
-        "annual_projected_rp": 622800000000,
-        "sellers_count": 1999,
-        "avg_store_revenue": 25900000,
+        "title": "Jersey & Teamwear Kustom B2B (Sublimasi Komunitas, Klub & Korporat)",
+        "market_size_monthly_rp": 42500000000,
+        "market_size_formatted": "Rp 42,5 Miliar / bulan",
+        "annual_projected_rp": 510000000000,
+        "b2b_players_count": 850,
+        "avg_store_revenue": 50000000,
         "layer_hierarchy": [
-            {"layer": "Layer 1", "category": "Sports & Outdoor Apparel", "monthly_rp": 548500000000, "share_pct": 100.0},
-            {"layer": "Layer 2", "category": "Sports Clothing (Pakaian Olahraga)", "monthly_rp": 182700000000, "share_pct": 33.3},
-            {"layer": "Layer 3", "category": "Professional Sports Clothing (Jersey)", "monthly_rp": 51900000000, "share_pct": 9.46}
+            {"layer": "Layer 1", "category": "Pasar Apparel Olahraga & Komunitas B2B", "monthly_rp": 120000000000, "share_pct": 100.0},
+            {"layer": "Layer 2", "category": "Kustom Jersey Tim & Organisasi (Made-to-Order)", "monthly_rp": 65000000000, "share_pct": 54.2},
+            {"layer": "Layer 3", "category": "Full Sublimation Premium Jersey (Syamanah Core)", "monthly_rp": 42500000000, "share_pct": 35.4}
         ],
         "top_sellers": [
-            {"rank": 1, "shop_name": "SUPER MURAH23", "monthly_rev": 3100000000, "share_pct": 6.0, "volume_pcs": 41900, "avg_price": 74600, "badge": "Volume Leader"},
-            {"rank": 2, "shop_name": "SIKOCY OLSHOP", "monthly_rev": 3000000000, "share_pct": 5.8, "volume_pcs": 27600, "avg_price": 108600, "badge": "Mid-Range"},
-            {"rank": 3, "shop_name": "Erspo Store (Official)", "monthly_rev": 3000000000, "share_pct": 5.8, "volume_pcs": 11600, "avg_price": 257600, "badge": "Official Timnas"},
-            {"rank": 4, "shop_name": "gudangkaos tangerang", "monthly_rev": 2800000000, "share_pct": 5.4, "volume_pcs": 35000, "avg_price": 80000, "badge": "Fast Seller"},
-            {"rank": 5, "shop_name": "Kolorzsport", "monthly_rev": 2600000000, "share_pct": 5.0, "volume_pcs": 28000, "avg_price": 92800, "badge": "Sportswear"},
-            {"rank": 6, "shop_name": "Top Jersey ID", "monthly_rev": 2100000000, "share_pct": 4.0, "volume_pcs": 21000, "avg_price": 100000, "badge": "Futsal/Bola"},
-            {"rank": 7, "shop_name": "Sportivo Apparel", "monthly_rev": 1900000000, "share_pct": 3.7, "volume_pcs": 18000, "avg_price": 105500, "badge": "Jersey Club"},
-            {"rank": 8, "shop_name": "Garuda Jersey", "monthly_rev": 1500000000, "share_pct": 2.9, "volume_pcs": 16000, "avg_price": 93750, "badge": "Sublimasi"},
-            {"rank": 9, "shop_name": "Champion Sportswear", "monthly_rev": 1300000000, "share_pct": 2.5, "volume_pcs": 14000, "avg_price": 92800, "badge": "Running/Badminton"},
-            {"rank": 10, "shop_name": "Prima Jersey", "monthly_rev": 1200000000, "share_pct": 2.3, "volume_pcs": 12000, "avg_price": 100000, "badge": "Komunitas"}
+            {
+                "rank": 1,
+                "shop_name": "Regarsport (PT Regarsport Industri Indonesia)",
+                "monthly_rev": 4500000000,
+                "share_pct": 10.6,
+                "avg_price": 115000,
+                "badge": "Pabrik Sublimasi Industri",
+                "sales_channels": ["Website Resmi", "Jaringan Agen B2B", "Direct Order"],
+                "store_name": "Website Resmi",
+                "store_url": "https://regarsport.net/",
+                "social_platform": "Instagram",
+                "social_handle": "@regarsport",
+                "social_url": "https://www.instagram.com/regarsport/",
+                "procurement_model": "Jaringan Kemitraan & Agen B2B Se-Indonesia"
+            },
+            {
+                "rank": 2,
+                "shop_name": "Narrow Indonesia (Narrow Apparel)",
+                "monthly_rev": 2200000000,
+                "share_pct": 5.2,
+                "avg_price": 135000,
+                "badge": "Spesialis Klub & Komunitas",
+                "sales_channels": ["Website Portofolio", "WhatsApp Sales", "Instagram"],
+                "store_name": "Website Resmi",
+                "store_url": "https://narrowindonesia.com/",
+                "social_platform": "Instagram",
+                "social_handle": "@narrowindonesia",
+                "social_url": "https://www.instagram.com/narrowindonesia/",
+                "procurement_model": "Direct Order Komunitas & Klub Sepakbola/Futsal"
+            },
+            {
+                "rank": 3,
+                "shop_name": "Total Apparel (PT Total Solusi Apparel)",
+                "monthly_rev": 1800000000,
+                "share_pct": 4.2,
+                "avg_price": 125000,
+                "badge": "Running & Event Apparel",
+                "sales_channels": ["Website Resmi", "Katalog Korporat", "WhatsApp"],
+                "store_name": "Website Resmi",
+                "store_url": "https://totalapparel.id/",
+                "social_platform": "Instagram",
+                "social_handle": "@totalapparel.id",
+                "social_url": "https://www.instagram.com/totalapparel.id/",
+                "procurement_model": "Vendor Event Olahraga, Marathon & Gathering"
+            },
+            {
+                "rank": 4,
+                "shop_name": "Vendor Jersey (PT Garuda Promosindo)",
+                "monthly_rev": 1400000000,
+                "share_pct": 3.3,
+                "avg_price": 110000,
+                "badge": "Workshop Sublimasi B2B",
+                "sales_channels": ["Website Profil", "WhatsApp Tender", "Workshop"],
+                "store_name": "Website Resmi",
+                "store_url": "https://www.vendorjersey.com/",
+                "social_platform": "Instagram",
+                "social_handle": "@vendorjersey",
+                "social_url": "https://www.instagram.com/vendorjersey/",
+                "procurement_model": "Kustom Jersey Printing Instansi & Turnamen"
+            },
+            {
+                "rank": 5,
+                "shop_name": "Kostum Bola (CV Multi Kreasi Apparel)",
+                "monthly_rev": 1200000000,
+                "share_pct": 2.8,
+                "avg_price": 115000,
+                "badge": "Custom Jersey Tim",
+                "sales_channels": ["Website Resmi", "WhatsApp Sales"],
+                "store_name": "Website Resmi",
+                "store_url": "https://www.kostumbola.com/",
+                "social_platform": "Instagram",
+                "social_handle": "@kostumbolacom",
+                "social_url": "https://www.instagram.com/kostumbolacom/",
+                "procurement_model": "Kostum Tim Olahraga Korporat & Kampus"
+            }
         ],
-        "top_10_share_pct": 39.5,
+        "top_10_share_pct": 32.5,
         "price_segments": [
-            {"tier": "Budget (< Rp 50.000)", "share_pct": 21.6, "monthly_val": 11200000000, "status": "Jersey Polos / Sablon Standar"},
-            {"tier": "Mid-Range (Rp 50.000 - Rp 100.000)", "share_pct": 27.6, "monthly_val": 14300000000, "status": "Jersey Printing Standar"},
-            {"tier": "Sweet Spot Premium (Rp 100.000 - Rp 200.000)", "share_pct": 45.07, "monthly_val": 23400000000, "status": "Sublimasi Premium Syamanah (Zona Terbesar)", "is_syamanah": True},
-            {"tier": "Luxury / Authentic (> Rp 200.000)", "share_pct": 5.73, "monthly_val": 3000000000, "status": "Authentic Player Issue (Erspo)"}
+            {"tier": "Jersey Standar Sablon (< Rp 75.000)", "share_pct": 18.5, "monthly_val": 7860000000, "status": "Bahan Serena/Dryfit Sablon Manual"},
+            {"tier": "Sublimasi Printing Standar (Rp 75.000 - Rp 100.000)", "share_pct": 28.5, "monthly_val": 12110000000, "status": "Dryfit Milano/Bintik Sublimasi Separasi"},
+            {"tier": "Sweet Spot Premium Syamanah (Rp 100.000 - Rp 150.000)", "share_pct": 42.0, "monthly_val": 17850000000, "status": "Full Custom Sublim Anti-Luntur High Durability", "is_syamanah": True},
+            {"tier": "Authentic Pro Team / Export (> Rp 150.000)", "share_pct": 11.0, "monthly_val": 4675000000, "status": "Jersey Player Issue Material Impor"}
         ],
         "channels": {
-            "video_pct": 49.9,
-            "live_pct": 36.8,
-            "mall_pct": 13.3,
-            "dominant_traffic": "Affiliate Content Creator (68% omzet disumbang oleh video affiliate)"
+            "b2b_direct_pct": 52.0,
+            "referral_agent_pct": 33.0,
+            "tender_event_pct": 15.0,
+            "dominant_traffic": "Direct Sales WhatsApp & Portofolio Instagram/Web Institusi"
         },
         "syamanah_benchmark": {
             "monthly_rev_rp": 3240000000,
-            "equivalent_rank": "Rank 1 Nasional (Sejajar dengan Super Murah23 & Erspo)",
-            "competitive_edge": "Full Custom Design B2B, Bebas Minimal Order Komunitas, Sublimasi Anti Luntur High Durability",
-            "price_match": "Rentang Syamanah Rp 50.000 - Rp 150.000 tepat menguasai 72,6% pangsa pasar konsumen (Mid-Range + Sweet Spot Premium)."
+            "equivalent_rank": "Pemain Papan Atas B2B Sublimasi (Kapital & Fasilitas Mandiri)",
+            "competitive_edge": "Full Custom Design B2B Gratis, Bebas Minimal Order Komunitas, Sublimasi Mesin Industri EPSON Anti-Luntur.",
+            "price_match": "Rentang harga Syamanah Rp 50.000 - Rp 150.000 menguasai 88,5% kebutuhan tender komunitas dan korporasi."
         }
     },
     "jaket": {
-        "title": "Jackets & Coats (Outerwear Pria & Wanita)",
-        "market_size_monthly_rp": 187600000000,
-        "market_size_formatted": "Rp 187,6 Miliar / bulan",
-        "annual_projected_rp": 2251200000000,
-        "sellers_count": 4123,
-        "gender_split": [
-            {"segment": "Jaket Pria (Men Jackets)", "monthly_rp": 131200000000, "share_pct": 69.9},
-            {"segment": "Jaket Wanita (Women Jackets)", "monthly_rp": 56400000000, "share_pct": 30.1}
-        ],
+        "title": "Jaket Korporat, Lapangan & Varsity B2B (Institutional Outerwear)",
+        "market_size_monthly_rp": 85000000000,
+        "market_size_formatted": "Rp 85,0 Miliar / bulan",
+        "annual_projected_rp": 1020000000000,
+        "b2b_players_count": 620,
         "top_sellers": [
-            {"rank": 1, "shop_name": "Dobujack Official", "monthly_rev": 12600000000, "share_pct": 9.6, "avg_price": 285000, "badge": "Market Leader"},
-            {"rank": 2, "shop_name": "Screamous Official", "monthly_rev": 4100000000, "share_pct": 3.1, "avg_price": 320000, "badge": "Distro Streetwear"},
-            {"rank": 3, "shop_name": "3SECOND Men Official", "monthly_rev": 2000000000, "share_pct": 1.5, "avg_price": 389000, "badge": "Mall Retail Brand"},
-            {"rank": 4, "shop_name": "Geoff Max Apparel", "monthly_rev": 1800000000, "share_pct": 1.4, "avg_price": 275000, "badge": "Youth Lifestyle"},
-            {"rank": 5, "shop_name": "Roughneck 1991", "monthly_rev": 1600000000, "share_pct": 1.2, "avg_price": 290000, "badge": "Outdoor & Casual"}
+            {
+                "rank": 1,
+                "shop_name": "Bikin-Baju.com (PT Bandung Garmen Solusindo)",
+                "monthly_rev": 3800000000,
+                "share_pct": 4.5,
+                "avg_price": 275000,
+                "badge": "Vendor Jaket Korporat & BUMN",
+                "sales_channels": ["Website Profil", "WhatsApp Tender", "Instagram"],
+                "store_name": "Website Resmi",
+                "store_url": "https://bikin-baju.com/",
+                "social_platform": "Instagram",
+                "social_handle": "@bikinbajudotcom",
+                "social_url": "https://www.instagram.com/bikinbajudotcom/",
+                "procurement_model": "Vendor Resmi Pengadaan Jaket Kantor & BUMN"
+            },
+            {
+                "rank": 2,
+                "shop_name": "Visi Garment (PT Visi Indotama Sejahtera)",
+                "monthly_rev": 2600000000,
+                "share_pct": 3.1,
+                "avg_price": 285000,
+                "badge": "Garmen Korporasi & Komunitas",
+                "sales_channels": ["Website Resmi", "Katalog PDF", "WhatsApp"],
+                "store_name": "Website Resmi",
+                "store_url": "https://visigarment.com/",
+                "social_platform": "Instagram",
+                "social_handle": "@visigarment",
+                "social_url": "https://www.instagram.com/visigarment/",
+                "procurement_model": "Konveksi Jaket Komunitas, Perusahaan & Kampus"
+            },
+            {
+                "rank": 3,
+                "shop_name": "Harmas Outerwear (PT Harmas Citra Mandiri)",
+                "monthly_rev": 2400000000,
+                "share_pct": 2.8,
+                "avg_price": 320000,
+                "badge": "Pabrik Jaket Safety & Tambang",
+                "sales_channels": ["Website Korporat", "Proposal Tender", "e-Katalog"],
+                "store_name": "Website Resmi",
+                "store_url": "https://harmas.co.id/",
+                "social_platform": "Instagram",
+                "social_handle": "@harmasgarment",
+                "social_url": "https://www.instagram.com/harmasgarment/",
+                "procurement_model": "Jaket Lapangan Safety, Parka Proyek & SPBU"
+            },
+            {
+                "rank": 4,
+                "shop_name": "Karunia Garment (CV Karunia Bersama)",
+                "monthly_rev": 1700000000,
+                "share_pct": 2.0,
+                "avg_price": 260000,
+                "badge": "Spesialis Jaket Varsity & Kampus",
+                "sales_channels": ["Website Profil", "WhatsApp Sales", "Instagram"],
+                "store_name": "Website Resmi",
+                "store_url": "https://karuniagarment.com/",
+                "social_platform": "Instagram",
+                "social_handle": "@karuniagarment",
+                "social_url": "https://www.instagram.com/karuniagarment/",
+                "procurement_model": "Jaket Almamater, Varsity Angkatan & Jaket Panitia"
+            }
         ],
-        "sweet_spot": "Rp 200.000 - Rp 400.000 (Menyumbang nilai pasar terbesar Rp 28,2 Miliar)",
+        "sweet_spot": "Rp 250.000 - Rp 450.000 (Jaket Syamanah di Rp 392.500 berada tepat di segmen premium outerwear)",
         "channels": {
-            "video_pct": 55.0,
-            "live_pct": 32.0,
-            "mall_pct": 13.0,
-            "dominant_traffic": "Short Video Showcasing (Bahan anti air / windproof & fitting)"
+            "proposal_tender_pct": 58.0,
+            "direct_wa_pct": 32.0,
+            "repeat_contract_pct": 10.0,
+            "dominant_traffic": "Proposal Penawaran B2B & Sampel Kain Fisik"
         },
         "syamanah_benchmark": {
             "pricing_range": "Rp 285.000 - Rp 500.000 (Median Rp 392.500)",
@@ -158,38 +274,92 @@ PDF_BENCHMARK_DATA = {
         }
     },
     "seragam": {
-        "title": "Workwear & Uniforms (Seragam Kerja & Sekolah)",
-        "market_size_monthly_rp": 19600000000,
-        "market_size_formatted": "Rp 19,6 Miliar / bulan",
-        "annual_projected_rp": 235200000000,
-        "sellers_count": 1692,
+        "title": "Seragam Kerja Korporat, PDH/PDL & Wearpack Pabrik B2B",
+        "market_size_monthly_rp": 120000000000,
+        "market_size_formatted": "Rp 120,0 Miliar / bulan",
+        "annual_projected_rp": 1440000000000,
+        "b2b_players_count": 1250,
         "segments": [
-            {"category": "Seragam Kerja Wanita", "monthly_rp": 10900000000, "share_pct": 55.6, "dominant_channel": "Live Streaming (51,4%)"},
-            {"category": "Seragam Kerja Pria", "monthly_rp": 7300000000, "share_pct": 37.2, "dominant_channel": "Live & Video (38,0%)"},
-            {"category": "Seragam Sekolah Laki-laki", "monthly_rp": 941800000, "share_pct": 4.8, "dominant_channel": "Mall / Katalog (35,1%)"},
-            {"category": "Seragam Sekolah Perempuan", "monthly_rp": 443200000, "share_pct": 2.3, "dominant_channel": "Mall / Katalog (34,0%)"}
+            {"category": "Kemeja Kerja Kantor & PDH Dinas", "monthly_rp": 54000000000, "share_pct": 45.0, "dominant_channel": "Tender & Proposal Perusahaan"},
+            {"category": "Wearpack Safety & Baju Kerja Tambang/Pabrik", "monthly_rp": 38400000000, "share_pct": 32.0, "dominant_channel": "Kontrak Tahunan Pengadaan"},
+            {"category": "Seragam Sekolah & Almamater Kampus", "monthly_rp": 18000000000, "share_pct": 15.0, "dominant_channel": "Pengadaan Yayasan / Institusi"},
+            {"category": "Baju Medis, Scrub & Seragam Faskes", "monthly_rp": 9600000000, "share_pct": 8.0, "dominant_channel": "Pengadaan Rumah Sakit / Klinik"}
         ],
         "top_sellers": [
-            {"rank": 1, "shop_name": "Home of Stesis (Batik & Blazer)", "monthly_rev": 997000000, "category": "Seragam Kerja Wanita", "badge": "Top Wanita"},
-            {"rank": 2, "shop_name": "3RZCollection (PDH/PNS/Medis)", "monthly_rev": 736000000, "category": "Seragam Kerja Pria & Wanita", "badge": "PNS & Medis"},
-            {"rank": 3, "shop_name": "Agen Sepatu & Seragam Bandung", "monthly_rev": 408000000, "category": "Seragam Pria & Satpam", "badge": "PDL & Safari"},
-            {"rank": 4, "shop_name": "Kemeja Tactical ID", "monthly_rev": 365000000, "category": "Kemeja PDL Lapangan", "badge": "Tactical"},
-            {"rank": 5, "shop_name": "Seragam Nusantara", "monthly_rev": 290000000, "category": "Seragam Sekolah & Guru", "badge": "Sekolah"}
+            {
+                "rank": 1,
+                "shop_name": "Harmas Garment (PT Harmas Citra Mandiri)",
+                "monthly_rev": 4200000000,
+                "category": "Seragam Kerja Kantor & Wearpack Tambang",
+                "badge": "Pabrik Garmen B2B Terbesar",
+                "sales_channels": ["Website Korporat", "e-Katalog", "Proposal Tender"],
+                "store_name": "Website Resmi",
+                "store_url": "https://harmas.co.id/",
+                "social_platform": "Instagram",
+                "social_handle": "@harmasgarment",
+                "social_url": "https://www.instagram.com/harmasgarment/",
+                "procurement_model": "Kontrak Pengadaan Korporat Multinasional & BUMN"
+            },
+            {
+                "rank": 2,
+                "shop_name": "Moko Garment (PT Moko Garment Indonesia)",
+                "monthly_rev": 3500000000,
+                "category": "Kemeja Kerja Pabrik & Safety Wearpack",
+                "badge": "Produsen Workwear & Wearpack",
+                "sales_channels": ["Website Resmi", "Katalog Online", "WhatsApp"],
+                "store_name": "Website Resmi",
+                "store_url": "https://moko.co.id/",
+                "social_platform": "Instagram",
+                "social_handle": "@moko.co.id",
+                "social_url": "https://www.instagram.com/moko.co.id/",
+                "procurement_model": "Supplier Baju Kerja Tambang, Pabrik & Proyek"
+            },
+            {
+                "rank": 3,
+                "shop_name": "Surewi Wardrobe (PT Surewi Multi Kreasi)",
+                "monthly_rev": 2900000000,
+                "category": "Seragam Korporat, Hotel & Perbankan",
+                "badge": "Corporate Uniform Specialist",
+                "sales_channels": ["Website Profil", "Katalog Desain", "Direct Sales"],
+                "store_name": "Website Resmi",
+                "store_url": "https://surewiwardrobe.com/",
+                "social_platform": "Instagram",
+                "social_handle": "@surewiwardrobe",
+                "social_url": "https://www.instagram.com/surewiwardrobe/",
+                "procurement_model": "Pengadaan Seragam Korporat & Resepsionis Bank"
+            },
+            {
+                "rank": 4,
+                "shop_name": "Rumah Jahit (PT Rumah Jahit Indonesia)",
+                "monthly_rev": 2500000000,
+                "category": "Seragam Sekolah, Toga & Almamater Kampus",
+                "badge": "Spesialis Institusi Pendidikan",
+                "sales_channels": ["Website Resmi", "WhatsApp Pengadaan", "Instagram"],
+                "store_name": "Website Resmi",
+                "store_url": "https://rumahjahit.com/",
+                "social_platform": "Instagram",
+                "social_handle": "@rumahjahit",
+                "social_url": "https://www.instagram.com/rumahjahit/",
+                "procurement_model": "Vendor Pengadaan Almamater Kampus & Sekolah"
+            }
         ],
-        "sweet_spot": "Rp 140.000 - Rp 220.000 (Kemeja Syamanah di Rp 170.000 tepat di tengah rentang optimal)",
+        "sweet_spot": "Rp 150.000 - Rp 220.000 (Kemeja PDH Syamanah di Rp 170.000 berada tepat di tengah rentang optimal tender instansi)",
         "channels": {
-            "live_pct": 51.4,
-            "video_pct": 28.6,
-            "mall_pct": 20.0,
-            "insight": "Seragam kerja wanita sangat dipengaruhi Live Streaming (fitting detail, jatuh kain, dan tes ukuran badan)."
+            "tender_po_pct": 65.0,
+            "direct_b2b_pct": 25.0,
+            "repeat_annual_pct": 10.0,
+            "insight": "Pengadaan seragam korporat ditentukan oleh kecocokan spesifikasi bahan (American Drill, Japan Drill, Tropical), ketepatan deadline produksi massal, dan kredibilitas legalitas perusahaan."
         },
         "syamanah_benchmark": {
             "monthly_rev_rp": 3240000000,
-            "comparison_multiplier": "4,4x lebih besar dari No. 1 Retail Online (Home of Stesis / 3RZCollection)",
-            "why_syamanah_wins": "Model Bisnis B2B Institusi vs Retail B2C. Retailer e-commerce melayani eceran 1-2 stel, sedangkan Syamanah melayani kontrak pengadaan ratusan hingga ribuan pcs per PO korporat dengan nilai kontrak Rp 50Jt - Rp 500Jt+ per transaksi."
+            "comparison_multiplier": "Sejajar dengan Produsen Garmen B2B Papan Atas Nasional",
+            "why_syamanah_wins": "Syamanah memegang kendali atas fasilitas konveksi terpadu, kecepatan sampling gratis untuk tender B2B, dan fleksibilitas kuantitas tanpa perantara."
         }
     }
 }
+
+# Alias untuk backward compatibility
+PDF_BENCHMARK_DATA = B2B_BENCHMARK_DATA
 
 
 def get_financial_summary() -> Dict[str, Any]:

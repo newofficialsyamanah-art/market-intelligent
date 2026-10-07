@@ -288,13 +288,14 @@
     <table class="table table-sm table-hover align-middle mb-0 small">
       <thead class="table-dark">
         <tr>
-          <th style="width: 60px;" class="text-center">Rank</th>
+          <th style="width: 50px;" class="text-center">Rank</th>
           <th>Nama Toko / Brand</th>
-          <th class="text-center">Fokus / Segmentasi</th>
+          <th class="text-center">Platform Jualan</th>
+          <th class="text-center">Toko & Sosmed</th>
           <th class="text-end">Omzet (30 Hari)</th>
           <th class="text-end">Pangsa Pasar</th>
           <th class="text-center">Harga Rata-rata</th>
-          <th class="text-center">Status</th>
+          <th class="text-center">Segmentasi</th>
         </tr>
       </thead>
       <tbody>
@@ -304,13 +305,28 @@
             <span class="badge bg-success fs-6"><i class="bi bi-star-fill text-warning me-1"></i>#1</span>
           </td>
           <td>
-            <strong class="text-success fs-6">SYAMANAH GROUP (Syamanah + Raffiz)</strong>
+            <a href="https://syamanah.com/" target="_blank" rel="noopener noreferrer" class="text-decoration-none text-success fs-6 fw-bold" title="Buka Website Resmi Syamanah">
+              SYAMANAH GROUP (Syamanah + Raffiz) <i class="bi bi-box-arrow-up-right small"></i>
+            </a>
             <div class="text-muted" style="font-size: 0.72rem;">B2B Custom Apparel Sublimasi, Jersey Komunitas & Organisasi</div>
           </td>
-          <td class="text-center"><span class="badge bg-success-subtle text-success border border-success">B2B & Komunitas</span></td>
+          <td class="text-center">
+            <span class="badge bg-primary me-1"><i class="bi bi-building me-1"></i>Direct B2B</span>
+            <span class="badge bg-success"><i class="bi bi-whatsapp me-1"></i>WA Catalog</span>
+          </td>
+          <td class="text-center">
+            <div class="d-inline-flex flex-wrap gap-1 justify-content-center">
+              <a href="https://syamanah.com/" target="_blank" rel="noopener noreferrer" class="btn btn-xs btn-outline-success py-0 px-2 text-nowrap rounded-pill" style="font-size: 0.72rem;" title="Website Resmi Syamanah">
+                <i class="bi bi-globe me-1"></i>Web <i class="bi bi-box-arrow-up-right ms-1"></i>
+              </a>
+              <a href="https://instagram.com/syamanah.apparel" target="_blank" rel="noopener noreferrer" class="btn btn-xs btn-outline-danger py-0 px-2 text-nowrap rounded-pill" style="font-size: 0.72rem;" title="Instagram @syamanah.apparel">
+                <i class="bi bi-instagram me-1"></i>@syamanah.apparel <i class="bi bi-box-arrow-up-right ms-1"></i>
+              </a>
+            </div>
+          </td>
           <td class="text-end fw-bold text-success fs-6">Rp 3.242.000.000</td>
-          <td class="text-end fw-bold text-success fs-6">6,24%</td>
-          <td class="text-center fw-bold">Rp 100.000 (Median)</td>
+          <td class="text-end fw-bold text-success fs-6">7,63%</td>
+          <td class="text-center fw-bold">Rp 100.000</td>
           <td class="text-center"><span class="badge bg-success text-white">Posisi Terkuat</span></td>
         </tr>
         {% for top in benchmarks.jersey.top_sellers %}
@@ -321,13 +337,36 @@
             </span>
           </td>
           <td>
-            <strong class="text-dark">{{ top.shop_name }}</strong>
+            <a href="{{ top.store_url }}" target="_blank" rel="noopener noreferrer" class="text-decoration-none text-dark fw-bold" title="Buka Website Resmi {{ top.shop_name }}">
+              {{ top.shop_name }} <i class="bi bi-box-arrow-up-right text-primary small"></i>
+            </a>
+            <div class="text-muted" style="font-size: 0.68rem;"><i class="bi bi-shield-check me-1"></i>{{ top.procurement_model|default(top.badge) }}</div>
           </td>
-          <td class="text-center"><span class="badge bg-secondary-subtle text-secondary-emphasis">{{ top.badge }}</span></td>
+          <td class="text-center">
+            {% for ch in top.sales_channels %}
+            <span class="badge bg-secondary-subtle text-secondary-emphasis me-1" style="font-size: 0.70rem;">
+              <i class="bi bi-check-circle me-1"></i>{{ ch }}
+            </span>
+            {% endfor %}
+          </td>
+          <td class="text-center">
+            <div class="d-inline-flex flex-wrap gap-1 justify-content-center">
+              {% if top.store_url %}
+              <a href="{{ top.store_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-xs btn-outline-primary py-0 px-2 text-nowrap rounded-pill" style="font-size: 0.72rem;" title="Buka Website Resmi {{ top.shop_name }}">
+                <i class="bi bi-globe me-1"></i>{{ top.store_name|default('Web Resmi') }} <i class="bi bi-box-arrow-up-right ms-1" style="font-size: 0.65rem;"></i>
+              </a>
+              {% endif %}
+              {% if top.social_url %}
+              <a href="{{ top.social_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-xs {% if top.social_platform == 'Instagram' %}btn-outline-danger{% else %}btn-outline-dark{% endif %} py-0 px-2 text-nowrap rounded-pill" style="font-size: 0.72rem;">
+                <i class="bi {% if top.social_platform == 'Instagram' %}bi-instagram{% else %}bi-tiktok{% endif %} me-1"></i>{{ top.social_handle }} <i class="bi bi-box-arrow-up-right ms-1" style="font-size: 0.65rem;"></i>
+              </a>
+              {% endif %}
+            </div>
+          </td>
           <td class="text-end fw-bold">Rp {{ (top.monthly_rev / 1e9)|round(1) }} M</td>
           <td class="text-end">{{ top.share_pct }}%</td>
           <td class="text-center">Rp {{ "{:,}".format(top.avg_price) }}</td>
-          <td class="text-center text-muted"><i class="bi bi-cart me-1"></i>Ritel Online</td>
+          <td class="text-center"><span class="badge bg-secondary-subtle text-secondary-emphasis">{{ top.badge }}</span></td>
         </tr>
         {% endfor %}
       </tbody>
@@ -440,26 +479,50 @@
     <!-- Left: Top Players -->
     <div class="col-lg-7">
       <div class="border rounded p-3 bg-white h-100">
-        <h6 class="fw-bold text-dark mb-2"><i class="bi bi-trophy-fill text-warning me-2"></i>Top 5 Brand Jaket Nasional (Data Riset PDF)</h6>
+        <h6 class="fw-bold text-dark mb-2"><i class="bi bi-building text-secondary me-2"></i>Top Vendor Garmen Jaket Korporat & Lapangan B2B</h6>
         <div class="table-responsive">
           <table class="table table-sm table-striped align-middle mb-0 small">
             <thead class="table-light">
               <tr>
                 <th class="text-center" style="width: 45px;">Rank</th>
-                <th>Brand / Toko</th>
-                <th class="text-center">Kategori</th>
-                <th class="text-end">Omzet 30 Hari</th>
-                <th class="text-center">Harga Rata-rata</th>
+                <th>Nama Vendor B2B</th>
+                <th class="text-center">Kanal Penjualan</th>
+                <th class="text-center">Tautan Web & Sosmed</th>
+                <th class="text-end">Omzet Bulanan</th>
               </tr>
             </thead>
             <tbody>
               {% for j in benchmarks.jaket.top_sellers %}
               <tr>
                 <td class="text-center"><span class="badge {% if j.rank == 1 %}rank-badge-1{% else %}bg-light text-dark border{% endif %}">#{{ j.rank }}</span></td>
-                <td><strong>{{ j.shop_name }}</strong></td>
-                <td class="text-center"><span class="badge bg-secondary-subtle text-secondary-emphasis">{{ j.badge }}</span></td>
+                <td>
+                  <a href="{{ j.store_url }}" target="_blank" rel="noopener noreferrer" class="text-decoration-none text-dark fw-bold" title="Buka Website Resmi {{ j.shop_name }}">
+                    {{ j.shop_name }} <i class="bi bi-box-arrow-up-right text-primary small"></i>
+                  </a>
+                  <div class="text-muted" style="font-size: 0.68rem;"><i class="bi bi-shield-check me-1"></i>{{ j.procurement_model|default(j.badge) }} &bull; Rp {{ "{:,}".format(j.avg_price) }}</div>
+                </td>
+                <td class="text-center">
+                  {% for ch in j.sales_channels %}
+                  <span class="badge bg-secondary-subtle text-secondary-emphasis me-1" style="font-size: 0.68rem;">
+                    <i class="bi bi-check-circle me-1"></i>{{ ch }}
+                  </span>
+                  {% endfor %}
+                </td>
+                <td class="text-center">
+                  <div class="d-inline-flex flex-wrap gap-1 justify-content-center">
+                    {% if j.store_url %}
+                    <a href="{{ j.store_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-xs btn-outline-primary py-0 px-2 text-nowrap rounded-pill" style="font-size: 0.70rem;" title="Buka Website Resmi {{ j.shop_name }}">
+                      <i class="bi bi-globe me-1"></i>{{ j.store_name|default('Web Resmi') }} <i class="bi bi-box-arrow-up-right ms-1" style="font-size: 0.62rem;"></i>
+                    </a>
+                    {% endif %}
+                    {% if j.social_url %}
+                    <a href="{{ j.social_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-xs btn-outline-danger py-0 px-2 text-nowrap rounded-pill" style="font-size: 0.70rem;" title="{{ j.social_platform }} {{ j.social_handle }}">
+                      <i class="bi bi-instagram me-1"></i>{{ j.social_handle }} <i class="bi bi-box-arrow-up-right ms-1" style="font-size: 0.62rem;"></i>
+                    </a>
+                    {% endif %}
+                  </div>
+                </td>
                 <td class="text-end fw-bold text-dark">Rp {{ (j.monthly_rev / 1e9)|round(1) }} M</td>
-                <td class="text-center">Rp {{ "{:,}".format(j.avg_price) }}</td>
               </tr>
               {% endfor %}
             </tbody>
@@ -556,6 +619,61 @@
           <i class="bi bi-check-all me-1"></i>Harga Kemeja PDH Syamanah (Rp 170.000) berada tepat di pusat rentang sweet spot tender instansi nasional (Rp 140k – Rp 220k).
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- Top 5 Brand Seragam Table -->
+  <div class="border rounded p-3 bg-white mt-3">
+    <h6 class="fw-bold text-dark mb-2"><i class="bi bi-award-fill text-success me-2"></i>Top Produsen & Pabrik Garmen Seragam B2B Nasional</h6>
+    <div class="table-responsive">
+      <table class="table table-sm table-striped align-middle mb-0 small">
+        <thead class="table-light">
+          <tr>
+            <th class="text-center" style="width: 45px;">Rank</th>
+            <th>Nama Vendor B2B</th>
+            <th>Spesialisasi Pengadaan</th>
+            <th class="text-center">Kanal Penjualan</th>
+            <th class="text-center">Tautan Web & Sosmed</th>
+            <th class="text-end">Omzet Bulanan</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for s in benchmarks.seragam.top_sellers %}
+          <tr>
+            <td class="text-center"><span class="badge {% if s.rank == 1 %}rank-badge-1{% else %}bg-light text-dark border{% endif %}">#{{ s.rank }}</span></td>
+            <td>
+              <a href="{{ s.store_url }}" target="_blank" rel="noopener noreferrer" class="text-decoration-none text-dark fw-bold" title="Buka Website Resmi {{ s.shop_name }}">
+                {{ s.shop_name }} <i class="bi bi-box-arrow-up-right text-primary small"></i>
+              </a>
+              <div class="text-muted" style="font-size: 0.68rem;"><i class="bi bi-shield-check me-1"></i>{{ s.procurement_model|default(s.badge) }}</div>
+            </td>
+            <td>{{ s.category }}</td>
+            <td class="text-center">
+              {% for ch in s.sales_channels %}
+              <span class="badge bg-secondary-subtle text-secondary-emphasis me-1" style="font-size: 0.68rem;">
+                <i class="bi bi-check-circle me-1"></i>{{ ch }}
+              </span>
+              {% endfor %}
+            </td>
+            <td class="text-center">
+              <div class="d-inline-flex flex-wrap gap-1 justify-content-center">
+                {% if s.store_url %}
+                <a href="{{ s.store_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-xs btn-outline-primary py-0 px-2 text-nowrap rounded-pill" style="font-size: 0.70rem;" title="Buka Website Resmi {{ s.shop_name }}">
+                  <i class="bi bi-globe me-1"></i>{{ s.store_name|default('Web Resmi') }} <i class="bi bi-box-arrow-up-right ms-1" style="font-size: 0.62rem;"></i>
+                </a>
+                {% endif %}
+                {% if s.social_url %}
+                <a href="{{ s.social_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-xs btn-outline-danger py-0 px-2 text-nowrap rounded-pill" style="font-size: 0.70rem;" title="{{ s.social_platform }} {{ s.social_handle }}">
+                  <i class="bi bi-instagram me-1"></i>{{ s.social_handle }} <i class="bi bi-box-arrow-up-right ms-1" style="font-size: 0.62rem;"></i>
+                </a>
+                {% endif %}
+              </div>
+            </td>
+            <td class="text-end fw-bold text-dark">Rp {{ (s.monthly_rev / 1e6)|round(0) }} Juta</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
   </div>
 </div>
