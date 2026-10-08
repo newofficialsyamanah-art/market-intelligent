@@ -760,7 +760,7 @@ def edit_rfq(rfq_id):
     category = request.form.get("category", rfq.category).strip().lower()
     target_quantity = request.form.get("target_quantity", rfq.target_quantity, type=int)
     unit = request.form.get("unit", rfq.unit).strip()
-    target_budget_unit = request.form.get("target_budget_unit", type=float)
+    target_budget_str = request.form.get("target_budget_unit", "").strip()
     target_delivery_str = request.form.get("target_delivery_date", "").strip()
     specifications = request.form.get("specifications", "").strip()
     notes = request.form.get("notes", "").strip()
@@ -769,19 +769,37 @@ def edit_rfq(rfq_id):
         flash("Judul permintaan pengadaan wajib diisi.", "danger")
         return redirect(request.referrer or url_for("procurement.rfq_detail", rfq_id=rfq.id))
 
+    target_budget_unit = None
+    if target_budget_str:
+        try:
+            cleaned_budget = target_budget_str.replace("Rp", "").replace("rp", "").replace(".", "").replace(",", ".").strip()
+            target_budget_unit = float(cleaned_budget)
+        except ValueError:
+            try:
+                target_budget_unit = float(target_budget_str)
+            except ValueError:
+                target_budget_unit = None
+
     rfq.title = title
-    rfq.category = category
+    if category in VALID_CATEGORIES:
+        rfq.category = category
     rfq.target_quantity = max(1, target_quantity or 1)
     rfq.unit = unit or "pcs"
     rfq.target_budget_unit = target_budget_unit
     rfq.specifications = specifications
     rfq.notes = notes
 
+    # Sinkronisasi total penawaran jika supplier sudah pernah input harga satuan
+    if rfq.quotation_price_unit:
+        rfq.quotation_total_price = rfq.quotation_price_unit * rfq.target_quantity
+
     if target_delivery_str:
         try:
             rfq.target_delivery_date = datetime.strptime(target_delivery_str, "%Y-%m-%d").date()
         except ValueError:
             pass
+    else:
+        rfq.target_delivery_date = None
 
     # Handle update file lampiran TOR jika ada file baru diunggah
     attachment_file = request.files.get("attachment")
