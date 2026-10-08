@@ -167,6 +167,7 @@
 {% endif %}
 
 <div class="container-fluid app-main-container px-3 px-sm-4 py-3 py-md-4">
+  {% block flash_messages %}
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
       {% for category, msg in messages %}
@@ -177,6 +178,7 @@
       {% endfor %}
     {% endif %}
   {% endwith %}
+  {% endblock %}
 
   {% block content %}{% endblock %}
 </div>

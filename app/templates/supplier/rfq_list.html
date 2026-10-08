@@ -25,19 +25,25 @@
     </div>
   </div>
 
-  <!-- Flash Alerts -->
-  {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-      {% for category, message in messages %}
-        <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm" role="alert">
-          {{ message }}
-          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-      {% endfor %}
-    {% endif %}
-  {% endwith %}
 
   <!-- Metric Overview Cards -->
+  {% if metrics.revision_needed and metrics.revision_needed > 0 %}
+  <div class="alert alert-warning border-start border-warning border-5 shadow-sm rounded-3 mb-4 p-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div class="d-flex align-items-center gap-3">
+      <div class="p-2 bg-warning bg-opacity-25 rounded-circle text-dark fs-4">
+        <i class="bi bi-exclamation-triangle-fill text-danger"></i>
+      </div>
+      <div>
+        <h6 class="fw-bold text-dark mb-0">Ada {{ metrics.revision_needed }} Permintaan RFQ Diperbarui oleh Procurement</h6>
+        <small class="text-secondary">Spesifikasi atau rincian kebutuhan telah diubah oleh tim Procurement Syamanah. Penawaran harga Anda perlu ditinjau & direvisi.</small>
+      </div>
+    </div>
+    <a href="{{ url_for('supplier.rfq_list', status='revision') }}" class="btn btn-warning btn-sm text-dark fw-bold px-3 shadow-sm">
+      <i class="bi bi-arrow-repeat me-1"></i> Lihat RFQ Perlu Revisi
+    </a>
+  </div>
+  {% endif %}
+
   <div class="row g-3 mb-4">
     <div class="col-6 col-md-3">
       <div class="card border-0 shadow-sm rounded-3 p-3 bg-white h-100">
@@ -93,6 +99,9 @@
       <div class="col-md-3">
         <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
           <option value="all" {% if current_status == 'all' %}selected{% endif %}>Semua Status Permintaan</option>
+          {% if metrics.revision_needed and metrics.revision_needed > 0 %}
+          <option value="revision" {% if current_status == 'revision' %}selected{% endif %} class="text-danger fw-bold">⚠️ Perlu Revisi Penawaran ({{ metrics.revision_needed }})</option>
+          {% endif %}
           <option value="requested" {% if current_status == 'requested' %}selected{% endif %}>Menunggu Respon Anda ({{ metrics.action_needed }})</option>
           <option value="submitted" {% if current_status == 'submitted' %}selected{% endif %}>Penawaran Terkirim ({{ metrics.submitted }})</option>
           <option value="accepted" {% if current_status == 'accepted' %}selected{% endif %}>Disetujui / Deal ({{ metrics.accepted }})</option>
@@ -132,7 +141,7 @@
         <tbody>
           {% if rfqs %}
             {% for r in rfqs %}
-            <tr class="{% if r.status == 'requested' %}table-warning bg-opacity-10{% endif %}">
+            <tr class="{% if r.revision_required %}table-warning bg-opacity-25 border-start border-warning border-4{% elif r.status == 'requested' %}table-warning bg-opacity-10{% endif %}">
               <td class="ps-3">
                 <span class="badge bg-light text-dark border font-monospace px-2 py-1">{{ r.rfq_code }}</span>
                 <div class="small text-muted mt-1" style="font-size: 0.72rem;">
@@ -143,6 +152,11 @@
                 <div class="fw-bold text-dark mb-0">{{ r.title }}</div>
                 <div class="d-flex align-items-center gap-2 mt-1">
                   <span class="badge bg-secondary-subtle text-secondary small text-capitalize">{{ r.category }}</span>
+                  {% if r.revision_required %}
+                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle small fw-bold">
+                      <i class="bi bi-exclamation-triangle-fill me-1"></i>Diperbarui Procurement
+                    </span>
+                  {% endif %}
                   {% if r.rfq_attachment_url %}
                     <span class="badge bg-info-subtle text-info border border-info-subtle small" title="Ada Dokumen TOR/Spesifikasi">
                       <i class="bi bi-paperclip me-1"></i>Lampiran TOR
@@ -190,7 +204,12 @@
                 {% endif %}
               </td>
               <td>
-                {% if r.status == 'requested' %}
+                {% if r.revision_required %}
+                  <span class="badge bg-warning text-dark border border-warning px-2 py-1 shadow-sm">
+                    <i class="bi bi-arrow-repeat text-danger me-1"></i> Perlu Revisi Penawaran
+                  </span>
+                  <div class="small text-danger fw-semibold mt-1" style="font-size: 0.72rem;">RFQ Diperbarui</div>
+                {% elif r.status == 'requested' %}
                   <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-2 py-1">
                     <i class="bi bi-clock-history me-1"></i> Menunggu Respon Anda
                   </span>
@@ -211,7 +230,11 @@
                 {% endif %}
               </td>
               <td class="text-end pe-3">
-                {% if r.status == 'requested' %}
+                {% if r.revision_required %}
+                  <a href="{{ url_for('supplier.rfq_detail', rfq_id=r.id) }}" class="btn btn-warning btn-sm text-dark fw-bold shadow-sm">
+                    <i class="bi bi-arrow-repeat me-1"></i> Revisi Penawaran
+                  </a>
+                {% elif r.status == 'requested' %}
                   <a href="{{ url_for('supplier.rfq_detail', rfq_id=r.id) }}" class="btn btn-warning btn-sm text-dark fw-semibold shadow-sm">
                     <i class="bi bi-pencil-square me-1"></i> Respon RFQ
                   </a>

@@ -80,6 +80,9 @@
       <div class="col-md-3">
         <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
           <option value="all" {% if current_status == 'all' %}selected{% endif %}>Semua Status Permintaan</option>
+          {% if metrics.revision and metrics.revision > 0 %}
+          <option value="revision" {% if current_status == 'revision' %}selected{% endif %} class="text-warning fw-bold">⚠️ Menunggu Revisi Supplier ({{ metrics.revision }})</option>
+          {% endif %}
           <option value="requested" {% if current_status == 'requested' %}selected{% endif %}>Menunggu Respon Supplier</option>
           <option value="submitted" {% if current_status == 'submitted' %}selected{% endif %}>Penawaran Masuk (Tinjau)</option>
           <option value="accepted" {% if current_status == 'accepted' %}selected{% endif %}>Disetujui (Accepted)</option>
@@ -171,9 +174,15 @@
                   <i class="bi bi-clock-history me-1"></i> Menunggu Respon
                 </span>
               {% elif r.status == 'submitted' %}
-                <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1">
-                  <i class="bi bi-inbox-fill me-1"></i> Penawaran Masuk
-                </span>
+                {% if r.revision_required %}
+                  <span class="badge bg-warning text-dark border border-warning px-2 py-1 shadow-sm">
+                    <i class="bi bi-arrow-repeat text-danger me-1"></i> Menunggu Revisi Supplier
+                  </span>
+                {% else %}
+                  <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1">
+                    <i class="bi bi-inbox-fill me-1"></i> Penawaran Masuk
+                  </span>
+                {% endif %}
               {% elif r.status == 'accepted' %}
                 <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">
                   <i class="bi bi-check-circle-fill me-1"></i> Disetujui
@@ -338,6 +347,16 @@
             <div class="col-md-12">
               <label class="form-label small fw-bold">Catatan Tambahan untuk Rekanan Supplier</label>
               <textarea name="notes" rows="2" class="form-control">{{ r.notes or '' }}</textarea>
+            </div>
+
+            <div class="col-md-12">
+              <label class="form-label small fw-bold text-dark">
+                <i class="bi bi-bell-fill text-warning me-1"></i>Pesan Pembaruan / Alasan Revisi untuk Rekanan Supplier (Opsional)
+              </label>
+              <input type="text" name="revision_note" class="form-control" value="{{ r.revision_note or '' }}" placeholder="Contoh: Kuantitas diubah, mohon perbarui penawaran harga...">
+              <div class="form-text small text-muted">
+                Jika supplier sudah mengirimkan penawaran, pembaruan ini otomatis mengirimkan notifikasi revisi ke portal rekanan supplier.
+              </div>
             </div>
           </div>
         </div>

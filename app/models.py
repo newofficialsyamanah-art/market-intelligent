@@ -365,6 +365,11 @@ class QuotationRequest(db.Model):
     notes = db.Column(db.Text, nullable=True)
     rfq_attachment_url = db.Column(db.String(500), nullable=True)
 
+    # Status Pembaruan dari Procurement & Notifikasi Revisi untuk Supplier
+    revision_required = db.Column(db.Boolean, default=False, index=True)
+    revision_note = db.Column(db.Text, nullable=True)
+    rfq_updated_at = db.Column(db.DateTime, nullable=True)
+
     # Tanggapan / Penawaran Resmi dari Supplier
     quotation_price_unit = db.Column(db.Float, nullable=True)
     quotation_total_price = db.Column(db.Float, nullable=True)

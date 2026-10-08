@@ -11,8 +11,15 @@ from app import ai_agent
 from app.discovery import _page_data, _search
 from app.extensions import db
 from app.models import ProcurementSupplier
-from app.utils import is_safe_url
+from app.utils import is_safe_url, is_valid_indonesian_phone
 from sqlalchemy import func, or_
+
+
+class SearchResult(list):
+    """List turunan yang mempertahankan atribut new_count untuk pelaporan notifikasi yang presisi."""
+    def __init__(self, items=(), new_count=0):
+        super().__init__(items)
+        self.new_count = new_count
 
 LEGACY_PRODUCT_MAP = {
     "jersey": "raw material",
@@ -708,9 +715,25 @@ def clean_company_name(title: str, url: str) -> str:
 
 
 def is_relevant_supplier(title: str, text: str, product: str, material: str = "") -> bool:
-    """Memverifikasi bahwa halaman web yang ditemukan relevan dengan kategori supplier yang dicari."""
+    """Memverifikasi bahwa halaman web yang ditemukan relevan dengan kategori supplier yang dicari (bukan toko barang jadi)."""
     combined = f"{title} {text}".lower()
     norm_prod = LEGACY_PRODUCT_MAP.get(product.lower().strip(), product.lower().strip())
+
+    # Validasi tegas: tolak toko ritel baju jadi/distro jika mencari bahan baku
+    if norm_prod == "raw material":
+        finished_goods_indicators = [
+            "toko baju", "kaos distro", "jual kaos polos", "dropship baju", "reseller baju",
+            "baju anak", "fashion retail", "gamis pesta", "outfit harian", "toko busana",
+            "retail pakaian", "beli baju online", "kaos oblong jadi"
+        ]
+        has_finished = any(fg in combined for fg in finished_goods_indicators)
+        has_raw = any(rw in combined for rw in [
+            "bahan baku", "kain", "tekstil", "fabric", "textile", "rollan", "pabrik",
+            "supplier", "distributor", "grosir kain", "yard", "kiloan", "benang", "manufaktur"
+        ])
+        if has_finished and not has_raw:
+            return False
+
     keywords = CATEGORY_KEYWORDS.get(norm_prod, CATEGORY_KEYWORDS["raw material"])
     matches = sum(1 for kw in keywords if kw in combined)
     if matches < 1:
@@ -723,10 +746,25 @@ def is_relevant_supplier(title: str, text: str, product: str, material: str = ""
 
 
 def is_relevant_fabric_supplier(title: str, text: str, product: str, material: str = "") -> bool:
-    """Memverifikasi relevansi supplier (backward-compatible dengan test suite lama)."""
+    """Memverifikasi relevansi supplier bahan baku (menolak barang jadi/distro retail)."""
+    combined = f"{title} {text}".lower()
     norm_prod = LEGACY_PRODUCT_MAP.get(product.lower().strip(), product.lower().strip())
+
+    if norm_prod == "raw material":
+        finished_goods_indicators = [
+            "toko baju", "kaos distro", "jual kaos polos", "dropship baju", "reseller baju",
+            "baju anak", "fashion retail", "gamis pesta", "outfit harian", "toko busana",
+            "retail pakaian", "beli baju online", "kaos oblong jadi"
+        ]
+        has_finished = any(fg in combined for fg in finished_goods_indicators)
+        has_raw = any(rw in combined for rw in [
+            "bahan baku", "kain", "tekstil", "fabric", "textile", "rollan", "pabrik",
+            "supplier", "distributor", "grosir kain", "yard", "kiloan", "benang", "manufaktur"
+        ])
+        if has_finished and not has_raw:
+            return False
+
     if norm_prod == "raw material" and product.lower() in ("jersey", "kaos", "polo", "kemeja", "jaket", "kain", "textile"):
-        combined = f"{title} {text}".lower()
         matches = sum(1 for kw in FABRIC_KEYWORDS if kw in combined)
         if matches < 2:
             return False
@@ -798,7 +836,7 @@ def _ai_recommendations(candidates, product, material, custom_prompt: str = ""):
 
 
 def _ai_plan_queries_and_targets(product: str, material: str = "", region: str = "Indonesia", custom_prompt: str = "") -> dict:
-    """Tahap 1 AI Pipeline: AI merumuskan target website dan query pencarian presisi tinggi."""
+    """Tahap 1 AI Pipeline: AI merumuskan target perusahaan bahan baku nyata dan query pencarian presisi tinggi."""
     prompt = {
         "product": product,
         "material": material or "material standar",
@@ -808,13 +846,19 @@ def _ai_plan_queries_and_targets(product: str, material: str = "", region: str =
         prompt["custom_instructions"] = custom_prompt
 
     sys_prompt = (
-        "Kamu adalah AI Research Specialist pengadaan & procurement B2B di Indonesia. "
-        "Berdasarkan kategori produk/layanan, spesifikasi material, wilayah, dan instruksi khusus pengguna (jika ada), sebutkan beberapa target perusahaan/supplier/distributor/vendor nyata di Indonesia, "
-        "serta 3-4 query pencarian Google/DDG terarah (gunakan kata kunci teknis seperti 'distributor resmi', 'supplier', 'wa.me', atau 'katalog B2B'). "
-        'Format JSON murni: {"candidates": [{"name": "...", "website": "https://..."}], "search_queries": ["..."]}'
+        "Kamu adalah Senior Sourcing Specialist pengadaan BAHAN BAKU (raw material) manufaktur B2B di Indonesia. "
+        "Tugasmu adalah memberikan daftar 3-5 PABRIK, PRODUSEN, atau DISTRIBUTOR BESAR BAHAN BAKU NYATA di Indonesia yang relevan. "
+        "ATURAN KETAT:\n"
+        "1. HANYA berikan supplier BAHAN BAKU (kain tekstil, benang, polimer, kimia industri, elektrikal industri, komponen teknik). "
+        "DILARANG KERAS memberikan toko baju distro, fashion retail, dropshipper kaos, atau toko barang jadi.\n"
+        "2. HANYA cantumkan perusahaan NYATA yang beroperasi di Indonesia.\n"
+        "3. HANYA cantumkan nomor telepon/WhatsApp ASLI jika Anda mengetahuinya dengan pasti. JANGAN PERNAH membuat nomor dummy/palsu (seperti 1234, 5678, 08123456789). Jika tidak tahu nomor aslinya, isi null.\n"
+        "4. Cantumkan domain website resmi nyata jika ada.\n"
+        "Format JSON murni:\n"
+        '{"candidates": [{"name": "Nama Perusahaan", "website": "https://...", "contact_phone": "08... atau null", "material": "...", "region": "...", "description": "..."}], "search_queries": ["query 1", "query 2"]}'
     )
     try:
-        res = ai_agent._chat_json(sys_prompt, json.dumps(prompt), temperature=0.2, max_tokens=1000)
+        res = ai_agent._chat_json(sys_prompt, json.dumps(prompt, ensure_ascii=False), temperature=0.1, max_tokens=1500)
         if isinstance(res, dict):
             return res
     except Exception:
@@ -856,7 +900,7 @@ def _scrape_page_worker(url, prod_key, mat, reg):
             "website": final_url,
             "source_url": final_url,
             "contact_email": emails[0] if emails else None,
-            "contact_phone": phones[0] if phones else None,
+            "contact_phone": next((p for p in phones if is_valid_indonesian_phone(p)), None),
             "description": text[:2000],
         }
     except Exception:
@@ -960,7 +1004,7 @@ def _tavily_search_candidates(query: str, product_key: str, material: str = "", 
                 clean_p = "0" + clean_p[3:]
             elif clean_p.startswith("62"):
                 clean_p = "0" + clean_p[2:]
-            if 9 <= len(clean_p) <= 14 and clean_p not in phones:
+            if 9 <= len(clean_p) <= 14 and is_valid_indonesian_phone(clean_p) and clean_p not in phones:
                 phones.append(clean_p)
 
         seen_urls_in_batch.add(url)
@@ -985,8 +1029,9 @@ def _tavily_search_candidates(query: str, product_key: str, material: str = "", 
         def _quick_fetch_contact(cand):
             try:
                 _u, _soup, _t, _em, _ph, _so = _page_data(cand["source_url"], timeout=2.5)
-                if _ph and not cand.get("contact_phone"):
-                    cand["contact_phone"] = _ph[0]
+                valid_ph = next((p for p in (_ph or []) if is_valid_indonesian_phone(p)), None)
+                if valid_ph and not cand.get("contact_phone"):
+                    cand["contact_phone"] = valid_ph
                 if _em and not cand.get("contact_email"):
                     cand["contact_email"] = _em[0]
             except Exception:
@@ -1008,6 +1053,7 @@ def search_suppliers(product, material="", region="Indonesia", limit=10, user_id
 
     saved = []
     seen_urls = set()
+    newly_found_count = 0
 
     # 1. Masukkan verified supplier database terlebih dahulu (jaminan akurasi instan)
     verified_list = VERIFIED_SUPPLIERS.get(product_key, [])
@@ -1025,8 +1071,9 @@ def search_suppliers(product, material="", region="Indonesia", limit=10, user_id
         ).first()
         if not supplier:
             supplier = ProcurementSupplier(
-                source_url=v_url, product=product_key, created_by=user_id
+                source_url=v_url, product=product_key, created_by=None
             )
+            newly_found_count += 1
         supplier.company_name = v["company_name"]
         supplier.material = v.get("material") or material or None
         supplier.region = v.get("region") or region or None
@@ -1063,10 +1110,34 @@ def search_suppliers(product, material="", region="Indonesia", limit=10, user_id
         search_queries = [default_query]
         direct_candidates_urls = []
         ai_plan = _ai_plan_queries_and_targets(product_key, material, region, custom_prompt=custom_prompt)
-        for cand in ai_plan.get("candidates", []):
-            cw = cand.get("website")
-            if cw and cw.startswith("http"):
-                direct_candidates_urls.append(cw.rstrip("/"))
+        ai_candidates = ai_plan.get("candidates", [])
+        for cand in ai_candidates:
+            c_name = cand.get("name") or cand.get("company_name")
+            if not c_name:
+                continue
+            c_url = cand.get("website") or ""
+            if c_url and c_url.startswith("http"):
+                direct_candidates_urls.append(c_url.rstrip("/"))
+            phone = cand.get("contact_phone")
+            valid_phone = phone if is_valid_indonesian_phone(phone) else None
+
+            desc = cand.get("description") or f"Pemasok bahan baku {cand.get('material') or material} di {cand.get('region') or region}."
+            if not is_relevant_fabric_supplier(c_name, desc, product_key, material):
+                continue
+
+            candidates.append({
+                "company_name": clean_company_name(c_name, c_url or f"https://{c_name.lower().replace(' ', '')}.com"),
+                "title": f"{c_name} - Supplier Bahan Baku {cand.get('material') or material or product_key}",
+                "product": product_key,
+                "material": cand.get("material") or material or None,
+                "region": cand.get("region") or region or None,
+                "website": c_url or None,
+                "source_url": c_url or f"https://sourcing.internal/{product_key}/{c_name.lower().replace(' ', '-')}",
+                "contact_email": cand.get("contact_email"),
+                "contact_phone": valid_phone,
+                "description": desc,
+            })
+
         suggested_queries = ai_plan.get("search_queries", [])
         if suggested_queries:
             search_queries = [suggested_queries[0]]
@@ -1156,6 +1227,8 @@ def search_suppliers(product, material="", region="Indonesia", limit=10, user_id
 
         cand_url = candidate["source_url"].rstrip("/")
         cand_name = candidate["company_name"].strip()
+        cand_phone = candidate.get("contact_phone")
+        valid_cand_phone = cand_phone if is_valid_indonesian_phone(cand_phone) else None
 
         # Cek apakah supplier sudah ada di database (berdasarkan URL atau nama perusahaan)
         supplier = ProcurementSupplier.query.filter(
@@ -1168,8 +1241,9 @@ def search_suppliers(product, material="", region="Indonesia", limit=10, user_id
 
         if not supplier:
             supplier = ProcurementSupplier(
-                source_url=cand_url, product=product_key, created_by=user_id
+                source_url=cand_url, product=product_key, created_by=None
             )
+            newly_found_count += 1
 
         supplier.company_name = cand_name
         supplier.material = material or supplier.material or None
@@ -1178,18 +1252,21 @@ def search_suppliers(product, material="", region="Indonesia", limit=10, user_id
             supplier.website = candidate["website"]
         if candidate.get("contact_email") and not supplier.contact_email:
             supplier.contact_email = candidate["contact_email"]
-        if candidate.get("contact_phone") and not supplier.contact_phone:
-            supplier.contact_phone = candidate["contact_phone"]
+        if valid_cand_phone and not supplier.contact_phone:
+            supplier.contact_phone = valid_cand_phone
+        elif supplier.contact_phone and not is_valid_indonesian_phone(supplier.contact_phone):
+            supplier.contact_phone = valid_cand_phone
         if candidate.get("description") and len(candidate["description"]) > len(supplier.description or ""):
             supplier.description = candidate["description"]
         supplier.fit_score = max(fit_score, supplier.fit_score or 0)
         supplier.recommendation_json = json.dumps(recommendation, ensure_ascii=False)
         supplier.verification_status = "tavily" if active_engine == "tavily" else "ai_pipeline"
         db.session.add(supplier)
-        saved.append(supplier)
+        if supplier not in saved:
+            saved.append(supplier)
 
     db.session.commit()
-    return search_query_used, saved
+    return search_query_used, SearchResult(saved, new_count=newly_found_count)
 
 
 def scrape_supplier_direct(url, product, material="", region="Indonesia", user_id=None, custom_prompt=""):
@@ -1200,6 +1277,7 @@ def scrape_supplier_direct(url, product, material="", region="Indonesia", user_i
     final_url, soup, text, emails, phones, _social = _page_data(url)
     raw_title = soup.title.get_text(" ", strip=True) if soup.title else urlparse(final_url).netloc
     clean_name = clean_company_name(raw_title, final_url)
+    valid_phone = next((p for p in phones if is_valid_indonesian_phone(p)), None)
 
     candidate = {
         "company_name": clean_name[:255],
@@ -1210,7 +1288,7 @@ def scrape_supplier_direct(url, product, material="", region="Indonesia", user_i
         "website": final_url,
         "source_url": final_url,
         "contact_email": emails[0] if emails else None,
-        "contact_phone": phones[0] if phones else None,
+        "contact_phone": valid_phone,
         "description": text[:2500],
     }
 
@@ -1224,14 +1302,14 @@ def scrape_supplier_direct(url, product, material="", region="Indonesia", user_i
     supplier = ProcurementSupplier.query.filter_by(
         source_url=candidate["source_url"], product=product.lower().strip()
     ).first() or ProcurementSupplier(
-        source_url=candidate["source_url"], product=product.lower().strip(), created_by=user_id
+        source_url=candidate["source_url"], product=product.lower().strip(), created_by=None
     )
     supplier.company_name = candidate["company_name"]
     supplier.material = material or None
     supplier.region = region or None
     supplier.website = candidate["website"]
     supplier.contact_email = candidate["contact_email"]
-    supplier.contact_phone = candidate["contact_phone"]
+    supplier.contact_phone = valid_phone
     supplier.description = candidate["description"]
     supplier.fit_score = fit_score
     supplier.recommendation_json = json.dumps(recommendation, ensure_ascii=False)

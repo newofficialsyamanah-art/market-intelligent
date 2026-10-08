@@ -62,10 +62,40 @@ def is_safe_url(url: str) -> bool:
         return False
 
 
-def parse_whatsapp(phone, company_name=None):
+def is_valid_indonesian_phone(phone: str) -> bool:
+    """
+    Validasi nomor telepon Indonesia asli vs nomor dummy/halusinasi AI.
+    Menolak urutan sekuensial (123456, 987654), repetitive (11111, 00000),
+    placeholder dummy (08123456789), serta panjang/prefix di luar standar telekomunikasi Indonesia.
+    """
+    import re
+    if not phone or str(phone).strip().lower() in ("none", "nan", "-", "", "null"):
+        return False
+    p_str = str(phone).strip()
+    digits = re.sub(r"\D", "", p_str)
+    if len(digits) < 8 or len(digits) > 16:
+        return False
+    # Cek digit berulang ekstrem (misal 5 digit berturut-turut sama: 00000, 11111)
+    if re.search(r"(\d)\1{4,}", digits):
+        return False
+    # Cek urutan angka sekuensial naik / turun
+    if re.search(r"01234|12345|23456|34567|45678|56789|98765|87654|76543|65432|54321", digits):
+        return False
+    # Cek dummy placeholder umum
+    if digits in {"08123456789", "081234567890", "08111111111", "0800000000", "628123456789", "0812345678", "08987654321"}:
+        return False
+    # Validasi prefix & length
+    if digits.startswith(("08", "628")):
+        return 10 <= len(digits) <= 15
+    if digits.startswith(("02", "03", "04", "05", "06", "07", "09", "622", "623", "624", "625", "627", "629")):
+        return 9 <= len(digits) <= 13
+    return False
+
+
+def parse_whatsapp(phone, company_name=None, context="market_intelligence"):
     """
     Menganalisis nomor telepon untuk WhatsApp:
-    1. Membersihkan karakter non-digit.
+    1. Membersihkan karakter non-digit & memeriksa anti-halusinasi / dummy.
     2. Menormalisasi format Indonesia:
        - 08xxx -> 628xxx
        - 6208xxx -> 628xxx
@@ -74,7 +104,7 @@ def parse_whatsapp(phone, company_name=None):
     3. Mengidentifikasi tipe:
        - 'mobile' (awalan 628xxx, panjang 10-15 digit): Potensi nomor WhatsApp aktif / seluler.
        - 'landline' (awalan 021, 022, 024, 031, dll / PSTN): Telepon kantor kabel, BUKAN WhatsApp.
-       - 'invalid' / 'none': Nomor kosong, rusak, atau di luar standar.
+       - 'invalid' / 'none': Nomor kosong, rusak, dummy, atau di luar standar.
     4. Menyusun template pesan pembuka bisnis yang dipersonalisasi.
     5. Mengembalikan dictionary terstruktur untuk UI rendering & tombol aksi.
     """
@@ -98,6 +128,21 @@ def parse_whatsapp(phone, company_name=None):
     p_str = str(phone).strip()
     digits = re.sub(r"\D", "", p_str)
 
+    # Validasi keaslian format nomor Indonesia
+    if not is_valid_indonesian_phone(p_str):
+        return {
+            "raw": p_str,
+            "clean": digits,
+            "is_valid_wa": False,
+            "type": "invalid",
+            "type_label": "Nomor Tidak Valid / Dummy",
+            "tooltip": f"Nomor ({p_str}) tidak valid atau terdeteksi sebagai placeholder dummy.",
+            "wa_number": None,
+            "wa_url": None,
+            "formatted_display": p_str,
+            "default_message": "",
+        }
+
     # Deteksi dan normalisasi format nomor Indonesia
     normalized = digits
     if normalized.startswith("6208"):
@@ -114,12 +159,20 @@ def parse_whatsapp(phone, company_name=None):
     ) and not is_mobile
 
     company = company_name.strip() if company_name else "Bapak/Ibu"
-    default_msg = (
-        f"Halo Tim {company},\n\n"
-        f"Perkenalkan kami dari Syamanah Market Intelligence. "
-        f"Kami tertarik untuk berdiskusi terkait potensi kolaborasi bisnis dengan {company}.\n\n"
-        f"Apakah kami dapat terhubung dengan perwakilan terkait? Terima kasih banyak."
-    )
+    if context == "procurement":
+        default_msg = (
+            f"Halo Tim {company},\n\n"
+            f"Perkenalkan kami dari Tim Pengadaan (Procurement) PT Syamanah. "
+            f"Kami tertarik untuk menanyakan ketersediaan katalog dan penawaran bahan baku dengan {company}.\n\n"
+            f"Apakah kami dapat terhubung dengan PIC penjualan/marketing? Terima kasih banyak."
+        )
+    else:
+        default_msg = (
+            f"Halo Tim {company},\n\n"
+            f"Perkenalkan kami dari Syamanah Market Intelligence. "
+            f"Kami tertarik untuk berdiskusi terkait potensi kolaborasi bisnis dengan {company}.\n\n"
+            f"Apakah kami dapat terhubung dengan perwakilan terkait? Terima kasih banyak."
+        )
     encoded_msg = urllib.parse.quote(default_msg)
 
     if is_mobile:
@@ -149,7 +202,7 @@ def parse_whatsapp(phone, company_name=None):
             "is_valid_wa": False,
             "type": "landline",
             "type_label": "Telepon Kantor (PSTN)",
-            "tooltip": f"Nomor ini adalah telepon kantor PSTN ({p_str}), bukan nomor seluler WhatsApp. Tidak disarankan kirim WA.",
+            "tooltip": f"Nomor ini adalah telepon kantor PSTN kabel ({p_str}), bukan nomor seluler WhatsApp. Gunakan panggilan suara biasa.",
             "wa_number": None,
             "wa_url": None,
             "formatted_display": p_str,

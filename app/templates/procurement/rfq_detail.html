@@ -22,9 +22,15 @@
             <i class="bi bi-clock-history me-1"></i> Menunggu Respon Supplier
           </span>
         {% elif rfq.status == 'submitted' %}
-          <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1">
-            <i class="bi bi-inbox-fill me-1"></i> Penawaran Masuk (Perlu Evaluasi)
-          </span>
+          {% if rfq.revision_required %}
+            <span class="badge bg-warning text-dark border border-warning px-2 py-1">
+              <i class="bi bi-arrow-repeat text-danger me-1"></i> Menunggu Revisi Supplier
+            </span>
+          {% else %}
+            <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1">
+              <i class="bi bi-inbox-fill me-1"></i> Penawaran Masuk (Perlu Evaluasi)
+            </span>
+          {% endif %}
         {% elif rfq.status == 'accepted' %}
           <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">
             <i class="bi bi-check-circle-fill me-1"></i> Penawaran Disetujui
@@ -39,6 +45,15 @@
       </div>
       <h3 class="fw-bold mb-1" style="color: #0f172a;">{{ rfq.title }}</h3>
       <p class="text-muted small mb-0">Diterbitkan oleh: <span class="fw-semibold text-dark">{{ rfq.procurement_user.name }}</span> pada {{ rfq.created_at.strftime('%d %B %Y, %H:%M') }} WIB</p>
+      {% if rfq.revision_required %}
+      <div class="alert alert-warning border-start border-warning border-4 shadow-sm rounded-3 mt-2 mb-0 p-2 px-3 d-flex align-items-center justify-content-between">
+        <div class="small text-dark">
+          <i class="bi bi-arrow-repeat text-danger me-1"></i><strong>Notifikasi Revisi Aktif:</strong> Supplier telah menerima pemberitahuan pembaruan RFQ dan sedang diminta merevisi penawaran.
+          {% if rfq.revision_note %}<br><span class="text-secondary fst-italic ms-3">"{{ rfq.revision_note }}"</span>{% endif %}
+        </div>
+        <span class="badge bg-warning text-dark border font-monospace">Revisi Pending</span>
+      </div>
+      {% endif %}
     </div>
 
     <!-- Top Action Buttons -->
@@ -551,6 +566,16 @@
             <div class="col-md-12">
               <label class="form-label small fw-bold">Catatan Tambahan untuk Rekanan Supplier</label>
               <textarea name="notes" rows="2" class="form-control">{{ rfq.notes or '' }}</textarea>
+            </div>
+
+            <div class="col-md-12">
+              <label class="form-label small fw-bold text-dark">
+                <i class="bi bi-bell-fill text-warning me-1"></i>Pesan Pembaruan / Alasan Revisi untuk Rekanan Supplier (Opsional)
+              </label>
+              <input type="text" name="revision_note" class="form-control" value="{{ rfq.revision_note or '' }}" placeholder="Contoh: Kuantitas diubah, mohon perbarui penawaran harga...">
+              <div class="form-text small text-muted">
+                Jika supplier sudah mengirimkan penawaran, pembaruan ini otomatis mengirimkan notifikasi revisi ke portal rekanan supplier.
+              </div>
             </div>
           </div>
         </div>

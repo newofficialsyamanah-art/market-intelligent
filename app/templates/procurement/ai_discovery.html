@@ -43,17 +43,6 @@
   </li>
 </ul>
 
-<!-- Flash Messages -->
-{% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages %}
-    {% for category, message in messages %}
-      <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-        {{ message }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-      </div>
-    {% endfor %}
-  {% endif %}
-{% endwith %}
 
 <!-- Top Summary Cards (4 Clean KPI Cards Khusus Temuan AI) -->
 <div class="row g-3 mb-4">
@@ -332,24 +321,54 @@
         <!-- 4. Kontak & WhatsApp Hasil Crawling -->
         <td>
           {% if s.contact_phone %}
-            {% set clean_phone = s.contact_phone|replace(' ', '')|replace('-', '')|replace('+', '') %}
-            {% if clean_phone.startswith('0') %}
-              {% set wa_num = '62' ~ clean_phone[1:] %}
-            {% else %}
-              {% set wa_num = clean_phone %}
-            {% endif %}
-            {% set wa_msg = "Halo " ~ s.company_name ~ ", kami dari Tim Pengadaan Syamanah tertarik dengan produk pasokan Anda." %}
-            <div class="d-flex align-items-center gap-1">
-              <a href="https://wa.me/{{ wa_num }}?text={{ wa_msg|urlencode }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-success py-0 px-2 fw-semibold" title="Chat WhatsApp PIC">
-                <i class="bi bi-whatsapp me-1"></i>{{ s.contact_phone }}
-              </a>
+            {% set wa = parse_wa(s.contact_phone, s.company_name, context='procurement') %}
+            <div class="d-flex flex-column gap-1">
+              <!-- Baris Tombol Aksi: Telepon Biasa vs WhatsApp -->
+              <div class="d-flex align-items-center gap-1">
+                <!-- 1. Tombol Telepon Biasa -->
+                <a href="tel:{{ wa.clean or s.contact_phone }}" class="btn btn-sm btn-outline-secondary py-0 px-2 font-monospace" style="font-size: 0.75rem;" title="Panggilan Suara / Telepon Biasa">
+                  <i class="bi bi-telephone-outbound me-1"></i>{{ wa.formatted_display if wa.formatted_display != '-' else s.contact_phone }}
+                </a>
+
+                <!-- 2. Tombol WhatsApp (Pop-up Modal Pengadaan) -->
+                {% if wa.is_valid_wa %}
+                  <button type="button" class="btn btn-sm btn-success py-0 px-2 fw-semibold btn-wa-trigger"
+                          data-bs-toggle="modal" data-bs-target="#modalWhatsAppQuickSend"
+                          data-company="{{ s.company_name }}"
+                          data-phone="{{ s.contact_phone }}"
+                          data-wanumber="{{ wa.wa_number }}"
+                          data-isvalid="true"
+                          data-type="{{ wa.type }}"
+                          data-context="procurement"
+                          title="Buka Template & Kirim WhatsApp">
+                    <i class="bi bi-whatsapp me-1"></i>WA
+                  </button>
+                {% endif %}
+              </div>
+
+              <!-- Indikator Keaktifan / Validitas Nomor WhatsApp -->
+              <div>
+                {% if wa.is_valid_wa %}
+                  <span class="badge bg-success-subtle text-success border border-success-subtle py-0 px-1" style="font-size: 0.65rem;" title="Nomor Seluler WhatsApp Aktif (+{{ wa.wa_number }})">
+                    <i class="bi bi-check-circle-fill me-1"></i>WA Aktif
+                  </span>
+                {% elif wa.type == 'landline' %}
+                  <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle py-0 px-1" style="font-size: 0.65rem;" title="Telepon Kantor PSTN Kabel (Gunakan tombol telepon)">
+                    <i class="bi bi-telephone-inbound me-1"></i>PSTN / Kantor
+                  </span>
+                {% else %}
+                  <span class="badge bg-danger-subtle text-danger border border-danger-subtle py-0 px-1" style="font-size: 0.65rem;" title="Format nomor tidak valid untuk WhatsApp">
+                    <i class="bi bi-x-circle me-1"></i>Non-WA
+                  </span>
+                {% endif %}
+              </div>
             </div>
           {% else %}
-            <span class="text-muted small">Tidak terdeteksi</span>
+            <span class="text-muted small"><i class="bi bi-telephone-x me-1"></i>Tidak terdeteksi</span>
           {% endif %}
           {% if s.contact_email %}
             <div class="small text-truncate mt-1" style="max-width: 150px;">
-              <a href="mailto:{{ s.contact_email }}" class="text-secondary text-decoration-none">{{ s.contact_email }}</a>
+              <a href="mailto:{{ s.contact_email }}" class="text-secondary text-decoration-none"><i class="bi bi-envelope me-1"></i>{{ s.contact_email }}</a>
             </div>
           {% endif %}
         </td>
@@ -462,5 +481,7 @@
   </div>
   {% endif %}
 </div>
+
+{% include "components/wa_modal.html" %}
 
 {% endblock %}

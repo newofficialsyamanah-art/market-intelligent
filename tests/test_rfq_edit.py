@@ -35,6 +35,15 @@ class TestRFQEdit(unittest.TestCase):
             db.session.add(self.supplier)
         db.session.commit()
 
+        self.sup_user = User.query.filter_by(email="sup_test@example.com").first()
+        if not self.sup_user:
+            self.sup_user = User(name="Mitra Supplier Test", email="sup_test@example.com", role="supplier", is_active_flag=True)
+            self.sup_user.set_password("Secret123!")
+            db.session.add(self.sup_user)
+            db.session.commit()
+        self.supplier.created_by = self.sup_user.id
+        db.session.commit()
+
         # Buat QuotationRequest (RFQ)
         self.rfq = QuotationRequest.query.filter_by(rfq_code="RFQ-TEST-0001").first()
         if not self.rfq:
@@ -60,8 +69,16 @@ class TestRFQEdit(unittest.TestCase):
         self.app_context.pop()
 
     def login_proc(self):
+        self.client.get("/logout", follow_redirects=True)
         return self.client.post("/login", data={
             "email": "proc_test@example.com",
+            "password": "Secret123!"
+        }, follow_redirects=True)
+
+    def login_sup(self):
+        self.client.get("/logout", follow_redirects=True)
+        return self.client.post("/login", data={
+            "email": "sup_test@example.com",
             "password": "Secret123!"
         }, follow_redirects=True)
 
@@ -126,6 +143,60 @@ class TestRFQEdit(unittest.TestCase):
         tbody_end = html.find('</tbody>')
         tbody_content = html[tbody_start:tbody_end]
         self.assertNotIn(f'id="modalEditRFQ{self.rfq.id}"', tbody_content)
+
+    def test_supplier_notification_on_procurement_edit(self):
+        # 1. Supplier submits initial quotation
+        self.rfq.status = "submitted"
+        self.rfq.quotation_price_unit = 500000.0
+        self.rfq.quotation_total_price = 50000000.0
+        self.rfq.supplier_user_id = self.sup_user.id
+        self.rfq.revision_required = False
+        db.session.commit()
+
+        # 2. Procurement edits RFQ and provides revision note
+        self.login_proc()
+        res = self.client.post(f"/procurement/rfq/{self.rfq.id}/edit", data={
+            "title": "Pengadaan Kain Cotton 200 Roll (Tambah Kuota)",
+            "category": "raw material",
+            "target_quantity": 200,
+            "unit": "roll",
+            "target_budget_unit": "480000",
+            "revision_note": "Kuantitas bertambah menjadi 200 roll, mohon penawaran harga terbaik."
+        }, follow_redirects=True)
+        self.assertEqual(res.status_code, 200)
+
+        # Cek database
+        rfq_refreshed = db.session.get(QuotationRequest, self.rfq.id)
+        self.assertTrue(rfq_refreshed.revision_required)
+        self.assertIn("Kuantitas bertambah", rfq_refreshed.revision_note)
+
+        # 3. Supplier views detail page and sees notification banner & note
+        self.login_sup()
+        res_sup_detail = self.client.get(f"/supplier/rfq/{self.rfq.id}")
+        self.assertEqual(res_sup_detail.status_code, 200)
+        html_detail = res_sup_detail.data.decode("utf-8")
+        self.assertIn("Perlu Revisi Penawaran", html_detail)
+        self.assertIn("Kuantitas bertambah menjadi 200 roll", html_detail)
+        self.assertIn("Revisi Sekarang", html_detail)
+
+        # 4. Supplier views list page and sees warning badge
+        res_sup_list = self.client.get("/supplier/rfq")
+        self.assertEqual(res_sup_list.status_code, 200)
+        html_list = res_sup_list.data.decode("utf-8")
+        self.assertIn("Perlu Revisi Penawaran", html_list)
+
+        # 5. Supplier submits revised quote, revision_required resets to False
+        res_submit_rev = self.client.post(f"/supplier/rfq/{self.rfq.id}/submit", data={
+            "quotation_price_unit": 475000.0,
+            "quotation_total_price": 95000000.0,
+            "quotation_lead_time_days": 10,
+            "quotation_notes": "Harga khusus revisi volume 200 roll"
+        }, follow_redirects=True)
+        self.assertEqual(res_submit_rev.status_code, 200)
+
+        rfq_final = db.session.get(QuotationRequest, self.rfq.id)
+        self.assertFalse(rfq_final.revision_required)
+        self.assertEqual(rfq_final.quotation_price_unit, 475000.0)
 
 
 if __name__ == "__main__":

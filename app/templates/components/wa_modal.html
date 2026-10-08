@@ -92,8 +92,9 @@
   let currentWaNumber = '';
   let isValidWa = true;
   let currentType = 'mobile';
+  let currentContext = 'market_intelligence';
 
-  const templates = {
+  const miTemplates = {
     intro: function(comp) {
       const name = comp || 'Bapak/Ibu';
       return 'Halo Tim ' + name + ',\n\nPerkenalkan kami dari Syamanah Market Intelligence. Kami tertarik untuk berdiskusi terkait potensi kolaborasi bisnis dengan ' + name + '.\n\nApakah kami dapat terhubung dengan perwakilan terkait? Terima kasih banyak.';
@@ -110,6 +111,48 @@
       return '';
     }
   };
+
+  const procTemplates = {
+    procurement_rfq: function(comp) {
+      const name = comp || 'Bapak/Ibu';
+      return 'Halo Tim ' + name + ',\n\nKami dari Tim Pengadaan (Procurement) PT Syamanah. Kami membutuhkan pasokan bahan baku dan ingin mengajukan permohonan penawaran harga resmi (RFQ) kepada ' + name + '.\n\nApakah kami dapat meminta katalog produk dan pricelist grosir terbaru? Terima kasih banyak.';
+    },
+    procurement_stock: function(comp) {
+      const name = comp || 'Bapak/Ibu';
+      return 'Halo Tim ' + name + ',\n\nPerkenalkan kami dari Procurement Syamanah. Kami ingin menanyakan ketersediaan stok pasokan bahan baku dan batas minimal order (MOQ) di ' + name + '.\n\nBolehkah kami terhubung dengan sales representative terkait? Terima kasih.';
+    },
+    procurement_partner: function(comp) {
+      const name = comp || 'Bapak/Ibu';
+      return 'Halo Rekan ' + name + ',\n\nSalam dari PT Syamanah. Kami ingin mengundang ' + name + ' untuk bergabung menjadi Mitra Rekanan Pemasok Resmi dalam sistem pengadaan B2B kami.\n\nApakah ada waktu luang untuk mendiskusikan peluang kerja sama pasokan? Terima kasih.';
+    },
+    custom: function() {
+      return '';
+    }
+  };
+
+  function getActiveTemplates() {
+    return currentContext === 'procurement' ? procTemplates : miTemplates;
+  }
+
+  function renderSelectOptions() {
+    const sel = document.getElementById('waModalTemplateSelect');
+    if (!sel) return;
+    if (currentContext === 'procurement') {
+      sel.innerHTML = `
+        <option value="procurement_rfq">1. Permintaan Penawaran & Pricelist (RFQ)</option>
+        <option value="procurement_stock">2. Konfirmasi Ketersediaan Stok & MOQ</option>
+        <option value="procurement_partner">3. Undangan Menjadi Mitra Rekanan Resmi</option>
+        <option value="custom">4. Tulis Bebas (Custom)</option>
+      `;
+    } else {
+      sel.innerHTML = `
+        <option value="intro">1. Perkenalan & Kemitraan Bisnis (B2B)</option>
+        <option value="meeting">2. Undangan Diskusi Singkat (Meeting)</option>
+        <option value="product">3. Penawaran Solusi & Sinergi Pasar</option>
+        <option value="custom">4. Tulis Bebas (Custom)</option>
+      `;
+    }
+  }
 
   function updateSendUrl() {
     const sendBtn = document.getElementById('waModalSendBtn');
@@ -146,6 +189,7 @@
       currentWaNumber = triggerBtn.getAttribute('data-wanumber') || '';
       isValidWa = triggerBtn.getAttribute('data-isvalid') === 'true';
       currentType = triggerBtn.getAttribute('data-type') || 'mobile';
+      currentContext = triggerBtn.getAttribute('data-context') || 'market_intelligence';
 
       const compEl = document.getElementById('waModalCompany');
       const phoneEl = document.getElementById('waModalPhoneDisplay');
@@ -188,19 +232,23 @@
         if (alertLandline) alertLandline.classList.add('d-none');
       }
 
+      renderSelectOptions();
+      const activeT = getActiveTemplates();
+      const firstKey = Object.keys(activeT)[0];
       const templateSelect = document.getElementById('waModalTemplateSelect');
-      if (templateSelect) templateSelect.value = 'intro';
+      if (templateSelect) templateSelect.value = firstKey;
       const msgArea = document.getElementById('waModalMessage');
-      if (msgArea) msgArea.value = templates.intro(currentCompany);
+      if (msgArea) msgArea.value = activeT[firstKey](currentCompany);
 
       updateSendUrl();
     });
 
     document.getElementById('waModalTemplateSelect')?.addEventListener('change', function() {
       const val = this.value;
-      if (val in templates && val !== 'custom') {
+      const activeT = getActiveTemplates();
+      if (val in activeT && val !== 'custom') {
         const msgArea = document.getElementById('waModalMessage');
-        if (msgArea) msgArea.value = templates[val](currentCompany);
+        if (msgArea) msgArea.value = activeT[val](currentCompany);
       }
       updateSendUrl();
     });
@@ -215,7 +263,6 @@
         this.innerHTML = '<i class="bi bi-check2 text-success me-1"></i>Tersalin!';
         setTimeout(() => { this.innerHTML = origText; }, 2000);
       });
-    });
   });
 })();
 </script>

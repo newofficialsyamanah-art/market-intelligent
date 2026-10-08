@@ -347,7 +347,9 @@ def rfq_list():
         )
     )
 
-    if status_filter and status_filter != "all":
+    if status_filter == "revision":
+        query = query.filter(QuotationRequest.revision_required == True)
+    elif status_filter and status_filter != "all":
         query = query.filter(QuotationRequest.status == status_filter)
 
     if search_q:
@@ -371,6 +373,7 @@ def rfq_list():
     )
     total_count = base_q.count()
     action_needed_count = base_q.filter_by(status="requested").count()
+    revision_needed_count = base_q.filter_by(revision_required=True).count()
     submitted_count = base_q.filter_by(status="submitted").count()
     accepted_count = base_q.filter_by(status="accepted").count()
     rejected_count = base_q.filter_by(status="rejected").count()
@@ -383,6 +386,7 @@ def rfq_list():
         metrics={
             "total": total_count,
             "action_needed": action_needed_count,
+            "revision_needed": revision_needed_count,
             "submitted": submitted_count,
             "accepted": accepted_count,
             "rejected": rejected_count,
@@ -451,6 +455,7 @@ def submit_quotation(rfq_id):
     rfq.responded_at = utc_now()
     rfq.responded_by_id = current_user.id
     rfq.status = "submitted"
+    rfq.revision_required = False
 
     db.session.commit()
     log_activity("submit_quotation", f"Supplier {supplier.company_name} mengirim penawaran untuk {rfq.rfq_code}")
@@ -492,6 +497,7 @@ def withdraw_quotation(rfq_id):
     rfq.responded_at = None
     rfq.responded_by_id = None
     rfq.status = "requested"
+    rfq.revision_required = False
 
     db.session.commit()
     log_activity("withdraw_quotation", f"Supplier {supplier.company_name} menarik penawaran {rfq.rfq_code}")

@@ -60,18 +60,36 @@
       {% endif %}
     </form>
 
-    <!-- WhatsApp Quick Contact -->
+    <!-- Kontak Telepon & WhatsApp -->
     {% if supplier.contact_phone %}
-      {% set clean_phone = supplier.contact_phone|replace(' ', '')|replace('-', '')|replace('+', '') %}
-      {% if clean_phone.startswith('0') %}
-        {% set wa_num = '62' ~ clean_phone[1:] %}
-      {% else %}
-        {% set wa_num = clean_phone %}
-      {% endif %}
-      {% set wa_msg = "Halo " ~ supplier.company_name ~ ", kami dari Tim Pengadaan / Procurement Syamanah ingin mendiskusikan kebutuhan pasokan rekanan." %}
-      <a href="https://wa.me/{{ wa_num }}?text={{ wa_msg|urlencode }}" target="_blank" rel="noopener" class="btn btn-sm btn-success fw-semibold">
-        <i class="bi bi-whatsapp me-1"></i> Hubungi WhatsApp
+      {% set wa = parse_wa(supplier.contact_phone, supplier.company_name, context='procurement') %}
+      <!-- Tombol Panggilan Telepon Biasa -->
+      <a href="tel:{{ wa.clean or supplier.contact_phone }}" class="btn btn-sm btn-outline-secondary fw-semibold font-monospace" title="Panggil Nomor Telepon">
+        <i class="bi bi-telephone-outbound me-1"></i> Telepon: {{ wa.formatted_display if wa.formatted_display != '-' else supplier.contact_phone }}
       </a>
+
+      <!-- Tombol WhatsApp dengan Modal Pop-up -->
+      {% if wa.is_valid_wa %}
+        <button type="button" class="btn btn-sm btn-success fw-semibold btn-wa-trigger"
+                data-bs-toggle="modal" data-bs-target="#modalWhatsAppQuickSend"
+                data-company="{{ supplier.company_name }}"
+                data-phone="{{ supplier.contact_phone }}"
+                data-wanumber="{{ wa.wa_number }}"
+                data-isvalid="true"
+                data-type="{{ wa.type }}"
+                data-context="procurement"
+                title="Buka Template & Kirim WhatsApp">
+          <i class="bi bi-whatsapp me-1"></i> Hubungi WhatsApp
+        </button>
+      {% elif wa.type == 'landline' %}
+        <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-2" title="Nomor kantor kabel PSTN (Gunakan telepon biasa)">
+          <i class="bi bi-telephone-inbound me-1"></i> Telepon Kantor (PSTN)
+        </span>
+      {% else %}
+        <span class="badge bg-secondary-subtle text-secondary border px-2 py-2">
+          <i class="bi bi-question-circle me-1"></i> Format Khusus
+        </span>
+      {% endif %}
     {% endif %}
 
     <!-- Hapus Supplier -->
@@ -82,17 +100,6 @@
   </div>
 </div>
 
-<!-- Flash Messages -->
-{% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages %}
-    {% for category, message in messages %}
-      <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-        {{ message }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-      </div>
-    {% endfor %}
-  {% endif %}
-{% endwith %}
 
 <div class="row g-4">
   <!-- Kolom Kiri: Profil, Legalitas, dan Katalog Produk -->
@@ -474,4 +481,7 @@
 
   </div>
 </div>
+
+{% include "components/wa_modal.html" %}
+
 {% endblock %}

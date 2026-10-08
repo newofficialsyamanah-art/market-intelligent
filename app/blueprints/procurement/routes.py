@@ -321,8 +321,17 @@ def search():
         query, suppliers = search_suppliers(
             norm_product, material, region, limit, current_user.id, use_ai_pipeline=use_ai, custom_prompt=custom_prompt
         )
-        log_activity("procurement_search", f"Pencarian supplier ({mode}): {query}; prompt={custom_prompt[:50]}; hasil={len(suppliers)}")
-        flash(f"AI Pipeline selesai: {len(suppliers)} calon supplier teridentifikasi & disimpan ke daftar Temuan AI.", "success")
+        newly_found = getattr(suppliers, "new_count", len(suppliers))
+        log_activity("procurement_search", f"Pencarian supplier ({mode}): {query}; prompt={custom_prompt[:50]}; hasil={len(suppliers)}; baru={newly_found}")
+        if newly_found > 0:
+            if newly_found == 1:
+                flash("AI Pipeline selesai: 1 calon supplier baru berhasil ditemukan & disimpan ke daftar Temuan AI.", "success")
+            else:
+                flash(f"AI Pipeline selesai: {newly_found} calon supplier baru berhasil ditemukan & disimpan ke daftar Temuan AI.", "success")
+        elif len(suppliers) > 0:
+            flash(f"Pencarian selesai: {len(suppliers)} calon supplier yang sesuai ditemukan (data sudah tersedia di daftar Temuan AI).", "info")
+        else:
+            flash("Pencarian AI selesai, tetapi tidak ditemukan calon supplier bahan baku yang sesuai. Silakan coba spesifikasi bahan atau kata kunci lain.", "warning")
     except Exception as error:
         db.session.rollback()
         flash(f"Pencarian AI gagal: {error}", "danger")
@@ -599,7 +608,9 @@ def rfq_list():
             )
         )
 
-    if status_filter and status_filter != "all":
+    if status_filter == "revision":
+        query = query.filter(QuotationRequest.revision_required == True)
+    elif status_filter and status_filter != "all":
         query = query.filter(QuotationRequest.status == status_filter)
 
     if category_filter:
@@ -614,6 +625,7 @@ def rfq_list():
     submitted_count = QuotationRequest.query.filter_by(status="submitted").count()
     accepted_count = QuotationRequest.query.filter_by(status="accepted").count()
     rejected_count = QuotationRequest.query.filter_by(status="rejected").count()
+    revision_count = QuotationRequest.query.filter_by(revision_required=True).count()
 
     # Daftar Supplier untuk modal Create RFQ
     suppliers = ProcurementSupplier.query.order_by(ProcurementSupplier.company_name.asc()).all()
@@ -636,6 +648,7 @@ def rfq_list():
             "submitted": submitted_count,
             "accepted": accepted_count,
             "rejected": rejected_count,
+            "revision": revision_count,
         },
         current_status=status_filter,
         current_category=category_filter,
@@ -764,6 +777,7 @@ def edit_rfq(rfq_id):
     target_delivery_str = request.form.get("target_delivery_date", "").strip()
     specifications = request.form.get("specifications", "").strip()
     notes = request.form.get("notes", "").strip()
+    revision_note = request.form.get("revision_note", "").strip()
 
     if not title:
         flash("Judul permintaan pengadaan wajib diisi.", "danger")
@@ -808,11 +822,23 @@ def edit_rfq(rfq_id):
         if new_url:
             rfq.rfq_attachment_url = new_url
 
-    rfq.updated_at = utc_now()
-    db.session.commit()
+    now = utc_now()
+    rfq.rfq_updated_at = now
+    rfq.updated_at = now
 
-    log_activity("edit_rfq", f"Procurement memperbarui data RFQ {rfq.rfq_code}")
-    flash(f"Permintaan RFQ {rfq.rfq_code} berhasil diperbarui!", "success")
+    # Jika supplier sudah pernah mengajukan penawaran, tandai bahwa penawaran perlu direvisi
+    if rfq.status == "submitted":
+        rfq.revision_required = True
+        rfq.revision_note = revision_note or "Spesifikasi/volume pengadaan diperbarui oleh tim Procurement. Mohon sesuaikan rincian penawaran harga Anda."
+        log_activity("edit_rfq", f"Procurement memperbarui RFQ {rfq.rfq_code} dan menandai butuh revisi supplier: {rfq.revision_note}")
+        flash(f"Permintaan RFQ {rfq.rfq_code} berhasil diperbarui! Notifikasi revisi telah dikirimkan ke pihak supplier.", "success")
+    else:
+        if revision_note:
+            rfq.revision_note = revision_note
+        log_activity("edit_rfq", f"Procurement memperbarui data RFQ {rfq.rfq_code}")
+        flash(f"Permintaan RFQ {rfq.rfq_code} berhasil diperbarui!", "success")
+
+    db.session.commit()
     return redirect(request.referrer or url_for("procurement.rfq_detail", rfq_id=rfq.id))
 
 
