@@ -158,6 +158,58 @@
 <div class="tab-content" id="marketViewTabsContent">
   <!-- ==================== TAB 1: MAKRO B2B (TAM, SAM, SOM & FINANSIAL RIIL) ==================== -->
   <div class="tab-pane fade show active" id="tab-macro" role="tabpanel">
+    <!-- Executive Quick Guide Card (Design Thinking: Empathy for Non-Technical Users) -->
+    <div class="card border-0 shadow-sm rounded-3 mb-4 bg-white border-start border-4 border-primary">
+      <div class="card-body p-3">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+          <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-primary-subtle text-primary p-2 rounded-circle fs-6">
+              <i class="bi bi-lightbulb-fill"></i>
+            </span>
+            <div>
+              <h6 class="fw-bold text-dark mb-0">Panduan Ringkas 30 Detik untuk Manajemen & Non-Teknis</h6>
+              <small class="text-muted">Bingung dengan singkatan TAM, SAM, SOM? Berikut analogi bisnis sederhananya:</small>
+            </div>
+          </div>
+          <button class="btn btn-sm btn-outline-primary rounded-pill px-3" type="button" data-bs-toggle="collapse" data-bs-target="#guideCollapse" aria-expanded="true">
+            <i class="bi bi-info-circle me-1"></i> Buka / Tutup Panduan
+          </button>
+        </div>
+        <div class="collapse show mt-3 pt-3 border-top" id="guideCollapse">
+          <div class="row g-2 small">
+            <div class="col-md-3">
+              <div class="p-3 rounded bg-light border h-100">
+                <span class="badge bg-primary mb-1">1. TAM (Total Pasar)</span>
+                <div class="fw-bold text-dark mb-1">"Berapa total seluruh kue pasar di Indonesia?"</div>
+                <p class="text-muted mb-0" style="font-size: 0.76rem;">Jika seluruh <strong>8.559 organisasi</strong> di database memesan seragam, nilainya mencapai <strong>Rp 300,5 Miliar / tahun</strong>.</p>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="p-3 rounded bg-light border h-100">
+                <span class="badge bg-info text-dark mb-1">2. SAM (Pasar Relevan)</span>
+                <div class="fw-bold text-dark mb-1">"Kue mana yang cocok untuk kemampuan Syamanah?"</div>
+                <p class="text-muted mb-0" style="font-size: 0.76rem;">Organisasi yang relevan (Tier A, B, C) dan butuh Jersey, Jaket, & Seragam kustom bernilai <strong>Rp 97,3 Miliar / tahun</strong>.</p>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="p-3 rounded bg-light border h-100">
+                <span class="badge bg-warning text-dark mb-1">3. SOM (Target Realistis)</span>
+                <div class="fw-bold text-dark mb-1">"Berapa target yang paling siap diambil tahun ini?"</div>
+                <p class="text-muted mb-0" style="font-size: 0.76rem;">Klien prioritas tinggi (Tier A Hot & Tier B Warm) yang paling cepat di-closing tim sales bernilai <strong>Rp 36,1 Miliar / tahun</strong>.</p>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="p-3 rounded bg-light border h-100">
+                <span class="badge bg-success mb-1">4. Realisasi Syamanah</span>
+                <div class="fw-bold text-dark mb-1">"Berapa uang nyata yang sudah masuk kas?"</div>
+                <p class="text-muted mb-0" style="font-size: 0.76rem;">Realisasi riil pembukuan internal Syamanah Group rata-rata <strong>Rp 3,24 Miliar / bulan</strong> (Peringkat #5 Nasional se-Indonesia).</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Row 1: Executive KPI Cards -->
     <div class="row g-3 mb-4">
       <!-- TAM Card -->
@@ -663,11 +715,29 @@
 
     <!-- Leaderboard Table -->
     <div class="card border-0 shadow-sm p-4 bg-white mb-4">
-      <div class="d-flex justify-content-between align-items-center mb-3">
+      <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
         <div>
           <h5 class="fw-bold text-dark mb-0"><i class="bi bi-list-ol text-primary me-2"></i>Leaderboard Top 20 Produsen & Pabrik Apparel B2B Terbesar di Seluruh Indonesia</h5>
           <small class="text-muted">Data benchmark industri garmen, konveksi & vendor apparel B2B nasional. Baris Syamanah Group di-highlight khusus (Peringkat #5 Nasional se-Indonesia).</small>
         </div>
+        <div class="d-flex flex-wrap align-items-center gap-2">
+          <div class="input-group input-group-sm" style="width: 250px;">
+            <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+            <input type="text" id="searchTop20" class="form-control border-start-0" placeholder="Ketik nama pabrik / kota...">
+          </div>
+          <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1 small" id="countTop20">Menampilkan 20 Produsen</span>
+        </div>
+      </div>
+
+      <!-- Quick Filter Buttons (Design Thinking: 1-Click Access for Non-Technical Users) -->
+      <div class="d-flex flex-wrap align-items-center gap-1 mb-3 pb-2 border-bottom">
+        <span class="small text-muted me-1"><i class="bi bi-funnel-fill text-primary me-1"></i>Filter Wilayah:</span>
+        <button type="button" class="btn btn-xs btn-primary rounded-pill px-3 py-1 filter-btn-top20 active" data-region="all">Semua Wilayah</button>
+        <button type="button" class="btn btn-xs btn-outline-secondary rounded-pill px-3 py-1 filter-btn-top20" data-region="Jawa Barat">Jawa Barat</button>
+        <button type="button" class="btn btn-xs btn-outline-secondary rounded-pill px-3 py-1 filter-btn-top20" data-region="Jawa Tengah">Jawa Tengah & Solo</button>
+        <button type="button" class="btn btn-xs btn-outline-secondary rounded-pill px-3 py-1 filter-btn-top20" data-region="Yogyakarta">DI Yogyakarta</button>
+        <button type="button" class="btn btn-xs btn-outline-secondary rounded-pill px-3 py-1 filter-btn-top20" data-region="Jakarta">Jabodetabek / Banten</button>
+        <button type="button" class="btn btn-xs btn-outline-secondary rounded-pill px-3 py-1 filter-btn-top20" data-region="Jawa Timur">Jawa Timur</button>
       </div>
 
       <div class="table-responsive">
@@ -684,9 +754,9 @@
               <th>Model Pengadaan</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody id="top20TableBody">
             {% for b in national_top_brands %}
-            <tr class="{% if b.is_syamanah %}table-success border-2 border-success fw-bold{% endif %}">
+            <tr class="top20-row {% if b.is_syamanah %}table-success border-2 border-success fw-bold{% endif %}" data-city="{{ b.city }}">
               <td class="text-center">
                 {% if b.rank == 1 %}
                   <span class="badge bg-warning text-dark fs-6">🥇 #1</span>
@@ -790,11 +860,29 @@
 
     <!-- Top Benchmark Sellers Table -->
     <div class="card border-0 shadow-sm p-4 bg-white mb-4">
-      <div class="d-flex justify-content-between align-items-center mb-3">
+      <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
         <div>
           <h5 class="fw-bold text-dark mb-0"><i class="bi bi-building text-warning me-2"></i>Peringkat 20 Produsen Garmen & Konveksi Jersey B2B Nasional</h5>
-          <small class="text-muted">Perbandingan sesama pemain garmen & konveksi jersey B2B di Indonesia. Klik tombol tautan untuk membuka profil resmi.</small>
+          <small class="text-muted">Perbandingan 20 produsen garmen & konveksi jersey sublimasi teratas di Indonesia.</small>
         </div>
+        <div class="d-flex flex-wrap align-items-center gap-2">
+          <div class="input-group input-group-sm" style="width: 250px;">
+            <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+            <input type="text" id="searchJersey" class="form-control border-start-0" placeholder="Ketik nama pabrik / kota...">
+          </div>
+          <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-1 small" id="countJersey">Menampilkan 20 Produsen</span>
+        </div>
+      </div>
+
+      <!-- Quick Region Filter Buttons -->
+      <div class="d-flex flex-wrap align-items-center gap-1 mb-3 pb-2 border-bottom">
+        <span class="small text-muted me-1"><i class="bi bi-funnel-fill text-warning me-1"></i>Filter Wilayah:</span>
+        <button type="button" class="btn btn-xs btn-warning text-dark rounded-pill px-3 py-1 filter-btn-jersey active" data-region="all">Semua Wilayah</button>
+        <button type="button" class="btn btn-xs btn-outline-secondary rounded-pill px-3 py-1 filter-btn-jersey" data-region="Bandung, Jawa Barat">Jawa Barat</button>
+        <button type="button" class="btn btn-xs btn-outline-secondary rounded-pill px-3 py-1 filter-btn-jersey" data-region="Jawa Tengah">Jawa Tengah & Solo</button>
+        <button type="button" class="btn btn-xs btn-outline-secondary rounded-pill px-3 py-1 filter-btn-jersey" data-region="Yogyakarta">DI Yogyakarta</button>
+        <button type="button" class="btn btn-xs btn-outline-secondary rounded-pill px-3 py-1 filter-btn-jersey" data-region="Jakarta">Jabodetabek / Banten</button>
+        <button type="button" class="btn btn-xs btn-outline-secondary rounded-pill px-3 py-1 filter-btn-jersey" data-region="Jawa Timur">Jawa Timur</button>
       </div>
 
       <div class="table-responsive">
@@ -812,9 +900,9 @@
               <th class="text-center">Segmentasi</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody id="jerseyTableBody">
             {% for top in benchmarks.jersey.top_sellers %}
-            <tr class="{% if top.is_syamanah %}table-success border-2 border-success fw-bold{% endif %}">
+            <tr class="jersey-row {% if top.is_syamanah %}table-success border-2 border-success fw-bold{% endif %}" data-city="{{ top.city }}">
               <td class="text-center fw-bold">
                 {% if top.rank == 1 %}
                   <span class="badge bg-warning text-dark fs-6">🥇 #1</span>
@@ -938,12 +1026,31 @@
 
     <!-- Top Jaket Sellers Table -->
     <div class="card border-0 shadow-sm p-4 bg-white mb-4">
-      <div class="d-flex justify-content-between align-items-center mb-3">
+      <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
         <div>
           <h5 class="fw-bold text-dark mb-0"><i class="bi bi-building text-secondary me-2"></i>Peringkat 20 Produsen Garmen Jaket Korporat & Lapangan B2B Nasional</h5>
           <small class="text-muted">Perbandingan 20 produsen outerwear institusional & korporat teratas di Indonesia.</small>
         </div>
+        <div class="d-flex flex-wrap align-items-center gap-2">
+          <div class="input-group input-group-sm" style="width: 250px;">
+            <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+            <input type="text" id="searchJaket" class="form-control border-start-0" placeholder="Ketik nama pabrik / kota...">
+          </div>
+          <span class="badge bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle px-2 py-1 small" id="countJaket">Menampilkan 20 Produsen</span>
+        </div>
       </div>
+
+      <!-- Quick Region Filter Buttons -->
+      <div class="d-flex flex-wrap align-items-center gap-1 mb-3 pb-2 border-bottom">
+        <span class="small text-muted me-1"><i class="bi bi-funnel-fill text-secondary me-1"></i>Filter Wilayah:</span>
+        <button type="button" class="btn btn-xs btn-secondary text-white rounded-pill px-3 py-1 filter-btn-jaket active" data-region="all">Semua Wilayah</button>
+        <button type="button" class="btn btn-xs btn-outline-secondary rounded-pill px-3 py-1 filter-btn-jaket" data-region="Bandung, Jawa Barat">Jawa Barat</button>
+        <button type="button" class="btn btn-xs btn-outline-secondary rounded-pill px-3 py-1 filter-btn-jaket" data-region="Jawa Tengah">Jawa Tengah & Solo</button>
+        <button type="button" class="btn btn-xs btn-outline-secondary rounded-pill px-3 py-1 filter-btn-jaket" data-region="Yogyakarta">DI Yogyakarta</button>
+        <button type="button" class="btn btn-xs btn-outline-secondary rounded-pill px-3 py-1 filter-btn-jaket" data-region="Jakarta">Jabodetabek / Banten</button>
+        <button type="button" class="btn btn-xs btn-outline-secondary rounded-pill px-3 py-1 filter-btn-jaket" data-region="Jawa Timur">Jawa Timur</button>
+      </div>
+
       <div class="table-responsive">
         <table class="table table-hover align-middle mb-0">
           <thead class="table-light small">
@@ -959,9 +1066,9 @@
               <th class="text-center">Segmentasi</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody id="jaketTableBody">
             {% for j in benchmarks.jaket.top_sellers %}
-            <tr class="{% if j.is_syamanah %}table-primary border-2 border-primary fw-bold{% endif %}">
+            <tr class="jaket-row {% if j.is_syamanah %}table-success border-2 border-success fw-bold{% endif %}" data-city="{{ j.city }}">
               <td class="text-center fw-bold">
                 {% if j.rank == 1 %}
                   <span class="badge bg-warning text-dark fs-6">🥇 #1</span>
@@ -1058,12 +1165,31 @@
 
     <!-- Comparative Table -->
     <div class="card border-0 shadow-sm p-4 bg-white mb-4">
-      <div class="d-flex justify-content-between align-items-center mb-3">
+      <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
         <div>
           <h5 class="fw-bold text-dark mb-0"><i class="bi bi-award-fill text-success me-2"></i>Peringkat 20 Produsen & Pabrik Garmen Seragam Kerja B2B Nasional</h5>
           <small class="text-muted">Pabrik seragam kemeja PDH, PDL lapangan, wearpack pabrik, dan baju kerja instansi se-Indonesia.</small>
         </div>
+        <div class="d-flex flex-wrap align-items-center gap-2">
+          <div class="input-group input-group-sm" style="width: 250px;">
+            <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+            <input type="text" id="searchSeragam" class="form-control border-start-0" placeholder="Ketik nama pabrik / kota...">
+          </div>
+          <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 small" id="countSeragam">Menampilkan 20 Produsen</span>
+        </div>
       </div>
+
+      <!-- Quick Region Filter Buttons -->
+      <div class="d-flex flex-wrap align-items-center gap-1 mb-3 pb-2 border-bottom">
+        <span class="small text-muted me-1"><i class="bi bi-funnel-fill text-success me-1"></i>Filter Wilayah:</span>
+        <button type="button" class="btn btn-xs btn-success text-white rounded-pill px-3 py-1 filter-btn-seragam active" data-region="all">Semua Wilayah</button>
+        <button type="button" class="btn btn-xs btn-outline-secondary rounded-pill px-3 py-1 filter-btn-seragam" data-region="Bandung, Jawa Barat">Jawa Barat</button>
+        <button type="button" class="btn btn-xs btn-outline-secondary rounded-pill px-3 py-1 filter-btn-seragam" data-region="Jawa Tengah">Jawa Tengah & Solo</button>
+        <button type="button" class="btn btn-xs btn-outline-secondary rounded-pill px-3 py-1 filter-btn-seragam" data-region="Yogyakarta">DI Yogyakarta</button>
+        <button type="button" class="btn btn-xs btn-outline-secondary rounded-pill px-3 py-1 filter-btn-seragam" data-region="Jakarta">Jabodetabek / Banten</button>
+        <button type="button" class="btn btn-xs btn-outline-secondary rounded-pill px-3 py-1 filter-btn-seragam" data-region="Jawa Timur">Jawa Timur</button>
+      </div>
+
       <div class="table-responsive">
         <table class="table table-hover align-middle mb-0">
           <thead class="table-light small">
@@ -1078,9 +1204,9 @@
               <th class="text-center">Model Pembelian</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody id="seragamTableBody">
             {% for s in benchmarks.seragam.top_sellers %}
-            <tr class="{% if s.is_syamanah %}table-success border-2 border-success fw-bold{% endif %}">
+            <tr class="seragam-row {% if s.is_syamanah %}table-success border-2 border-success fw-bold{% endif %}" data-city="{{ s.city }}">
               <td class="text-center fw-bold">
                 {% if s.rank == 1 %}
                   <span class="badge bg-warning text-dark fs-6">🥇 #1</span>
@@ -1315,6 +1441,69 @@ document.addEventListener('DOMContentLoaded', function() {
 
   sliderTierC.addEventListener('input', updateSimulation);
   sliderPrice.addEventListener('input', updateSimulation);
+
+  // 4. Interactive Quick Search & Region Filters for Top 20 Tables (Design Thinking: Non-Technical Friendly)
+  function initTableFilter(searchInputId, filterBtnClass, tableBodyId, counterId, totalCount) {
+    const searchInput = document.getElementById(searchInputId);
+    const filterBtns = document.querySelectorAll('.' + filterBtnClass);
+    const tableBody = document.getElementById(tableBodyId);
+    const counter = document.getElementById(counterId);
+    if (!tableBody) return;
+
+    const rows = tableBody.querySelectorAll('tr');
+
+    function applyFilter() {
+      const q = (searchInput ? searchInput.value : '').toLowerCase().trim();
+      const activeBtn = document.querySelector('.' + filterBtnClass + '.active');
+      const region = activeBtn ? activeBtn.getAttribute('data-region') : 'all';
+
+      let visible = 0;
+      rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        const city = (row.getAttribute('data-city') || '').toLowerCase();
+        
+        const matchSearch = !q || text.includes(q);
+        const matchRegion = (region === 'all') || city.includes(region.toLowerCase());
+
+        if (matchSearch && matchRegion) {
+          row.style.display = '';
+          visible++;
+        } else {
+          row.style.display = 'none';
+        }
+      });
+
+      if (counter) {
+        counter.textContent = 'Menampilkan ' + visible + ' dari ' + totalCount + ' Produsen';
+      }
+    }
+
+    if (searchInput) {
+      searchInput.addEventListener('input', applyFilter);
+    }
+
+    filterBtns.forEach(btn => {
+      btn.addEventListener('click', function() {
+        filterBtns.forEach(b => {
+          b.classList.remove('active', 'btn-primary', 'btn-warning', 'btn-secondary', 'btn-success');
+          b.classList.add('btn-outline-secondary');
+        });
+        this.classList.remove('btn-outline-secondary');
+        this.classList.add('active');
+        if (filterBtnClass.includes('top20')) this.classList.add('btn-primary');
+        else if (filterBtnClass.includes('jersey')) this.classList.add('btn-warning');
+        else if (filterBtnClass.includes('jaket')) this.classList.add('btn-secondary');
+        else if (filterBtnClass.includes('seragam')) this.classList.add('btn-success');
+
+        applyFilter();
+      });
+    });
+  }
+
+  initTableFilter('searchTop20', 'filter-btn-top20', 'top20TableBody', 'countTop20', 20);
+  initTableFilter('searchJersey', 'filter-btn-jersey', 'jerseyTableBody', 'countJersey', 20);
+  initTableFilter('searchJaket', 'filter-btn-jaket', 'jaketTableBody', 'countJaket', 20);
+  initTableFilter('searchSeragam', 'filter-btn-seragam', 'seragamTableBody', 'countSeragam', 20);
 });
 </script>
 {% endblock %}
