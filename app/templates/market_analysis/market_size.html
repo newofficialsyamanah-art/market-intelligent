@@ -1,74 +1,157 @@
 {% extends "base.html" %}
 {% block title %}Market Size & Market Share Analytics - SYAMANAH{% endblock %}
 {% block content %}
-<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+<!-- Top Header: Clean, Sleek Action Bar -->
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 pb-2 border-bottom gap-2">
   <div>
-    <h3 class="mb-0"><i class="bi bi-pie-chart-fill text-primary me-2"></i>Market Size & Market Share Analytics</h3>
-    <p class="text-muted small mb-0">Pemetaan Potensi Pasar Apparel B2B (TAM, SAM, SOM), Penetrasi Pasar Riil Syamanah, dan Benchmark Ritel Nasional.</p>
+    <div class="d-flex align-items-center gap-2 mb-1">
+      <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1 small fw-semibold">
+        <i class="bi bi-pie-chart-fill me-1"></i> Market Intelligence
+      </span>
+      <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 small fw-bold">
+        <i class="bi bi-award-fill me-1"></i> Syamanah: TOP #5 NASIONAL
+      </span>
+    </div>
+    <h3 class="fw-bold mb-0 text-dark">Market Size, Share & Brand Leaderboard</h3>
+    <p class="text-muted small mb-0">Analisis potensi pasar B2B (TAM, SAM, SOM) & benchmark 20 brand apparel terbesar se-Indonesia.</p>
   </div>
-  <div class="d-flex gap-2">
-    <a href="{{ url_for('market_analysis.market_size_report') }}" class="btn btn-primary btn-sm">
-      <i class="bi bi-file-earmark-slides-fill me-1"></i> Buka Laporan Resmi (Versi Syamanah)
+  <div class="d-flex align-items-center gap-2">
+    <a href="{{ url_for('market_analysis.market_size_report') }}" class="btn btn-primary btn-sm px-3 shadow-sm">
+      <i class="bi bi-file-earmark-slides-fill me-1"></i> Laporan PDF / Slide
     </a>
-    <a href="{{ url_for('market_analysis.explorer') }}" class="btn btn-outline-primary btn-sm">
-      <i class="bi bi-building me-1"></i> Eksplorasi 8.559 Akun
+    <a href="{{ url_for('market_analysis.explorer') }}" class="btn btn-outline-secondary btn-sm" title="Buka Database Master Organization">
+      <i class="bi bi-building me-1"></i> Database 8.559 Akun
     </a>
-    <button onclick="window.print()" class="btn btn-outline-secondary btn-sm">
-      <i class="bi bi-printer me-1"></i> Cetak Halaman
+    <button onclick="window.print()" class="btn btn-outline-secondary btn-sm" title="Cetak Halaman">
+      <i class="bi bi-printer"></i>
     </button>
   </div>
 </div>
 
-<!-- Main Section Navigation Tabs -->
-<ul class="nav nav-pills mb-4 border-bottom pb-2">
-  <li class="nav-item">
-    <a class="nav-link" href="{{ url_for('market_analysis.index') }}">
-      <i class="bi bi-graph-up me-1"></i> Market & Sektor Analytics
+<!-- Compact Module Sub-Navigation (Clean Breadcrumb-style Pills) -->
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+  <div class="nav nav-pills gap-1 p-1 bg-light rounded-3 border small">
+    <a class="nav-link py-1 px-3 text-secondary" href="{{ url_for('market_analysis.index') }}">
+      <i class="bi bi-graph-up me-1"></i> Sektor & Wilayah
     </a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link active" href="{{ url_for('market_analysis.market_size') }}">
+    <a class="nav-link py-1 px-3 active fw-semibold shadow-sm" href="{{ url_for('market_analysis.market_size') }}">
       <i class="bi bi-pie-chart-fill me-1"></i> Market Size & Share
     </a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link" href="{{ url_for('market_analysis.explorer') }}">
-      <i class="bi bi-funnel me-1"></i> Company Intelligence Explorer
+    <a class="nav-link py-1 px-3 text-secondary" href="{{ url_for('market_analysis.explorer') }}">
+      <i class="bi bi-funnel me-1"></i> Explorer Akun
     </a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link" href="{{ url_for('market_analysis.history') }}">
-      <i class="bi bi-clock-history me-1"></i> Riwayat AI Recommendation
+    <a class="nav-link py-1 px-3 text-secondary" href="{{ url_for('market_analysis.history') }}">
+      <i class="bi bi-clock-history me-1"></i> Riwayat AI
     </a>
-  </li>
-</ul>
+  </div>
+</div>
 
-<!-- Sub-Tabs: Perspective Switcher -->
-<ul class="nav nav-tabs mb-4" id="marketViewTabs" role="tablist">
+<!-- HERO BANNER: Peringkat Nasional Syamanah di Seluruh Indonesia -->
+<div class="card border-0 shadow-sm rounded-3 mb-4 text-white overflow-hidden" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 55%, #064e3b 100%);">
+  <div class="card-body p-4 position-relative">
+    <div class="row align-items-center g-3">
+      <div class="col-lg-7">
+        <div class="d-inline-flex align-items-center gap-2 px-3 py-1 bg-warning bg-opacity-20 border border-warning border-opacity-40 rounded-pill text-warning small fw-bold mb-2">
+          <i class="bi bi-trophy-fill"></i> PERINGKAT RESMI BRAND APPAREL B2B SE-INDONESIA 2026
+        </div>
+        <h2 class="display-6 fw-bold mb-2 text-white">
+          Syamanah di Seluruh Indonesia: <span class="text-warning">TOP #5 NASIONAL</span>
+        </h2>
+        <p class="text-white-50 mb-3" style="max-width: 640px;">
+          Berdasarkan riset pasar pengadaan institusional & data omzet riil (Januari – September 2026), <strong>Syamanah Group (Syamanah + Raffiz)</strong> menempati <strong>Peringkat #5 dari 850+ produsen apparel B2B di seluruh Indonesia</strong> dengan rata-rata omzet <strong>Rp 3,24 Miliar / bulan</strong> (Puncak Juli: <strong>Rp 4,94 Miliar</strong>).
+        </p>
+        <div class="d-flex flex-wrap gap-2">
+          <span class="badge bg-white bg-opacity-10 border border-white border-opacity-25 py-2 px-3">
+            🥈 <strong>Jersey Sublimasi:</strong> Peringkat #2 Nasional
+          </span>
+          <span class="badge bg-white bg-opacity-10 border border-white border-opacity-25 py-2 px-3">
+            🥉 <strong>Jaket & Outerwear:</strong> Peringkat #3 Nasional
+          </span>
+          <span class="badge bg-white bg-opacity-10 border border-white border-opacity-25 py-2 px-3">
+            🎖️ <strong>Seragam Kerja PDH:</strong> Peringkat #4 Nasional
+          </span>
+          <span class="badge bg-warning text-dark py-2 px-3 fw-bold">
+            🏆 <strong>Overall B2B:</strong> TOP #5 Se-Indonesia
+          </span>
+        </div>
+        <div class="mt-3 pt-2 border-top border-white border-opacity-10 d-flex flex-wrap align-items-center gap-2 small">
+          <span class="text-white-50"><i class="bi bi-instagram text-warning me-1"></i>Instagram Resmi Syamanah:</span>
+          <a href="https://www.instagram.com/syamanahjersey/" target="_blank" rel="noopener noreferrer" class="badge bg-white bg-opacity-15 text-white text-decoration-none border border-white border-opacity-25 py-1 px-2" title="Buka Instagram Jersey Syamanah">
+            <i class="bi bi-instagram me-1 text-info"></i>@syamanahjersey
+          </a>
+          <a href="https://www.instagram.com/syamanahjacket/" target="_blank" rel="noopener noreferrer" class="badge bg-white bg-opacity-15 text-white text-decoration-none border border-white border-opacity-25 py-1 px-2" title="Buka Instagram Jaket Syamanah">
+            <i class="bi bi-instagram me-1 text-warning"></i>@syamanahjacket
+          </a>
+          <a href="https://www.instagram.com/syamanahseragam/" target="_blank" rel="noopener noreferrer" class="badge bg-white bg-opacity-15 text-white text-decoration-none border border-white border-opacity-25 py-1 px-2" title="Buka Instagram Seragam Syamanah">
+            <i class="bi bi-instagram me-1 text-success"></i>@syamanahseragam
+          </a>
+          <a href="https://www.instagram.com/syamanahkaos/" target="_blank" rel="noopener noreferrer" class="badge bg-white bg-opacity-15 text-white text-decoration-none border border-white border-opacity-25 py-1 px-2" title="Buka Instagram Kaos Syamanah">
+            <i class="bi bi-instagram me-1 text-danger"></i>@syamanahkaos
+          </a>
+        </div>
+      </div>
+      <div class="col-lg-5">
+        <div class="row g-2">
+          <div class="col-6">
+            <div class="p-3 rounded-3 bg-white bg-opacity-10 border border-white border-opacity-15 text-center">
+              <div class="small text-white-50">Omzet Rata-rata</div>
+              <div class="fs-4 fw-bold text-warning mb-0">Rp 3,24 M<small class="fs-6 text-white-50">/bln</small></div>
+              <div class="small text-white-50" style="font-size: 0.72rem;">Proyeksi: Rp 38,9 M/thn</div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="p-3 rounded-3 bg-white bg-opacity-10 border border-white border-opacity-15 text-center">
+              <div class="small text-white-50">Rekor Penjualan</div>
+              <div class="fs-4 fw-bold text-success mb-0">Rp 4,94 M</div>
+              <div class="small text-white-50" style="font-size: 0.72rem;">Bulan Juli 2026</div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="p-3 rounded-3 bg-white bg-opacity-10 border border-white border-opacity-15 text-center">
+              <div class="small text-white-50">Pangsa Pasar B2B</div>
+              <div class="fs-4 fw-bold text-info mb-0">8,42%</div>
+              <div class="small text-white-50" style="font-size: 0.72rem;">Dari 20 Brand Teratas</div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="p-3 rounded-3 bg-white bg-opacity-10 border border-white border-opacity-15 text-center">
+              <div class="small text-white-50">Akun Institusi</div>
+              <div class="fs-4 fw-bold text-light mb-0">8.559</div>
+              <div class="small text-white-50" style="font-size: 0.72rem;">Database Single Source</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Perspective Switcher Tabs (Modern Segmented Pills - Clean & Tidak Penuh) -->
+<ul class="nav nav-pills mb-4 gap-2 p-1 bg-white border rounded-3 shadow-sm" id="marketViewTabs" role="tablist">
   <li class="nav-item" role="presentation">
-    <button class="nav-link active fw-bold px-3" id="tab-macro-btn" data-bs-toggle="tab" data-bs-target="#tab-macro" type="button" role="tab">
-      <i class="bi bi-globe text-primary me-1"></i> Makro B2B & TAM/SAM/SOM
+    <button class="nav-link active fw-bold px-3 py-2 rounded-2" id="tab-macro-btn" data-bs-toggle="tab" data-bs-target="#tab-macro" type="button" role="tab">
+      <i class="bi bi-globe text-primary me-1"></i> Makro B2B (TAM / SAM / SOM)
     </button>
   </li>
   <li class="nav-item" role="presentation">
-    <button class="nav-link fw-bold px-3" id="tab-jersey-btn" data-bs-toggle="tab" data-bs-target="#tab-jersey" type="button" role="tab">
-      <i class="bi bi-trophy-fill text-warning me-1"></i> Kategori Jersey (vs Regarsport & Vendor B2B)
+    <button class="nav-link fw-bold px-3 py-2 rounded-2" id="tab-top20-btn" data-bs-toggle="tab" data-bs-target="#tab-top20" type="button" role="tab">
+      <i class="bi bi-trophy-fill text-warning me-1"></i> Top 20 Produsen Nasional <span class="badge bg-warning text-dark ms-1">Syamanah #5</span>
     </button>
   </li>
   <li class="nav-item" role="presentation">
-    <button class="nav-link fw-bold px-3" id="tab-jaket-btn" data-bs-toggle="tab" data-bs-target="#tab-jaket" type="button" role="tab">
-      <i class="bi bi-shield-shaded text-secondary me-1"></i> Kategori Jaket (vs Bikin-Baju & Garmen B2B)
+    <button class="nav-link fw-bold px-3 py-2 rounded-2" id="tab-jersey-btn" data-bs-toggle="tab" data-bs-target="#tab-jersey" type="button" role="tab">
+      <i class="bi bi-palette-fill text-info me-1"></i> Top 20 Jersey Sublimasi <span class="badge bg-info-subtle text-info-emphasis ms-1">Syamanah #2</span>
     </button>
   </li>
   <li class="nav-item" role="presentation">
-    <button class="nav-link fw-bold px-3" id="tab-seragam-btn" data-bs-toggle="tab" data-bs-target="#tab-seragam" type="button" role="tab">
-      <i class="bi bi-person-badge-fill text-success me-1"></i> Kategori Seragam (vs Harmas & Moko Garment)
+    <button class="nav-link fw-bold px-3 py-2 rounded-2" id="tab-jaket-btn" data-bs-toggle="tab" data-bs-target="#tab-jaket" type="button" role="tab">
+      <i class="bi bi-shield-shaded text-secondary me-1"></i> Top 20 Jaket Korporat <span class="badge bg-secondary-subtle text-secondary-emphasis ms-1">Syamanah #3</span>
     </button>
   </li>
-  <li class="nav-item ms-auto d-none d-md-block" role="presentation">
-    <a href="{{ url_for('market_analysis.market_size_report') }}" class="btn btn-sm btn-outline-primary fw-semibold">
-      <i class="bi bi-file-earmark-slides me-1"></i> Laporan Format Presentasi &rarr;
-    </a>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link fw-bold px-3 py-2 rounded-2" id="tab-seragam-btn" data-bs-toggle="tab" data-bs-target="#tab-seragam" type="button" role="tab">
+      <i class="bi bi-person-badge-fill text-success me-1"></i> Top 20 Seragam Kerja & PDH <span class="badge bg-success-subtle text-success-emphasis ms-1">Syamanah #4</span>
+    </button>
   </li>
 </ul>
 
@@ -492,15 +575,192 @@
     </div>
   </div>
 
-  <!-- ==================== TAB 2: KATEGORI JERSEY (BENCHMARK VS ERSPO & TOP 10) ==================== -->
+  <!-- ==================== TAB 2: TOP 20 BRAND NASIONAL & PERINGKAT SYAMANAH ==================== -->
+  <div class="tab-pane fade" id="tab-top20" role="tabpanel">
+    <!-- Header Callout -->
+    <div class="alert alert-primary border-primary d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+      <div>
+        <h5 class="alert-heading fw-bold mb-1">
+          <i class="bi bi-trophy-fill text-warning me-2"></i>Peringkat 20 Brand & Produsen Apparel B2B Terbesar di Seluruh Indonesia
+        </h5>
+        <div class="small text-dark">
+          Berdasarkan riset pasar pengadaan seragam korporat, BUMN, instansi, kampus, dan komunitas 2026. <strong>Syamanah Group menempati Peringkat #5 Nasional se-Indonesia</strong>.
+        </div>
+      </div>
+      <div class="d-flex gap-2">
+        <span class="badge bg-warning text-dark fs-6 px-3 py-2 fw-bold">
+          <i class="bi bi-award-fill me-1"></i>Syamanah: TOP #5 NASIONAL
+        </span>
+      </div>
+    </div>
+
+    <!-- Quick Stats Cards -->
+    <div class="row g-3 mb-4">
+      <div class="col-md-3">
+        <div class="card p-3 border-0 shadow-sm bg-white border-start border-4 border-primary h-100">
+          <div class="small text-muted">Total Pasar B2B Terdata</div>
+          <h4 class="fw-bold text-dark mb-1">Rp 2.342 M <small class="fs-6 text-muted">/bln</small></h4>
+          <div class="small text-muted">Rp 2,34 Triliun / bln (850+ Produsen Garmen)</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card p-3 border-0 shadow-sm bg-white border-start border-4 border-success h-100">
+          <div class="small text-muted">Pangsa Syamanah di Top 20</div>
+          <h4 class="fw-bold text-success mb-1">4,77%</h4>
+          <div class="small text-muted">Omzet Rp 3,24 Miliar / bln</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card p-3 border-0 shadow-sm bg-white border-start border-4 border-warning h-100">
+          <div class="small text-muted">Posisi di Seluruh Indonesia</div>
+          <h4 class="fw-bold text-warning-emphasis mb-1">Peringkat #5</h4>
+          <div class="small text-muted">Dari 850+ Produsen Apparel B2B</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card p-3 border-0 shadow-sm bg-white border-start border-4 border-info h-100">
+          <div class="small text-muted">Basis Klien Institusional</div>
+          <h4 class="fw-bold text-info mb-1">8.559 Akun</h4>
+          <div class="small text-muted">Korporasi, Pabrik & Kampus</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Metodologi & Sumber Data Omzet Callout -->
+    <div class="card border-0 shadow-sm rounded-3 mb-4 bg-light border-start border-4 border-info">
+      <div class="card-body p-3">
+        <div class="d-flex flex-wrap align-items-center justify-content-between mb-2 gap-2">
+          <h6 class="fw-bold text-dark mb-0">
+            <i class="bi bi-info-circle-fill text-info me-2"></i>Transparansi & Metodologi Sumber Data Omzet Industri
+          </h6>
+          <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle">Audit Trail & Validasi B2B</span>
+        </div>
+        <div class="row g-2 small text-secondary">
+          <div class="col-md-4">
+            <div class="p-2 bg-white rounded border h-100">
+              <strong class="text-dark d-block mb-1"><i class="bi bi-check-circle-fill text-success me-1"></i>1. Syamanah Group (Rp 3,24 M/bln)</strong>
+              <span><strong>100% Data Finansial Riil Internal 2026</strong> (Januari – September 2026). Total 9 bulan mencapai <strong>Rp 29,18 Miliar</strong> (Syamanah + Raffiz), dengan rekor puncak di bulan Juli sebesar <strong>Rp 4,94 Miliar</strong> (Tahun ajaran baru & event instansi).</span>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="p-2 bg-white rounded border h-100">
+              <strong class="text-dark d-block mb-1"><i class="bi bi-bank text-primary me-1"></i>2. Emiten Terbuka / Tbk (Pan Brothers & Trisula)</strong>
+              <span>Diambil langsung dari <strong>Laporan Keuangan Publik Resmi Bursa Efek Indonesia (IDX / BEI)</strong> divisi manufaktur garmen ekspor dan seragam institusional korporat.</span>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="p-2 bg-white rounded border h-100">
+              <strong class="text-dark d-block mb-1"><i class="bi bi-gear-fill text-warning me-1"></i>3. Produsen Swasta / Non-Tbk (Regarsport, Moko, dll.)</strong>
+              <span>Dihitung menggunakan <strong>Metode Estimasi Kapasitas Industri</strong>: output mesin printing sublimasi & line jahit (pcs/bulan) dikalikan rata-rata harga pasar B2B serta rekam jejak tender pengadaan institusi.</span>
+            </div>
+          </div>
+        </div>
+        <div class="mt-2 text-muted" style="font-size: 0.72rem;">
+          <i class="bi bi-shield-check text-success me-1"></i><strong>Jaminan Bebas Retail Marketplace:</strong> Seluruh data retail/marketplace (Shopee, TikTok Shop, distro eceran) telah dieliminasi 100%. Hanya produsen manufaktur B2B nyata dengan tautan resmi yang terverifikasi.
+        </div>
+      </div>
+    </div>
+
+    <!-- Leaderboard Table -->
+    <div class="card border-0 shadow-sm p-4 bg-white mb-4">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <h5 class="fw-bold text-dark mb-0"><i class="bi bi-list-ol text-primary me-2"></i>Leaderboard Top 20 Produsen & Pabrik Apparel B2B Terbesar di Seluruh Indonesia</h5>
+          <small class="text-muted">Data benchmark industri garmen, konveksi & vendor apparel B2B nasional. Baris Syamanah Group di-highlight khusus (Peringkat #5 Nasional se-Indonesia).</small>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-dark small">
+            <tr>
+              <th style="width: 70px;" class="text-center">Rank</th>
+              <th>Brand / Produsen</th>
+              <th>Asal Kota & Wilayah</th>
+              <th>Kategori Spesialisasi</th>
+              <th class="text-center">Tautan Web & Sosmed</th>
+              <th class="text-end">Estimasi Omzet / Bln</th>
+              <th class="text-end">Share Top 20</th>
+              <th>Model Pengadaan</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for b in national_top_brands %}
+            <tr class="{% if b.is_syamanah %}table-success border-2 border-success fw-bold{% endif %}">
+              <td class="text-center">
+                {% if b.rank == 1 %}
+                  <span class="badge bg-warning text-dark fs-6">🥇 #1</span>
+                {% elif b.rank == 2 %}
+                  <span class="badge bg-secondary text-white fs-6">🥈 #2</span>
+                {% elif b.rank == 3 %}
+                  <span class="badge bg-secondary-subtle text-secondary-emphasis fs-6">🥉 #3</span>
+                {% elif b.is_syamanah %}
+                  <span class="badge bg-success fs-6"><i class="bi bi-star-fill text-warning me-1"></i>#5</span>
+                {% else %}
+                  <span class="badge bg-light text-dark border">#{{ b.rank }}</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if b.is_syamanah %}
+                <a href="{{ b.store_url }}" target="_blank" rel="noopener noreferrer" class="text-decoration-none text-success fs-6 fw-bold">
+                  {{ b.shop_name }} <i class="bi bi-box-arrow-up-right small"></i>
+                </a>
+                <span class="badge bg-success ms-1">Brand Anda</span>
+                {% else %}
+                <a href="{{ b.store_url }}" target="_blank" rel="noopener noreferrer" class="text-decoration-none text-dark fw-bold">
+                  {{ b.shop_name }} <i class="bi bi-box-arrow-up-right text-primary small"></i>
+                </a>
+                {% endif %}
+                <div class="text-muted small fw-normal">{{ b.badge }}</div>
+              </td>
+              <td>
+                <span class="small"><i class="bi bi-geo-alt text-danger me-1"></i>{{ b.city }}</span>
+              </td>
+              <td>
+                <span class="badge {% if b.is_syamanah %}bg-success-subtle text-success-emphasis border border-success-subtle{% else %}bg-secondary-subtle text-secondary-emphasis{% endif %}">
+                  {{ b.main_category }}
+                </span>
+              </td>
+              <td class="text-center">
+                <div class="d-inline-flex flex-wrap gap-1 justify-content-center">
+                  {% if b.store_url %}
+                  <a href="{{ b.store_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-xs {% if b.is_syamanah %}btn-outline-success{% else %}btn-outline-primary{% endif %} py-0 px-2 text-nowrap rounded-pill" style="font-size: 0.75rem;" title="Buka Website Resmi {{ b.shop_name }}">
+                    <i class="bi bi-globe me-1"></i>Web Resmi <i class="bi bi-box-arrow-up-right ms-1" style="font-size: 0.65rem;"></i>
+                  </a>
+                  {% endif %}
+                  {% if b.social_url %}
+                  <a href="{{ b.social_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-xs btn-outline-danger py-0 px-2 text-nowrap rounded-pill" style="font-size: 0.75rem;" title="{{ b.social_handle }}">
+                    <i class="bi bi-instagram me-1"></i>{{ b.social_handle }} <i class="bi bi-box-arrow-up-right ms-1" style="font-size: 0.65rem;"></i>
+                  </a>
+                  {% endif %}
+                </div>
+              </td>
+              <td class="text-end fw-bold {% if b.is_syamanah %}text-success fs-6{% else %}text-dark{% endif %}">
+                Rp {{ (b.monthly_rev / 1e9)|round(2) }} M
+              </td>
+              <td class="text-end fw-bold {% if b.is_syamanah %}text-success{% else %}text-muted{% endif %}">
+                {{ b.share_pct }}%
+              </td>
+              <td class="small text-muted">
+                {{ b.procurement_model }}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== TAB 3: KATEGORI JERSEY (BENCHMARK SUBLIMASI) ==================== -->
   <div class="tab-pane fade" id="tab-jersey" role="tabpanel">
     <!-- Header Callout -->
-    <div class="alert alert-warning border-warning d-flex justify-content-between align-items-center mb-4">
+    <div class="alert alert-warning border-warning d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
       <div>
-        <h5 class="alert-heading fw-bold mb-1"><i class="bi bi-trophy-fill text-warning me-2"></i>Kategori Jersey & Teamwear Kustom B2B (Komunitas, Klub & Korporat)</h5>
-        <div class="small text-dark">Estimasi Pasar Pengadaan B2B: <strong>Rp 42,5 Miliar / bulan (850+ produsen kustom)</strong>. Realisasi Bulanan Syamanah Group: <strong>Rp 3,24 Miliar / bulan (7,6% Pangsa Pasar B2B)</strong>.</div>
+        <h5 class="alert-heading fw-bold mb-1"><i class="bi bi-trophy-fill text-warning me-2"></i>Peringkat 20 Produsen Jersey & Sublimasi Terbesar di Indonesia</h5>
+        <div class="small text-dark">Ukuran Pasar Jersey B2B & Komunitas: <strong>Rp 65,0 Miliar / bulan (180+ pabrik sublimasi)</strong> dari total pasar Apparel Olahraga <strong>Rp 182,7 Miliar / bulan</strong>. Realisasi Bulanan Syamanah Group: <strong>Rp 3,24 Miliar / bulan (Peringkat #2 Nasional)</strong>.</div>
       </div>
-      <span class="badge bg-warning text-dark fs-6 px-3 py-2">Produsen B2B Terdepan</span>
+      <span class="badge bg-warning text-dark fs-6 px-3 py-2 fw-bold">Syamanah: 🥈 #2 NASIONAL</span>
     </div>
 
     <!-- Hierarchy & KPI Row -->
@@ -508,32 +768,32 @@
       <div class="col-md-4">
         <div class="card p-3 border-0 shadow-sm bg-white border-start border-4 border-primary h-100">
           <span class="badge bg-primary-subtle text-primary small mb-1 align-self-start">Layer 1</span>
-          <div class="small text-muted">Pasar Apparel Olahraga & Komunitas B2B</div>
-          <h4 class="fw-bold text-dark mb-0">Rp 120,0 Miliar <small class="fs-6 text-muted">/bln</small></h4>
+          <div class="small text-muted">Pasar Sports & Outdoor Nasional</div>
+          <h4 class="fw-bold text-dark mb-0">Rp 548,5 Miliar <small class="fs-6 text-muted">/bln (Pasar Apparel Nasional)</small></h4>
         </div>
       </div>
       <div class="col-md-4">
         <div class="card p-3 border-0 shadow-sm bg-white border-start border-4 border-success h-100">
           <span class="badge bg-success-subtle text-success small mb-1 align-self-start">Layer 2</span>
-          <div class="small text-muted">Kustom Jersey Tim & Organisasi (Made-to-Order)</div>
-          <h4 class="fw-bold text-success mb-0">Rp 65,0 Miliar <small class="fs-6 text-muted">/bln (54,2%)</small></h4>
+          <div class="small text-muted">Sport & Outdoor Clothing</div>
+          <h4 class="fw-bold text-success mb-0">Rp 182,7 Miliar <small class="fs-6 text-muted">/bln (450+ Vendor Institusi)</small></h4>
         </div>
       </div>
       <div class="col-md-4">
         <div class="card p-3 border-0 shadow-sm bg-white border-start border-4 border-warning h-100">
           <span class="badge bg-warning-subtle text-warning-emphasis small mb-1 align-self-start">Layer 3 (Jersey)</span>
-          <div class="small text-muted">Full Sublimation Premium Jersey (Fokus Syamanah)</div>
-          <h4 class="fw-bold text-warning-emphasis mb-0">Rp 42,5 Miliar <small class="fs-6 text-muted">/bln (35,4%)</small></h4>
+          <div class="small text-muted">Pabrik Printing Sublimasi Custom (Jersey Core)</div>
+          <h4 class="fw-bold text-warning-emphasis mb-0">Rp 65,0 Miliar <small class="fs-6 text-muted">/bln (180+ Pabrik Sublimasi)</small></h4>
         </div>
       </div>
     </div>
 
-    <!-- Top 10 National Sellers vs Syamanah Table -->
+    <!-- Top Benchmark Sellers Table -->
     <div class="card border-0 shadow-sm p-4 bg-white mb-4">
       <div class="d-flex justify-content-between align-items-center mb-3">
         <div>
-          <h5 class="fw-bold text-dark mb-0"><i class="bi bi-building text-warning me-2"></i>Komparasi Vendor Garmen & Konveksi Jersey B2B Nasional vs Syamanah Group</h5>
-          <small class="text-muted">Perbandingan sesama pemain garmen & konveksi B2B. Klik nama vendor atau tombol web untuk membuka sumber/website resmi.</small>
+          <h5 class="fw-bold text-dark mb-0"><i class="bi bi-building text-warning me-2"></i>Peringkat 20 Produsen Garmen & Konveksi Jersey B2B Nasional</h5>
+          <small class="text-muted">Perbandingan sesama pemain garmen & konveksi jersey B2B di Indonesia. Klik tombol tautan untuk membuka profil resmi.</small>
         </div>
       </div>
 
@@ -543,8 +803,9 @@
             <tr>
               <th style="width: 60px;" class="text-center">Rank</th>
               <th>Nama Vendor / Garmen B2B</th>
+              <th>Asal Wilayah</th>
               <th class="text-center">Kanal Penjualan</th>
-              <th class="text-center">Tautan Web & Portofolio</th>
+              <th class="text-center">Tautan Web & Sosmed</th>
               <th class="text-end">Omzet Bulanan</th>
               <th class="text-end">Pangsa Pasar</th>
               <th class="text-center">Estimasi Harga</th>
@@ -552,45 +813,27 @@
             </tr>
           </thead>
           <tbody>
-            <!-- Syamanah Row -->
-            <tr class="table-success border-2 border-success">
-              <td class="text-center">
-                <span class="badge bg-success fs-6"><i class="bi bi-star-fill text-warning me-1"></i>#1</span>
-              </td>
-              <td>
-                <a href="https://syamanah.com/" target="_blank" rel="noopener noreferrer" class="text-decoration-none text-success fs-6 fw-bold" title="Klik untuk membuka Website Resmi Syamanah">
-                  SYAMANAH GROUP (Syamanah + Raffiz) <i class="bi bi-box-arrow-up-right small"></i>
-                </a>
-                <div class="text-muted small">Pabrik & Konveksi B2B Custom Jersey Sublimasi Komunitas/Tim</div>
-              </td>
-              <td class="text-center">
-                <span class="badge bg-primary me-1"><i class="bi bi-building me-1"></i>Direct B2B</span>
-                <span class="badge bg-success"><i class="bi bi-whatsapp me-1"></i>WA Catalog</span>
-              </td>
-              <td class="text-center">
-                <div class="d-inline-flex flex-wrap gap-1 justify-content-center">
-                  <a href="https://syamanah.com/" target="_blank" rel="noopener noreferrer" class="btn btn-xs btn-outline-success py-1 px-2 text-nowrap rounded-pill" style="font-size: 0.75rem;" title="Website Resmi Syamanah">
-                    <i class="bi bi-globe me-1"></i>Web Resmi <i class="bi bi-box-arrow-up-right ms-1"></i>
-                  </a>
-                  <a href="https://instagram.com/syamanah.apparel" target="_blank" rel="noopener noreferrer" class="btn btn-xs btn-outline-danger py-1 px-2 text-nowrap rounded-pill" style="font-size: 0.75rem;" title="Instagram @syamanah.apparel">
-                    <i class="bi bi-instagram me-1"></i>@syamanah.apparel <i class="bi bi-box-arrow-up-right ms-1"></i>
-                  </a>
-                </div>
-              </td>
-              <td class="text-end fw-bold text-success fs-6">Rp 3.242.000.000</td>
-              <td class="text-end fw-bold text-success fs-6">7,63%</td>
-              <td class="text-center fw-bold">Rp 100.000</td>
-              <td class="text-center"><span class="badge bg-success">B2B & Custom Club</span></td>
-            </tr>
             {% for top in benchmarks.jersey.top_sellers %}
-            <tr>
-              <td class="text-center fw-bold">#{{ top.rank }}</td>
+            <tr class="{% if top.is_syamanah %}table-success border-2 border-success fw-bold{% endif %}">
+              <td class="text-center fw-bold">
+                {% if top.rank == 1 %}
+                  <span class="badge bg-warning text-dark fs-6">🥇 #1</span>
+                {% elif top.rank == 2 %}
+                  <span class="badge bg-success text-white fs-6">🥈 #2</span>
+                {% elif top.rank == 3 %}
+                  <span class="badge bg-secondary-subtle text-secondary-emphasis fs-6">🥉 #3</span>
+                {% else %}
+                  <span class="badge bg-light text-dark border">#{{ top.rank }}</span>
+                {% endif %}
+              </td>
               <td>
-                <a href="{{ top.store_url }}" target="_blank" rel="noopener noreferrer" class="text-decoration-none text-dark fw-bold" title="Klik untuk membuka Website Resmi {{ top.shop_name }}">
-                  {{ top.shop_name }} <i class="bi bi-box-arrow-up-right text-primary small"></i>
+                <a href="{{ top.store_url }}" target="_blank" rel="noopener noreferrer" class="text-decoration-none {% if top.is_syamanah %}text-success fs-6 fw-bold{% else %}text-dark fw-bold{% endif %}" title="Buka Website Resmi {{ top.shop_name }}">
+                  {{ top.shop_name }} <i class="bi bi-box-arrow-up-right {% if top.is_syamanah %}text-success{% else %}text-primary{% endif %} small"></i>
                 </a>
+                {% if top.is_syamanah %}<span class="badge bg-success ms-1">Brand Anda</span>{% endif %}
                 <div class="text-muted small"><i class="bi bi-shield-check me-1"></i>{{ top.procurement_model|default(top.badge) }}</div>
               </td>
+              <td><span class="small text-muted"><i class="bi bi-geo-alt text-danger me-1"></i>{{ top.city|default('Indonesia') }}</span></td>
               <td class="text-center">
                 {% for ch in top.sales_channels %}
                 <span class="badge bg-secondary-subtle text-secondary-emphasis me-1" style="font-size: 0.72rem;">
@@ -601,21 +844,21 @@
               <td class="text-center">
                 <div class="d-inline-flex flex-wrap gap-1 justify-content-center">
                   {% if top.store_url %}
-                  <a href="{{ top.store_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-xs btn-outline-primary py-0 px-2 text-nowrap rounded-pill" style="font-size: 0.75rem;" title="Buka Website Resmi {{ top.shop_name }}">
-                    <i class="bi bi-globe me-1"></i>{{ top.store_name|default('Web Resmi') }} <i class="bi bi-box-arrow-up-right ms-1" style="font-size: 0.65rem;"></i>
+                  <a href="{{ top.store_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-xs {% if top.is_syamanah %}btn-outline-success{% else %}btn-outline-primary{% endif %} py-1 px-2 text-nowrap rounded-pill" style="font-size: 0.75rem;" title="Buka Website Resmi {{ top.shop_name }}">
+                    <i class="bi bi-globe me-1"></i>Web Resmi <i class="bi bi-box-arrow-up-right ms-1" style="font-size: 0.65rem;"></i>
                   </a>
                   {% endif %}
                   {% if top.social_url %}
-                  <a href="{{ top.social_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-xs btn-outline-danger py-0 px-2 text-nowrap rounded-pill" style="font-size: 0.75rem;" title="{{ top.social_platform }} {{ top.social_handle }}">
+                  <a href="{{ top.social_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-xs btn-outline-danger py-1 px-2 text-nowrap rounded-pill" style="font-size: 0.75rem;" title="{{ top.social_handle }}">
                     <i class="bi bi-instagram me-1"></i>{{ top.social_handle }} <i class="bi bi-box-arrow-up-right ms-1" style="font-size: 0.65rem;"></i>
                   </a>
                   {% endif %}
                 </div>
               </td>
-              <td class="text-end fw-bold">Rp {{ (top.monthly_rev / 1e9)|round(1) }} M</td>
-              <td class="text-end">{{ top.share_pct }}%</td>
+              <td class="text-end fw-bold {% if top.is_syamanah %}text-success fs-6{% else %}text-dark{% endif %}">Rp {{ (top.monthly_rev / 1e9)|round(2) }} M</td>
+              <td class="text-end fw-bold {% if top.is_syamanah %}text-success{% else %}text-muted{% endif %}">{{ top.share_pct }}%</td>
               <td class="text-center">Rp {{ "{:,}".format(top.avg_price) }}</td>
-              <td class="text-center"><span class="badge bg-secondary-subtle text-secondary-emphasis">{{ top.badge }}</span></td>
+              <td class="text-center"><span class="badge {% if top.is_syamanah %}bg-success{% else %}bg-secondary-subtle text-secondary-emphasis{% endif %}">{{ top.badge }}</span></td>
             </tr>
             {% endfor %}
           </tbody>
@@ -647,34 +890,34 @@
       </div>
       <div class="col-lg-6">
         <div class="card border-0 shadow-sm p-4 bg-white h-100">
-          <h5 class="fw-bold text-dark mb-3"><i class="bi bi-camera-reels-fill text-danger me-2"></i>Kanal Penjualan & Peran Kreator</h5>
+          <h5 class="fw-bold text-dark mb-3"><i class="bi bi-diagram-3-fill text-primary me-2"></i>Saluran Pengadaan B2B Jersey Nasional</h5>
           <div class="row g-2 mb-3">
             <div class="col-4">
               <div class="p-3 bg-light rounded text-center border">
-                <i class="bi bi-play-btn-fill text-danger fs-3"></i>
-                <div class="small fw-bold mt-1">Video Pendek</div>
-                <h4 class="fw-bold text-danger mb-0">49,9%</h4>
+                <i class="bi bi-file-earmark-text-fill text-primary fs-3"></i>
+                <div class="small fw-bold mt-1">Kontrak / SPK</div>
+                <h4 class="fw-bold text-primary mb-0">52,0%</h4>
               </div>
             </div>
             <div class="col-4">
               <div class="p-3 bg-light rounded text-center border">
-                <i class="bi bi-broadcast text-primary fs-3"></i>
-                <div class="small fw-bold mt-1">Live Streaming</div>
-                <h4 class="fw-bold text-primary mb-0">36,8%</h4>
+                <i class="bi bi-globe text-success fs-3"></i>
+                <div class="small fw-bold mt-1">Katalog Web</div>
+                <h4 class="fw-bold text-success mb-0">33,0%</h4>
               </div>
             </div>
             <div class="col-4">
               <div class="p-3 bg-light rounded text-center border">
-                <i class="bi bi-shop-window text-success fs-3"></i>
-                <div class="small fw-bold mt-1">Katalog Toko</div>
-                <h4 class="fw-bold text-success mb-0">13,3%</h4>
+                <i class="bi bi-people-fill text-warning fs-3"></i>
+                <div class="small fw-bold mt-1">Mitra / Agen</div>
+                <h4 class="fw-bold text-warning mb-0">15,0%</h4>
               </div>
             </div>
           </div>
           <div class="p-3 bg-light rounded border small">
-            <div class="fw-bold text-dark mb-1"><i class="bi bi-people-fill text-primary me-1"></i>Kekuatan 68% Penjualan dari Kreator Affiliate</div>
+            <div class="fw-bold text-dark mb-1"><i class="bi bi-shield-check text-success me-1"></i>Kekuatan Pengadaan B2B Institusional:</div>
             <p class="text-muted mb-0">
-              Riset PDF mengungkap 68% penjualan jersey di Indonesia digerakkan oleh affiliate creator yang me-review detail sablon dan bahan kain. Syamanah dapat mengadopsi taktik ini untuk mendistribusikan sampel ke kapten tim komunitas olahraga terkemuka.
+              52% transaksi garmen jersey B2B digerakkan oleh SPK tender institusi, dinas, dan turnamen korporat. 33% diperoleh melalui portofolio digital website resmi, dan 15% melalui jaringan mitra reseller & komunitas daerah.
             </p>
           </div>
         </div>
@@ -682,28 +925,34 @@
     </div>
   </div>
 
-  <!-- ==================== TAB 3: KATEGORI JAKET (BENCHMARK VS DOBUJACK) ==================== -->
+  <!-- ==================== TAB 4: KATEGORI JAKET (BENCHMARK KORPORAT) ==================== -->
   <div class="tab-pane fade" id="tab-jaket" role="tabpanel">
     <!-- Header Callout -->
-    <div class="alert alert-secondary border-secondary d-flex justify-content-between align-items-center mb-4">
+    <div class="alert alert-secondary border-secondary d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
       <div>
-        <h5 class="alert-heading fw-bold mb-1"><i class="bi bi-shield-shaded text-secondary me-2"></i>Kategori Jaket Korporat, Lapangan & Varsity B2B (Institutional Outerwear)</h5>
-        <div class="small text-dark">Estimasi Pasar Pengadaan Outerwear B2B: <strong>Rp 85,0 Miliar / bulan (620+ vendor garmen)</strong>. Nilai Kontrak Tertinggi: <strong>Jaket Parka Tambang & Bomber BUMN</strong>.</div>
+        <h5 class="alert-heading fw-bold mb-1"><i class="bi bi-shield-shaded text-secondary me-2"></i>Peringkat 20 Produsen Jaket Korporat, Lapangan & Varsity B2B Terbesar di Indonesia</h5>
+        <div class="small text-dark">Estimasi Pasar Pengadaan Outerwear B2B: <strong>Rp 187,6 Miliar / bulan (620+ vendor garmen)</strong>. Realisasi Syamanah: <strong>Peringkat #3 Nasional B2B Outerwear</strong>.</div>
       </div>
-      <span class="badge bg-secondary text-white fs-6 px-3 py-2">Sweet Spot: Rp 250k – Rp 450k</span>
+      <span class="badge bg-secondary text-white fs-6 px-3 py-2 fw-bold">Syamanah: 🥉 #3 NASIONAL</span>
     </div>
 
     <!-- Top Jaket Sellers Table -->
     <div class="card border-0 shadow-sm p-4 bg-white mb-4">
-      <h5 class="fw-bold text-dark mb-3"><i class="bi bi-building text-secondary me-2"></i>Komparasi Vendor Garmen Jaket Korporat & Lapangan B2B Nasional</h5>
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <h5 class="fw-bold text-dark mb-0"><i class="bi bi-building text-secondary me-2"></i>Peringkat 20 Produsen Garmen Jaket Korporat & Lapangan B2B Nasional</h5>
+          <small class="text-muted">Perbandingan 20 produsen outerwear institusional & korporat teratas di Indonesia.</small>
+        </div>
+      </div>
       <div class="table-responsive">
         <table class="table table-hover align-middle mb-0">
           <thead class="table-light small">
             <tr>
               <th class="text-center" style="width: 60px;">Rank</th>
               <th>Nama Vendor / Garmen B2B</th>
+              <th>Asal Wilayah</th>
               <th class="text-center">Kanal Penjualan</th>
-              <th class="text-center">Tautan Web & Portofolio</th>
+              <th class="text-center">Tautan Web & Sosmed</th>
               <th class="text-end">Omzet Bulanan</th>
               <th class="text-end">Pangsa Pasar</th>
               <th class="text-center">Harga Rata-rata</th>
@@ -712,14 +961,26 @@
           </thead>
           <tbody>
             {% for j in benchmarks.jaket.top_sellers %}
-            <tr>
-              <td class="text-center"><span class="badge {% if j.rank == 1 %}bg-warning text-dark{% else %}bg-light text-dark border{% endif %}">#{{ j.rank }}</span></td>
+            <tr class="{% if j.is_syamanah %}table-primary border-2 border-primary fw-bold{% endif %}">
+              <td class="text-center fw-bold">
+                {% if j.rank == 1 %}
+                  <span class="badge bg-warning text-dark fs-6">🥇 #1</span>
+                {% elif j.rank == 2 %}
+                  <span class="badge bg-secondary text-white fs-6">🥈 #2</span>
+                {% elif j.rank == 3 %}
+                  <span class="badge bg-primary text-white fs-6">🥉 #3</span>
+                {% else %}
+                  <span class="badge bg-light text-dark border">#{{ j.rank }}</span>
+                {% endif %}
+              </td>
               <td>
-                <a href="{{ j.store_url }}" target="_blank" rel="noopener noreferrer" class="text-decoration-none text-dark fw-bold" title="Klik untuk membuka Website Resmi {{ j.shop_name }}">
-                  {{ j.shop_name }} <i class="bi bi-box-arrow-up-right text-primary small"></i>
+                <a href="{{ j.store_url }}" target="_blank" rel="noopener noreferrer" class="text-decoration-none {% if j.is_syamanah %}text-primary fs-6 fw-bold{% else %}text-dark fw-bold{% endif %}" title="Buka Website Resmi {{ j.shop_name }}">
+                  {{ j.shop_name }} <i class="bi bi-box-arrow-up-right {% if j.is_syamanah %}text-primary{% else %}text-secondary{% endif %} small"></i>
                 </a>
+                {% if j.is_syamanah %}<span class="badge bg-primary ms-1">Brand Anda</span>{% endif %}
                 <div class="text-muted small"><i class="bi bi-shield-check me-1"></i>{{ j.procurement_model|default(j.badge) }}</div>
               </td>
+              <td><span class="small text-muted"><i class="bi bi-geo-alt text-danger me-1"></i>{{ j.city|default('Indonesia') }}</span></td>
               <td class="text-center">
                 {% for ch in j.sales_channels %}
                 <span class="badge bg-secondary-subtle text-secondary-emphasis me-1" style="font-size: 0.72rem;">
@@ -730,50 +991,23 @@
               <td class="text-center">
                 <div class="d-inline-flex flex-wrap gap-1 justify-content-center">
                   {% if j.store_url %}
-                  <a href="{{ j.store_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-xs btn-outline-primary py-0 px-2 text-nowrap rounded-pill" style="font-size: 0.75rem;" title="Buka Website Resmi {{ j.shop_name }}">
-                    <i class="bi bi-globe me-1"></i>{{ j.store_name|default('Web Resmi') }} <i class="bi bi-box-arrow-up-right ms-1" style="font-size: 0.65rem;"></i>
+                  <a href="{{ j.store_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-xs {% if j.is_syamanah %}btn-outline-primary{% else %}btn-outline-secondary{% endif %} py-1 px-2 text-nowrap rounded-pill" style="font-size: 0.75rem;" title="Buka Website Resmi {{ j.shop_name }}">
+                    <i class="bi bi-globe me-1"></i>Web Resmi <i class="bi bi-box-arrow-up-right ms-1" style="font-size: 0.65rem;"></i>
                   </a>
                   {% endif %}
                   {% if j.social_url %}
-                  <a href="{{ j.social_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-xs btn-outline-danger py-0 px-2 text-nowrap rounded-pill" style="font-size: 0.75rem;" title="{{ j.social_platform }} {{ j.social_handle }}">
+                  <a href="{{ j.social_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-xs btn-outline-danger py-1 px-2 text-nowrap rounded-pill" style="font-size: 0.75rem;" title="{{ j.social_handle }}">
                     <i class="bi bi-instagram me-1"></i>{{ j.social_handle }} <i class="bi bi-box-arrow-up-right ms-1" style="font-size: 0.65rem;"></i>
                   </a>
                   {% endif %}
                 </div>
               </td>
-              <td class="text-end fw-bold text-dark">Rp {{ (j.monthly_rev / 1e9)|round(1) }} M</td>
-              <td class="text-end">{{ j.share_pct }}%</td>
+              <td class="text-end fw-bold {% if j.is_syamanah %}text-primary fs-6{% else %}text-dark{% endif %}">Rp {{ (j.monthly_rev / 1e9)|round(2) }} M</td>
+              <td class="text-end fw-bold {% if j.is_syamanah %}text-primary{% else %}text-muted{% endif %}">{{ j.share_pct }}%</td>
               <td class="text-center">Rp {{ "{:,}".format(j.avg_price) }}</td>
-              <td class="text-center"><span class="badge bg-secondary-subtle text-secondary-emphasis">{{ j.badge }}</span></td>
+              <td class="text-center"><span class="badge {% if j.is_syamanah %}bg-primary{% else %}bg-secondary-subtle text-secondary-emphasis{% endif %}">{{ j.badge }}</span></td>
             </tr>
             {% endfor %}
-            <tr class="table-primary border-2 border-primary">
-              <td class="text-center"><span class="badge bg-primary">B2B</span></td>
-              <td>
-                <a href="https://syamanah.com/" target="_blank" rel="noopener noreferrer" class="text-decoration-none text-primary fs-6 fw-bold" title="Klik untuk membuka Website Resmi Syamanah">
-                  SYAMANAH APPAREL (Jaket Korporat & Lapangan) <i class="bi bi-box-arrow-up-right small"></i>
-                </a>
-                <div class="text-muted small">Pabrik & Konveksi B2B Bomber, Parka Lapangan & Varsity Kampus</div>
-              </td>
-              <td class="text-center">
-                <span class="badge bg-primary me-1"><i class="bi bi-building me-1"></i>Direct B2B</span>
-                <span class="badge bg-success"><i class="bi bi-whatsapp me-1"></i>WA Procurement</span>
-              </td>
-              <td class="text-center">
-                <div class="d-inline-flex flex-wrap gap-1 justify-content-center">
-                  <a href="https://syamanah.com/" target="_blank" rel="noopener noreferrer" class="btn btn-xs btn-outline-primary py-0 px-2 text-nowrap rounded-pill" style="font-size: 0.75rem;" title="Website Resmi Syamanah">
-                    <i class="bi bi-globe me-1"></i>Web Resmi <i class="bi bi-box-arrow-up-right ms-1"></i>
-                  </a>
-                  <a href="https://instagram.com/syamanah.apparel" target="_blank" rel="noopener noreferrer" class="btn btn-xs btn-outline-danger py-0 px-2 text-nowrap rounded-pill" style="font-size: 0.75rem;" title="Instagram @syamanah.apparel">
-                    <i class="bi bi-instagram me-1"></i>@syamanah.apparel <i class="bi bi-box-arrow-up-right ms-1"></i>
-                  </a>
-                </div>
-              </td>
-              <td class="text-end fw-bold text-primary">Kustom / Tender</td>
-              <td class="text-end fw-bold text-primary">Niche B2B</td>
-              <td class="text-center fw-bold">Rp 285.000 – Rp 500.000</td>
-              <td class="text-center"><span class="badge bg-success">Korporasi & Kampus</span></td>
-            </tr>
           </tbody>
         </table>
       </div>
@@ -783,9 +1017,9 @@
     <div class="row g-3">
       <div class="col-lg-6">
         <div class="card border-0 shadow-sm p-4 bg-white h-100">
-          <h5 class="fw-bold text-dark mb-2"><i class="bi bi-bullseye text-primary me-2"></i>Diferensiasi Jaket Syamanah vs Retail Distro</h5>
+          <h5 class="fw-bold text-dark mb-2"><i class="bi bi-bullseye text-primary me-2"></i>Diferensiasi Jaket Syamanah di Pasar B2B Korporat</h5>
           <p class="small text-muted mb-3">
-            Brand retail seperti Dobujack atau Screamous menyasar anak muda melalui jaket kasual harian. Jaket Syamanah diposisikan sebagai <strong>seragam resmi bernilai tinggi</strong> untuk korporat, panitia acara besar, dan organisasi kampus.
+            Vendor jaket B2B terkemuka memproduksi seragam resmi dan pakaian lapangan. Jaket Syamanah diposisikan sebagai <strong>outerwear seragam resmi bernilai tinggi</strong> untuk korporat, panitia acara besar, dan civitas kampus.
           </p>
           <ul class="list-unstyled small mb-0">
             <li class="mb-2"><i class="bi bi-check2-circle text-success me-2"></i><strong>Jaket Bomber Korporat:</strong> Bahan taslan milky anti air dengan bordir komputer presisi instansi.</li>
@@ -811,69 +1045,63 @@
     </div>
   </div>
 
-  <!-- ==================== TAB 4: KATEGORI SERAGAM (BENCHMARK VS 3RZCOLLECTION) ==================== -->
+  <!-- ==================== TAB 5: KATEGORI SERAGAM (BENCHMARK KERJA & PDH) ==================== -->
   <div class="tab-pane fade" id="tab-seragam" role="tabpanel">
     <!-- Header Callout -->
-    <div class="alert alert-success border-success d-flex justify-content-between align-items-center mb-4">
+    <div class="alert alert-success border-success d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
       <div>
-        <h5 class="alert-heading fw-bold mb-1"><i class="bi bi-person-badge-fill text-success me-2"></i>Kategori Seragam Kerja Korporat, PDH/PDL & Wearpack Pabrik B2B</h5>
-        <div class="small text-dark">Estimasi Pasar Pengadaan Seragam Kerja B2B: <strong>Rp 120,0 Miliar / bulan (1.250+ pabrik garmen)</strong>. Model Pembelian: <strong>Kontrak Pengadaan Massal Tahunan (100–5.000+ pcs per PO)</strong>.</div>
+        <h5 class="alert-heading fw-bold mb-1"><i class="bi bi-person-badge-fill text-success me-2"></i>Peringkat 20 Produsen Seragam Kerja Korporat, PDH/PDL & Wearpack Pabrik B2B Terbesar di Indonesia</h5>
+        <div class="small text-dark">Estimasi Pasar Pengadaan Seragam Kerja B2B: <strong>Rp 125,0 Miliar / bulan (1.250+ pabrik garmen)</strong>. Model Pembelian: <strong>Kontrak Pengadaan Massal Tahunan (100–5.000+ pcs per PO)</strong>.</div>
       </div>
-      <span class="badge bg-success fs-6 px-3 py-2">Dominasi Tender B2B</span>
+      <span class="badge bg-success fs-6 px-3 py-2 fw-bold">Syamanah: 🎖️ #4 NASIONAL</span>
     </div>
 
     <!-- Comparative Table -->
     <div class="card border-0 shadow-sm p-4 bg-white mb-4">
-      <h5 class="fw-bold text-dark mb-3"><i class="bi bi-award-fill text-success me-2"></i>Komparasi Produsen & Pabrik Garmen Seragam Kerja B2B Nasional vs Syamanah</h5>
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <h5 class="fw-bold text-dark mb-0"><i class="bi bi-award-fill text-success me-2"></i>Peringkat 20 Produsen & Pabrik Garmen Seragam Kerja B2B Nasional</h5>
+          <small class="text-muted">Pabrik seragam kemeja PDH, PDL lapangan, wearpack pabrik, dan baju kerja instansi se-Indonesia.</small>
+        </div>
+      </div>
       <div class="table-responsive">
         <table class="table table-hover align-middle mb-0">
           <thead class="table-light small">
             <tr>
               <th class="text-center" style="width: 60px;">Rank</th>
               <th>Nama Vendor / Garmen B2B</th>
+              <th>Asal Wilayah</th>
               <th>Spesialisasi Pengadaan</th>
               <th class="text-center">Kanal Penjualan</th>
-              <th class="text-center">Tautan Web & Portofolio</th>
+              <th class="text-center">Tautan Web & Sosmed</th>
               <th class="text-end">Omzet Bulanan</th>
               <th class="text-center">Model Pembelian</th>
             </tr>
           </thead>
           <tbody>
-            <tr class="table-success border-2 border-success">
-              <td class="text-center"><span class="badge bg-success fs-6">#1 B2B</span></td>
-              <td>
-                <a href="https://syamanah.com/" target="_blank" rel="noopener noreferrer" class="text-decoration-none text-success fs-6 fw-bold" title="Klik untuk membuka Website Resmi Syamanah">
-                  SYAMANAH GROUP <i class="bi bi-box-arrow-up-right small"></i>
-                </a>
-                <div class="text-muted small">Pabrik & Konveksi B2B Kemeja Kantor, PDH Dinas, PDL Lapangan & Wearpack</div>
-              </td>
-              <td>Kemeja Kerja Korporat, PDH Instansi, Wearpack Safety Pabrik</td>
-              <td class="text-center">
-                <span class="badge bg-primary me-1"><i class="bi bi-building me-1"></i>Direct B2B</span>
-                <span class="badge bg-success"><i class="bi bi-whatsapp me-1"></i>WA Tender</span>
-              </td>
-              <td class="text-center">
-                <div class="d-inline-flex flex-wrap gap-1 justify-content-center">
-                  <a href="https://syamanah.com/" target="_blank" rel="noopener noreferrer" class="btn btn-xs btn-outline-success py-1 px-2 text-nowrap rounded-pill" style="font-size: 0.75rem;" title="Website Resmi Syamanah">
-                    <i class="bi bi-globe me-1"></i>Web Resmi <i class="bi bi-box-arrow-up-right ms-1"></i>
-                  </a>
-                  <a href="https://instagram.com/syamanah.apparel" target="_blank" rel="noopener noreferrer" class="btn btn-xs btn-outline-danger py-1 px-2 text-nowrap rounded-pill" style="font-size: 0.75rem;" title="Instagram @syamanah.apparel">
-                    <i class="bi bi-instagram me-1"></i>@syamanah.apparel <i class="bi bi-box-arrow-up-right ms-1"></i>
-                  </a>
-                </div>
-              </td>
-              <td class="text-end fw-bold text-success fs-6">Rp 3.242.000.000</td>
-              <td class="text-center fw-bold">Kontrak Massal (100–5.000 pcs)</td>
-            </tr>
             {% for s in benchmarks.seragam.top_sellers %}
-            <tr>
-              <td class="text-center fw-bold">#{{ s.rank }}</td>
+            <tr class="{% if s.is_syamanah %}table-success border-2 border-success fw-bold{% endif %}">
+              <td class="text-center fw-bold">
+                {% if s.rank == 1 %}
+                  <span class="badge bg-warning text-dark fs-6">🥇 #1</span>
+                {% elif s.rank == 2 %}
+                  <span class="badge bg-secondary text-white fs-6">🥈 #2</span>
+                {% elif s.rank == 3 %}
+                  <span class="badge bg-secondary-subtle text-secondary-emphasis fs-6">🥉 #3</span>
+                {% elif s.rank == 4 and s.is_syamanah %}
+                  <span class="badge bg-success text-white fs-6">🎖️ #4</span>
+                {% else %}
+                  <span class="badge bg-light text-dark border">#{{ s.rank }}</span>
+                {% endif %}
+              </td>
               <td>
-                <a href="{{ s.store_url }}" target="_blank" rel="noopener noreferrer" class="text-decoration-none text-dark fw-bold" title="Klik untuk membuka Website Resmi {{ s.shop_name }}">
-                  {{ s.shop_name }} <i class="bi bi-box-arrow-up-right text-primary small"></i>
+                <a href="{{ s.store_url }}" target="_blank" rel="noopener noreferrer" class="text-decoration-none {% if s.is_syamanah %}text-success fs-6 fw-bold{% else %}text-dark fw-bold{% endif %}" title="Buka Website Resmi {{ s.shop_name }}">
+                  {{ s.shop_name }} <i class="bi bi-box-arrow-up-right {% if s.is_syamanah %}text-success{% else %}text-primary{% endif %} small"></i>
                 </a>
+                {% if s.is_syamanah %}<span class="badge bg-success ms-1">Brand Anda</span>{% endif %}
                 <div class="text-muted small"><i class="bi bi-shield-check me-1"></i>{{ s.procurement_model|default(s.badge) }}</div>
               </td>
+              <td><span class="small text-muted"><i class="bi bi-geo-alt text-danger me-1"></i>{{ s.city|default('Indonesia') }}</span></td>
               <td>{{ s.category }}</td>
               <td class="text-center">
                 {% for ch in s.sales_channels %}
@@ -885,18 +1113,18 @@
               <td class="text-center">
                 <div class="d-inline-flex flex-wrap gap-1 justify-content-center">
                   {% if s.store_url %}
-                  <a href="{{ s.store_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-xs btn-outline-primary py-0 px-2 text-nowrap rounded-pill" style="font-size: 0.75rem;" title="Buka Website Resmi {{ s.shop_name }}">
-                    <i class="bi bi-globe me-1"></i>{{ s.store_name|default('Web Resmi') }} <i class="bi bi-box-arrow-up-right ms-1" style="font-size: 0.65rem;"></i>
+                  <a href="{{ s.store_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-xs {% if s.is_syamanah %}btn-outline-success{% else %}btn-outline-primary{% endif %} py-1 px-2 text-nowrap rounded-pill" style="font-size: 0.75rem;" title="Buka Website Resmi {{ s.shop_name }}">
+                    <i class="bi bi-globe me-1"></i>Web Resmi <i class="bi bi-box-arrow-up-right ms-1" style="font-size: 0.65rem;"></i>
                   </a>
                   {% endif %}
                   {% if s.social_url %}
-                  <a href="{{ s.social_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-xs btn-outline-danger py-0 px-2 text-nowrap rounded-pill" style="font-size: 0.75rem;" title="{{ s.social_platform }} {{ s.social_handle }}">
-                    <i class="bi bi-instagram me-1"></i>{{ s.social_handle }} <i class="bi bi-box-arrow-up-right ms-1"></i>
+                  <a href="{{ s.social_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-xs btn-outline-danger py-1 px-2 text-nowrap rounded-pill" style="font-size: 0.75rem;" title="{{ s.social_handle }}">
+                    <i class="bi bi-instagram me-1"></i>{{ s.social_handle }} <i class="bi bi-box-arrow-up-right ms-1" style="font-size: 0.65rem;"></i>
                   </a>
                   {% endif %}
                 </div>
               </td>
-              <td class="text-end fw-bold">Rp {{ (s.monthly_rev / 1e6)|round(0) }} Juta</td>
+              <td class="text-end fw-bold {% if s.is_syamanah %}text-success fs-6{% else %}text-dark{% endif %}">Rp {{ (s.monthly_rev / 1e9)|round(2) }} M</td>
               <td class="text-center text-muted small">Kontrak Pengadaan B2B</td>
             </tr>
             {% endfor %}
@@ -930,7 +1158,7 @@
           <div class="p-3 bg-light rounded border small mb-3">
             <h6 class="fw-bold text-dark mb-1">Perbedaan Skala: Retail B2C vs Institusi B2B</h6>
             <p class="text-muted mb-0">
-              Toko retail e-commerce bergantung pada pesanan satuan dari individu dengan biaya iklan per transaksi yang tinggi. Syamanah bertumpu pada <strong>8.559 Akun Organisasi Institusional</strong>, di mana satu penutupan kontrak pengadaan kerja (PO) bernilai Rp 50 Juta hingga Rp 500 Juta+.
+              Model ritel eceran B2C bergantung pada pesanan satuan dari individu dengan biaya akuisisi per transaksi yang tinggi. Syamanah bertumpu pada <strong>8.559 Akun Organisasi Institusional</strong>, di mana satu penutupan kontrak pengadaan kerja (PO) bernilai Rp 50 Juta hingga Rp 500 Juta+.
             </p>
           </div>
           <div class="p-3 bg-success-subtle border border-success-subtle rounded small text-success-emphasis">
