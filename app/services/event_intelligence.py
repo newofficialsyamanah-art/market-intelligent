@@ -536,9 +536,14 @@ Format respon HANYA list JSON valid:
         total_count = query.count()
         total_pages = (total_count + per_page - 1) // per_page if total_count > 0 else 1
 
+        has_info = db.case(
+            (db.or_(Event.website.isnot(None), Event.social_json.isnot(None), Event.source_url.like('http%')), 1),
+            else_=0
+        )
         items = query.order_by(
+            has_info.desc(),
             Event.relevance_score.desc(),
-            Event.start_date.desc()
+            Event.start_date.desc().nullslast()
         ).offset((page - 1) * per_page).limit(per_page).all()
 
         return items, total_count, total_pages

@@ -441,28 +441,15 @@ def get_organization_detail(org_id: int) -> Optional[Dict[str, Any]]:
     # Prospek legacy yang terhubung
     legacy_count = org.prospects_legacy.count() if hasattr(org, "prospects_legacy") else 0
 
-    # Parse media sosial terstruktur (Instagram, Facebook, LinkedIn)
-    social_data = {"instagram": None, "facebook": None, "linkedin": None}
-    if org.social_json:
-        try:
-            parsed_social = json.loads(org.social_json)
-            if isinstance(parsed_social, dict):
-                for k in ("instagram", "facebook", "linkedin"):
-                    val = parsed_social.get(k) or parsed_social.get(k.capitalize())
-                    if val and str(val).strip() and str(val).lower() not in ("nan", "none", "-", ""):
-                        social_data[k] = str(val).strip()
-            elif isinstance(parsed_social, list):
-                for url in parsed_social:
-                    u_str = str(url).strip()
-                    u_low = u_str.lower()
-                    if "instagram.com" in u_low and not social_data["instagram"]:
-                        social_data["instagram"] = u_str
-                    elif "facebook.com" in u_low and not social_data["facebook"]:
-                        social_data["facebook"] = u_str
-                    elif "linkedin.com" in u_low and not social_data["linkedin"]:
-                        social_data["linkedin"] = u_str
-        except Exception:
-            pass
+    # Parse media sosial terstruktur & terverifikasi (Instagram, Facebook, LinkedIn, TikTok)
+    social_dict = org.social_media_dict if hasattr(org, "social_media_dict") else {}
+    social_data = {
+        "instagram": org.instagram_url if hasattr(org, "instagram_url") and org.instagram_url else social_dict.get("instagram"),
+        "facebook": org.facebook_url if hasattr(org, "facebook_url") and org.facebook_url else social_dict.get("facebook"),
+        "linkedin": org.linkedin_url if hasattr(org, "linkedin_url") and org.linkedin_url else social_dict.get("linkedin"),
+        "tiktok": org.tiktok_url if hasattr(org, "tiktok_url") and org.tiktok_url else social_dict.get("tiktok"),
+    }
+
 
     # Event Participations (F6.3 Event-Based Intelligence)
     participations_list = []

@@ -133,13 +133,17 @@
                 {% else %}
                   <span class="text-muted opacity-25 fs-6"><i class="bi bi-telephone"></i></span>
                 {% endif %}
-                {% if o.website %}
-                  <span class="text-primary fs-6" title="Website: {{ o.website }}"><i class="bi bi-globe"></i></span>
+                {% if o.clean_website_url %}
+                  <a href="{{ o.clean_website_url }}" target="_blank" rel="noopener noreferrer" class="text-primary fs-6 text-decoration-none" title="Buka Website: {{ o.clean_website_url }}"><i class="bi bi-globe"></i></a>
                 {% else %}
-                  <span class="text-muted opacity-25 fs-6"><i class="bi bi-globe"></i></span>
+                  <span class="text-muted opacity-25 fs-6" title="Website belum terdata"><i class="bi bi-globe"></i></span>
                 {% endif %}
-                {% if o.socials %}
-                  <span class="text-danger fs-6" title="Media Sosial"><i class="bi bi-share-fill"></i></span>
+                {% if o.instagram_url %}
+                  <a href="{{ o.instagram_url }}" target="_blank" rel="noopener noreferrer" class="text-danger fs-6 text-decoration-none" title="Buka Instagram Resmi"><i class="bi bi-instagram"></i></a>
+                {% elif o.linkedin_url %}
+                  <a href="{{ o.linkedin_url }}" target="_blank" rel="noopener noreferrer" class="text-primary-emphasis fs-6 text-decoration-none" title="Buka LinkedIn Resmi"><i class="bi bi-linkedin"></i></a>
+                {% elif o.socials %}
+                  <span class="text-danger fs-6" title="Media sosial terhubung"><i class="bi bi-share-fill"></i></span>
                 {% endif %}
               </div>
             </td>

@@ -1,6 +1,69 @@
 {% extends "base.html" %}
 {% block title %}Market Size & Market Share Analytics - SYAMANAH{% endblock %}
+
 {% block content %}
+<!-- MODAL POPUP INTERAKTIF: RINCIAN RUMUS & KALKULASI OMZET PERUSAHAAN -->
+<div class="modal fade" id="modalCompanyFormula" tabindex="-1" aria-labelledby="modalCompanyFormulaLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header bg-dark text-white p-3">
+        <div class="d-flex align-items-center gap-2">
+          <span class="badge bg-warning text-dark fs-6" id="mfRankBadge">#1</span>
+          <div>
+            <h5 class="modal-title fw-bold mb-0" id="mfCompanyName">Nama Perusahaan</h5>
+            <small class="text-white-50" id="mfCompanyCategory">Kategori Perusahaan</small>
+          </div>
+        </div>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4 bg-light">
+        <!-- Visual Equation Box -->
+        <div class="card border-0 shadow-sm p-3 mb-3 bg-white text-center border-top border-4 border-primary">
+          <div class="small text-muted text-uppercase fw-semibold mb-1">
+            <i class="bi bi-calculator-fill text-primary me-1"></i>Metode Perhitungan: <span id="mfMethodLabel" class="text-dark fw-bold">-</span>
+          </div>
+          <div class="p-3 bg-light rounded-3 my-2 border">
+            <div class="small text-muted mb-1">Persamaan Rumus Matematika:</div>
+            <div class="fs-5 fw-bold text-primary font-monospace" id="mfMathFormula">Formula Matematika</div>
+          </div>
+          <div class="d-flex justify-content-center align-items-center gap-2 mt-2">
+            <span class="text-muted small">Hasil Estimasi Omzet Bulanan:</span>
+            <span class="fs-4 fw-bold text-success" id="mfMonthlyOmzet">Rp 0 Miliar / bln</span>
+          </div>
+        </div>
+
+        <!-- Breakdown Variables -->
+        <div class="row g-2 mb-3">
+          <div class="col-md-6">
+            <div class="p-3 bg-white rounded border h-100">
+              <div class="small text-muted mb-1"><i class="bi bi-box-seam text-secondary me-1"></i>Estimasi Volume / Output Bulanan:</div>
+              <div class="fw-bold text-dark fs-6" id="mfVolumeDisplay">-</div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="p-3 bg-white rounded border h-100">
+              <div class="small text-muted mb-1"><i class="bi bi-tag-fill text-secondary me-1"></i>Harga Rata-Rata Acuan B2B:</div>
+              <div class="fw-bold text-dark fs-6" id="mfPriceDisplay">-</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Validation & Source -->
+        <div class="p-3 bg-white rounded border">
+          <div class="fw-bold text-dark small mb-1"><i class="bi bi-shield-check text-success me-1"></i>Sumber Validasi & Catatan Audit:</div>
+          <p class="small text-muted mb-2" id="mfAuditNote">-</p>
+          <div class="small text-secondary pt-2 border-top">
+            <i class="bi bi-file-earmark-text text-primary me-1"></i>Sumber Data: <strong id="mfDataSource">-</strong>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer bg-white py-2">
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Tutup</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Top Header: Clean, Sleek Action Bar -->
 <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 pb-2 border-bottom gap-2">
   <div>
@@ -16,11 +79,14 @@
     <p class="text-muted small mb-0">Analisis potensi pasar B2B (TAM, SAM, SOM) & benchmark 20 brand apparel terbesar se-Indonesia.</p>
   </div>
   <div class="d-flex align-items-center gap-2">
+    <a href="{{ url_for('market_analysis.export_market_size_excel') }}" class="btn btn-success btn-sm px-3 shadow-sm fw-semibold" title="Download Spreadsheet Excel (.xlsx)">
+      <i class="bi bi-file-earmark-excel-fill me-1"></i> Download Excel (.xlsx)
+    </a>
     <a href="{{ url_for('market_analysis.market_size_report') }}" class="btn btn-primary btn-sm px-3 shadow-sm">
       <i class="bi bi-file-earmark-slides-fill me-1"></i> Laporan PDF / Slide
     </a>
     <a href="{{ url_for('market_analysis.explorer') }}" class="btn btn-outline-secondary btn-sm" title="Buka Database Master Organization">
-      <i class="bi bi-building me-1"></i> Database 8.559 Akun
+      <i class="bi bi-building me-1"></i> Database 8.893 Akun
     </a>
     <button onclick="window.print()" class="btn btn-outline-secondary btn-sm" title="Cetak Halaman">
       <i class="bi bi-printer"></i>
@@ -73,6 +139,37 @@
           <span class="badge bg-warning text-dark py-2 px-3 fw-bold">
             🏆 <strong>Overall B2B:</strong> TOP #5 Se-Indonesia
           </span>
+        </div>
+
+        <!-- Profil Kapasitas Produksi & Model Operasional Syamanah -->
+        <div class="mt-3 p-3 rounded-3 bg-white bg-opacity-10 border border-white border-opacity-15">
+          <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
+            <span class="badge bg-warning text-dark fw-bold px-2 py-1"><i class="bi bi-gear-wide-connected me-1"></i>Kapasitas Manufaktur & Model Operasional Syamanah</span>
+            <small class="text-white-50">Kombinasi Mesin In-House & Kemitraan Vendor Maklon CMT Terpadu</small>
+          </div>
+          <div class="row g-2 small text-white">
+            <div class="col-md-4">
+              <div class="p-2 rounded bg-black bg-opacity-25 border border-white border-opacity-10 h-100">
+                <div class="text-warning fw-bold mb-1"><i class="bi bi-printer-fill me-1"></i>Jersey Sublimasi (Core In-House):</div>
+                <div class="fw-semibold">75.000 pcs / bulan (Kapasitas Mesin)</div>
+                <div class="text-white-50 mt-1" style="font-size: 0.72rem;">Jika permintaan >75k pcs, dilimpahkan ke vendor maklon CMT luar sebagai buffer overflow kapasitas tak terbatas.</div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="p-2 rounded bg-black bg-opacity-25 border border-white border-opacity-10 h-100">
+                <div class="text-info fw-bold mb-1"><i class="bi bi-shield-shaded me-1"></i>Jaket & Outerwear (Dedicated Line):</div>
+                <div class="fw-semibold">6.000 pcs / bulan (Lini In-House)</div>
+                <div class="text-white-50 mt-1" style="font-size: 0.72rem;">Diproduksi di lini garmen jaket khusus in-house untuk memastikan presisi jahitan dan bahan taslan/parasut.</div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="p-2 rounded bg-black bg-opacity-25 border border-white border-opacity-10 h-100">
+                <div class="text-success fw-bold mb-1"><i class="bi bi-diagram-2 me-1"></i>Seragam, Kaos & Polo (Substitusi):</div>
+                <div class="fw-semibold">Vendor Maklon CMT Mitra</div>
+                <div class="text-white-50 mt-1" style="font-size: 0.72rem;">Produk substitusi & komplementer diproduksi lewat kemitraan vendor maklon CMT luar terverifikasi (Asset-Light).</div>
+              </div>
+            </div>
+          </div>
         </div>
         <div class="mt-3 pt-2 border-top border-white border-opacity-10 d-flex flex-wrap align-items-center gap-2 small">
           <span class="text-white-50"><i class="bi bi-instagram text-warning me-1"></i>Instagram Resmi Syamanah:</span>
@@ -678,37 +775,149 @@
       </div>
     </div>
 
-    <!-- Metodologi & Sumber Data Omzet Callout -->
-    <div class="card border-0 shadow-sm rounded-3 mb-4 bg-light border-start border-4 border-info">
-      <div class="card-body p-3">
-        <div class="d-flex flex-wrap align-items-center justify-content-between mb-2 gap-2">
-          <h6 class="fw-bold text-dark mb-0">
-            <i class="bi bi-info-circle-fill text-info me-2"></i>Transparansi & Metodologi Sumber Data Omzet Industri
-          </h6>
-          <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle">Audit Trail & Validasi B2B</span>
+    <!-- SECTION KHUSUS: RUMUS PERKIRAAN OMZET TIAP PERUSAHAAN (TRANSPARAN & MUDAH DIPAHAMI NON-TEKNIS) -->
+    <div class="card border-0 shadow-sm rounded-3 mb-4 bg-white border-start border-4 border-primary">
+      <div class="card-body p-4">
+        <div class="d-flex flex-wrap align-items-center justify-content-between mb-3 gap-2">
+          <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+              <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1 small fw-bold">
+                <i class="bi bi-calculator-fill me-1"></i> Formula & Rumus Perhitungan
+              </span>
+              <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 small fw-semibold">
+                Transparan 100%
+              </span>
+            </div>
+            <h5 class="fw-bold text-dark mb-0">📐 Rumus & Rincian Perhitungan Estimasi Omzet 20 Perusahaan Apparel B2B</h5>
+            <p class="text-muted small mb-0">Bagaimana angka omzet tiap perusahaan dihitung? Berikut rumus matematika dan metode validasi untuk seluruh produsen:</p>
+          </div>
+          <button class="btn btn-sm btn-outline-primary rounded-pill px-3" type="button" data-bs-toggle="collapse" data-bs-target="#formulaCollapse" aria-expanded="true">
+            <i class="bi bi-eye me-1"></i> Buka / Tutup Tabel Rumus
+          </button>
         </div>
-        <div class="row g-2 small text-secondary">
+
+        <!-- 3 Pilar Metodologi Rumus (Design Thinking: Ramah Pengguna Non-Teknis) -->
+        <div class="row g-2 mb-3">
           <div class="col-md-4">
-            <div class="p-2 bg-white rounded border h-100">
-              <strong class="text-dark d-block mb-1"><i class="bi bi-check-circle-fill text-success me-1"></i>1. Syamanah Group (Rp 3,24 M/bln)</strong>
-              <span><strong>100% Data Finansial Riil Internal 2026</strong> (Januari – September 2026). Total 9 bulan mencapai <strong>Rp 29,18 Miliar</strong> (Syamanah + Raffiz), dengan rekor puncak di bulan Juli sebesar <strong>Rp 4,94 Miliar</strong> (Tahun ajaran baru & event instansi).</span>
+            <div class="p-3 bg-light rounded-3 border h-100">
+              <span class="badge bg-primary mb-1">Pilar 1 &bull; Emiten Publik BEI / Tbk</span>
+              <div class="fw-bold text-dark small mb-1">Laporan Keuangan Kuartalan Resmi BEI (IDX)</div>
+              <div class="p-2 bg-white rounded border small font-monospace text-primary fw-bold mb-2">
+                Omzet = Laporan BEI Kuartal ÷ 3 Bulan
+              </div>
+              <p class="text-muted small mb-0" style="font-size: 0.74rem;">
+                Digunakan untuk <strong>PT Pan Brothers Tbk</strong> dan <strong>PT Trisula International Tbk</strong>. Angka diambil langsung dari pos penjualan segmen garmen & seragam pada laporan keuangan publik.
+              </p>
             </div>
           </div>
           <div class="col-md-4">
-            <div class="p-2 bg-white rounded border h-100">
-              <strong class="text-dark d-block mb-1"><i class="bi bi-bank text-primary me-1"></i>2. Emiten Terbuka / Tbk (Pan Brothers & Trisula)</strong>
-              <span>Diambil langsung dari <strong>Laporan Keuangan Publik Resmi Bursa Efek Indonesia (IDX / BEI)</strong> divisi manufaktur garmen ekspor dan seragam institusional korporat.</span>
+            <div class="p-3 bg-light rounded-3 border h-100">
+              <span class="badge bg-warning text-dark mb-1">Pilar 2 &bull; Pabrik Swasta Non-Tbk</span>
+              <div class="fw-bold text-dark small mb-1">Volume Output Mesin × Harga Acuan Kontrak B2B</div>
+              <div class="p-2 bg-white rounded border small font-monospace text-warning-emphasis fw-bold mb-2">
+                Omzet = Volume (pcs/bln) × Harga SPK (Rp)
+              </div>
+              <p class="text-muted small mb-0" style="font-size: 0.74rem;">
+                Digunakan untuk <strong>Regarsport, Moko Garment, Amanah, Boogie, Garuda Print, dll</strong>. Volume dihitung dari kapasitas mesin terpasang dikali utilisasi industri (70-85%) dan harga rata-rata SPK.
+              </p>
             </div>
           </div>
           <div class="col-md-4">
-            <div class="p-2 bg-white rounded border h-100">
-              <strong class="text-dark d-block mb-1"><i class="bi bi-gear-fill text-warning me-1"></i>3. Produsen Swasta / Non-Tbk (Regarsport, Moko, dll.)</strong>
-              <span>Dihitung menggunakan <strong>Metode Estimasi Kapasitas Industri</strong>: output mesin printing sublimasi & line jahit (pcs/bulan) dikalikan rata-rata harga pasar B2B serta rekam jejak tender pengadaan institusi.</span>
+            <div class="p-3 bg-light rounded-3 border h-100">
+              <span class="badge bg-success mb-1">Pilar 3 &bull; Syamanah Group</span>
+              <div class="fw-bold text-dark small mb-1">Data Finansial Riil Kas Masuk Jan–Sep 2026</div>
+              <div class="p-2 bg-white rounded border small font-monospace text-success fw-bold mb-2">
+                Omzet = Total Riil 9 Bln (Rp 29,18 M) ÷ 9 Bln
+              </div>
+              <p class="text-muted small mb-0" style="font-size: 0.74rem;">
+                <strong>100% Riil Pembukuan Kas Masuk</strong>. Rata-rata Rp 3,24 M/bln. Mesin in-house: <strong>Jersey 75k pcs/bln</strong> (+ vendor overflow jika over), <strong>Jaket 6k pcs/bln</strong>, dan seragam dialihkan ke vendor maklon CMT.
+              </p>
             </div>
           </div>
         </div>
-        <div class="mt-2 text-muted" style="font-size: 0.72rem;">
-          <i class="bi bi-shield-check text-success me-1"></i><strong>Jaminan Bebas Retail Marketplace:</strong> Seluruh data retail/marketplace (Shopee, TikTok Shop, distro eceran) telah dieliminasi 100%. Hanya produsen manufaktur B2B nyata dengan tautan resmi yang terverifikasi.
+
+        <div class="collapse show" id="formulaCollapse">
+          <!-- Filter Kategori Rumus & Search -->
+          <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2 pt-2 border-top">
+            <div class="d-flex flex-wrap align-items-center gap-1">
+              <span class="small text-muted me-1"><i class="bi bi-funnel-fill text-primary me-1"></i>Filter Kelompok:</span>
+              <button type="button" class="btn btn-xs btn-primary rounded-pill px-3 py-1 filter-formula-btn active" data-method="all">Semua (20 Perusahaan)</button>
+              <button type="button" class="btn btn-xs btn-outline-secondary rounded-pill px-3 py-1 filter-formula-btn" data-method="emiten_tbk">Emiten BEI Tbk (2)</button>
+              <button type="button" class="btn btn-xs btn-outline-secondary rounded-pill px-3 py-1 filter-formula-btn" data-method="capacity_pricing">Pabrik Swasta (17)</button>
+              <button type="button" class="btn btn-xs btn-outline-secondary rounded-pill px-3 py-1 filter-formula-btn" data-method="real_financial">Syamanah Riil (1)</button>
+            </div>
+            <div class="input-group input-group-sm" style="width: 230px;">
+              <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+              <input type="text" id="searchFormulaInput" class="form-control border-start-0" placeholder="Cari nama pabrik...">
+            </div>
+          </div>
+
+          <!-- Tabel Lengkap Rumus Matematika 20 Perusahaan -->
+          <div class="table-responsive">
+            <table class="table table-hover table-sm align-middle mb-0 small" id="tableFormulas">
+              <thead class="table-light">
+                <tr>
+                  <th style="width: 50px;" class="text-center">Rank</th>
+                  <th>Brand / Pabrik</th>
+                  <th>Metode Perhitungan</th>
+                  <th>Estimasi Output / Bln</th>
+                  <th>Harga Acuan (Rp)</th>
+                  <th>Rumus Matematika & Kalkulasi</th>
+                  <th class="text-end">Estimasi Omzet</th>
+                  <th class="text-center">Detail</th>
+                </tr>
+              </thead>
+              <tbody id="formulaTableBody">
+                {% for f in omzet_formulas %}
+                <tr class="formula-row {% if f.rank == 5 %}table-success border-2 border-success fw-bold{% endif %}" data-method="{{ f.method_group }}" data-name="{{ f.company_name }}">
+                  <td class="text-center">
+                    <span class="badge {% if f.rank == 1 %}bg-warning text-dark{% elif f.rank == 2 %}bg-secondary text-white{% elif f.rank == 3 %}bg-secondary-subtle text-secondary-emphasis{% elif f.rank == 5 %}bg-success text-white{% else %}bg-light text-dark border{% endif %}">
+                      #{{ f.rank }}
+                    </span>
+                  </td>
+                  <td>
+                    <strong class="{% if f.rank == 5 %}text-success{% else %}text-dark{% endif %}">{{ f.company_name }}</strong>
+                    {% if f.rank == 5 %}<span class="badge bg-success ms-1">Brand Anda</span>{% endif %}
+                    <div class="text-muted" style="font-size: 0.70rem;">{{ f.category }} &bull; {{ f.city }}</div>
+                  </td>
+                  <td>
+                    <span class="badge {% if f.method_group == 'emiten_tbk' %}bg-primary-subtle text-primary border border-primary-subtle{% elif f.method_group == 'real_financial' %}bg-success-subtle text-success-emphasis border border-success-subtle{% else %}bg-warning-subtle text-warning-emphasis border border-warning-subtle{% endif %}">
+                      {{ f.method_label }}
+                    </span>
+                  </td>
+                  <td class="small">{{ f.volume_display }}</td>
+                  <td class="small text-muted">{{ f.price_unit_display }}</td>
+                  <td>
+                    <span class="font-monospace fw-semibold {% if f.rank == 5 %}text-success{% else %}text-dark{% endif %}" style="font-size: 0.75rem;">
+                      {{ f.math_formula }}
+                    </span>
+                    <div class="text-muted" style="font-size: 0.68rem;"><i class="bi bi-shield-check me-1"></i>Sumber: {{ f.data_source }}</div>
+                  </td>
+                  <td class="text-end fw-bold {% if f.rank == 5 %}text-success fs-6{% else %}text-dark{% endif %}">
+                    {{ f.monthly_revenue_formatted }}
+                  </td>
+                  <td class="text-center">
+                    <button type="button" class="btn btn-xs btn-outline-primary py-0 px-2 rounded-pill btn-show-formula text-nowrap"
+                            data-bs-toggle="modal" data-bs-target="#modalCompanyFormula"
+                            style="font-size: 0.70rem;"
+                            data-rank="{{ f.rank }}"
+                            data-company="{{ f.company_name }}"
+                            data-category="{{ f.category }}"
+                            data-method="{{ f.method_label }}"
+                            data-formula="{{ f.math_formula }}"
+                            data-volume="{{ f.volume_display }}"
+                            data-price="{{ f.price_unit_display }}"
+                            data-omzet="{{ f.monthly_revenue_formatted }}"
+                            data-source="{{ f.data_source }}"
+                            data-note="{{ f.audit_note }}">
+                      <i class="bi bi-eye me-1"></i>Detail
+                    </button>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
@@ -782,6 +991,13 @@
                 </a>
                 {% endif %}
                 <div class="text-muted small fw-normal">{{ b.badge }}</div>
+                {% if b.is_syamanah %}
+                <div class="mt-1">
+                  <span class="badge bg-success-subtle text-success-emphasis border border-success-subtle" style="font-size: 0.68rem;">
+                    <i class="bi bi-gear-fill me-1"></i>In-House: Jersey 75k & Jaket 6k pcs/bln | Seragam/Kaos/Polo: Vendor Maklon CMT Mitra
+                  </span>
+                </div>
+                {% endif %}
               </td>
               <td>
                 <span class="small"><i class="bi bi-geo-alt text-danger me-1"></i>{{ b.city }}</span>
@@ -803,10 +1019,35 @@
                     <i class="bi bi-instagram me-1"></i>{{ b.social_handle }} <i class="bi bi-box-arrow-up-right ms-1" style="font-size: 0.65rem;"></i>
                   </a>
                   {% endif %}
+                  {% if b.marketplace_url %}
+                  <a href="{{ b.marketplace_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-xs {% if b.has_marketplace %}btn-outline-warning text-dark{% else %}btn-outline-secondary{% endif %} py-0 px-2 text-nowrap rounded-pill" style="font-size: 0.75rem;" title="Buka Toko/Katalog {{ b.shop_name }}">
+                    <i class="bi {% if b.has_marketplace %}bi-shop text-warning{% else %}bi-briefcase text-secondary{% endif %} me-1"></i>{{ b.marketplace_name }} <i class="bi bi-box-arrow-up-right ms-1" style="font-size: 0.65rem;"></i>
+                  </a>
+                  {% endif %}
                 </div>
               </td>
-              <td class="text-end fw-bold {% if b.is_syamanah %}text-success fs-6{% else %}text-dark{% endif %}">
-                Rp {{ (b.monthly_rev / 1e9)|round(2) }} M
+              <td class="text-end">
+                <div class="fw-bold {% if b.is_syamanah %}text-success fs-6{% else %}text-dark{% endif %}">
+                  Rp {{ (b.monthly_rev / 1e9)|round(2) }} M
+                </div>
+                {% if b.calculation_formula %}
+                <button type="button" class="btn btn-xs btn-outline-info rounded-pill py-0 px-2 mt-1 btn-show-formula text-nowrap"
+                        data-bs-toggle="modal" data-bs-target="#modalCompanyFormula"
+                        style="font-size: 0.70rem;"
+                        data-rank="{{ b.rank }}"
+                        data-company="{{ b.shop_name }}"
+                        data-category="{{ b.main_category }}"
+                        data-method="{{ b.calculation_formula.method_label }}"
+                        data-formula="{{ b.calculation_formula.math_formula }}"
+                        data-volume="{{ b.calculation_formula.volume_display }}"
+                        data-price="{{ b.calculation_formula.price_unit_display }}"
+                        data-omzet="{{ b.calculation_formula.monthly_revenue_formatted }}"
+                        data-source="{{ b.calculation_formula.data_source }}"
+                        data-note="{{ b.calculation_formula.audit_note }}"
+                        title="Klik untuk melihat rumus kalkulasi perusahaan ini">
+                  <i class="bi bi-calculator me-1"></i>Rumus
+                </button>
+                {% endif %}
               </td>
               <td class="text-end fw-bold {% if b.is_syamanah %}text-success{% else %}text-muted{% endif %}">
                 {{ b.share_pct }}%
@@ -918,7 +1159,17 @@
                 <a href="{{ top.store_url }}" target="_blank" rel="noopener noreferrer" class="text-decoration-none {% if top.is_syamanah %}text-success fs-6 fw-bold{% else %}text-dark fw-bold{% endif %}" title="Buka Website Resmi {{ top.shop_name }}">
                   {{ top.shop_name }} <i class="bi bi-box-arrow-up-right {% if top.is_syamanah %}text-success{% else %}text-primary{% endif %} small"></i>
                 </a>
-                {% if top.is_syamanah %}<span class="badge bg-success ms-1">Brand Anda</span>{% endif %}
+                {% if top.is_syamanah %}
+                <span class="badge bg-success ms-1">Brand Anda</span>
+                <div class="mt-1 d-flex flex-wrap gap-1">
+                  <span class="badge bg-success-subtle text-success-emphasis border border-success-subtle" style="font-size: 0.70rem;">
+                    <i class="bi bi-printer-fill me-1"></i>Kapasitas Mesin In-House: 75.000 pcs / bulan
+                  </span>
+                  <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle" style="font-size: 0.70rem;">
+                    <i class="bi bi-shield-check me-1"></i>Vendor Luar (Overflow jika >75k pcs)
+                  </span>
+                </div>
+                {% endif %}
                 <div class="text-muted small"><i class="bi bi-shield-check me-1"></i>{{ top.procurement_model|default(top.badge) }}</div>
               </td>
               <td><span class="small text-muted"><i class="bi bi-geo-alt text-danger me-1"></i>{{ top.city|default('Indonesia') }}</span></td>
@@ -939,6 +1190,11 @@
                   {% if top.social_url %}
                   <a href="{{ top.social_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-xs btn-outline-danger py-1 px-2 text-nowrap rounded-pill" style="font-size: 0.75rem;" title="{{ top.social_handle }}">
                     <i class="bi bi-instagram me-1"></i>{{ top.social_handle }} <i class="bi bi-box-arrow-up-right ms-1" style="font-size: 0.65rem;"></i>
+                  </a>
+                  {% endif %}
+                  {% if top.marketplace_url %}
+                  <a href="{{ top.marketplace_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-xs {% if top.has_marketplace %}btn-outline-warning text-dark{% else %}btn-outline-secondary{% endif %} py-1 px-2 text-nowrap rounded-pill" style="font-size: 0.75rem;" title="Buka Toko/Katalog {{ top.shop_name }}">
+                    <i class="bi {% if top.has_marketplace %}bi-shop text-warning{% else %}bi-briefcase text-secondary{% endif %} me-1"></i>{{ top.marketplace_name }} <i class="bi bi-box-arrow-up-right ms-1" style="font-size: 0.65rem;"></i>
                   </a>
                   {% endif %}
                 </div>
@@ -1084,7 +1340,14 @@
                 <a href="{{ j.store_url }}" target="_blank" rel="noopener noreferrer" class="text-decoration-none {% if j.is_syamanah %}text-primary fs-6 fw-bold{% else %}text-dark fw-bold{% endif %}" title="Buka Website Resmi {{ j.shop_name }}">
                   {{ j.shop_name }} <i class="bi bi-box-arrow-up-right {% if j.is_syamanah %}text-primary{% else %}text-secondary{% endif %} small"></i>
                 </a>
-                {% if j.is_syamanah %}<span class="badge bg-primary ms-1">Brand Anda</span>{% endif %}
+                {% if j.is_syamanah %}
+                <span class="badge bg-primary ms-1">Brand Anda</span>
+                <div class="mt-1">
+                  <span class="badge bg-primary-subtle text-primary-emphasis border border-primary-subtle" style="font-size: 0.70rem;">
+                    <i class="bi bi-gear-fill me-1"></i>Kapasitas Lini Jahit In-House: 6.000 pcs / bulan (Realisasi: 2.500+ pcs/bln)
+                  </span>
+                </div>
+                {% endif %}
                 <div class="text-muted small"><i class="bi bi-shield-check me-1"></i>{{ j.procurement_model|default(j.badge) }}</div>
               </td>
               <td><span class="small text-muted"><i class="bi bi-geo-alt text-danger me-1"></i>{{ j.city|default('Indonesia') }}</span></td>
@@ -1105,6 +1368,11 @@
                   {% if j.social_url %}
                   <a href="{{ j.social_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-xs btn-outline-danger py-1 px-2 text-nowrap rounded-pill" style="font-size: 0.75rem;" title="{{ j.social_handle }}">
                     <i class="bi bi-instagram me-1"></i>{{ j.social_handle }} <i class="bi bi-box-arrow-up-right ms-1" style="font-size: 0.65rem;"></i>
+                  </a>
+                  {% endif %}
+                  {% if j.marketplace_url %}
+                  <a href="{{ j.marketplace_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-xs {% if j.has_marketplace %}btn-outline-warning text-dark{% else %}btn-outline-secondary{% endif %} py-1 px-2 text-nowrap rounded-pill" style="font-size: 0.75rem;" title="Buka Toko/Katalog {{ j.shop_name }}">
+                    <i class="bi {% if j.has_marketplace %}bi-shop text-warning{% else %}bi-briefcase text-secondary{% endif %} me-1"></i>{{ j.marketplace_name }} <i class="bi bi-box-arrow-up-right ms-1" style="font-size: 0.65rem;"></i>
                   </a>
                   {% endif %}
                 </div>
@@ -1224,7 +1492,14 @@
                 <a href="{{ s.store_url }}" target="_blank" rel="noopener noreferrer" class="text-decoration-none {% if s.is_syamanah %}text-success fs-6 fw-bold{% else %}text-dark fw-bold{% endif %}" title="Buka Website Resmi {{ s.shop_name }}">
                   {{ s.shop_name }} <i class="bi bi-box-arrow-up-right {% if s.is_syamanah %}text-success{% else %}text-primary{% endif %} small"></i>
                 </a>
-                {% if s.is_syamanah %}<span class="badge bg-success ms-1">Brand Anda</span>{% endif %}
+                {% if s.is_syamanah %}
+                <span class="badge bg-success ms-1">Brand Anda</span>
+                <div class="mt-1">
+                  <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle" style="font-size: 0.70rem;">
+                    <i class="bi bi-diagram-2 me-1"></i>Produk Substitusi & Komplementer via Kemitraan Vendor Maklon CMT Mitra
+                  </span>
+                </div>
+                {% endif %}
                 <div class="text-muted small"><i class="bi bi-shield-check me-1"></i>{{ s.procurement_model|default(s.badge) }}</div>
               </td>
               <td><span class="small text-muted"><i class="bi bi-geo-alt text-danger me-1"></i>{{ s.city|default('Indonesia') }}</span></td>
@@ -1246,6 +1521,11 @@
                   {% if s.social_url %}
                   <a href="{{ s.social_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-xs btn-outline-danger py-1 px-2 text-nowrap rounded-pill" style="font-size: 0.75rem;" title="{{ s.social_handle }}">
                     <i class="bi bi-instagram me-1"></i>{{ s.social_handle }} <i class="bi bi-box-arrow-up-right ms-1" style="font-size: 0.65rem;"></i>
+                  </a>
+                  {% endif %}
+                  {% if s.marketplace_url %}
+                  <a href="{{ s.marketplace_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-xs {% if s.has_marketplace %}btn-outline-warning text-dark{% else %}btn-outline-secondary{% endif %} py-1 px-2 text-nowrap rounded-pill" style="font-size: 0.75rem;" title="Buka Toko/Katalog {{ s.shop_name }}">
+                    <i class="bi {% if s.has_marketplace %}bi-shop text-warning{% else %}bi-briefcase text-secondary{% endif %} me-1"></i>{{ s.marketplace_name }} <i class="bi bi-box-arrow-up-right ms-1" style="font-size: 0.65rem;"></i>
                   </a>
                   {% endif %}
                 </div>
@@ -1504,6 +1784,79 @@ document.addEventListener('DOMContentLoaded', function() {
   initTableFilter('searchJersey', 'filter-btn-jersey', 'jerseyTableBody', 'countJersey', 20);
   initTableFilter('searchJaket', 'filter-btn-jaket', 'jaketTableBody', 'countJaket', 20);
   initTableFilter('searchSeragam', 'filter-btn-seragam', 'seragamTableBody', 'countSeragam', 20);
+
+  // 5. Handle Click on Rumus Button (Open Modal Interaktif)
+  document.querySelectorAll('.btn-show-formula').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      const rankBadge = document.getElementById('mfRankBadge');
+      if (rankBadge) rankBadge.textContent = '#' + (this.dataset.rank || '1');
+      const compName = document.getElementById('mfCompanyName');
+      if (compName) compName.textContent = this.dataset.company || '-';
+      const compCat = document.getElementById('mfCompanyCategory');
+      if (compCat) compCat.textContent = this.dataset.category || '-';
+      const methLab = document.getElementById('mfMethodLabel');
+      if (methLab) methLab.textContent = this.dataset.method || '-';
+      const mathForm = document.getElementById('mfMathFormula');
+      if (mathForm) mathForm.textContent = this.dataset.formula || '-';
+      const monthOmz = document.getElementById('mfMonthlyOmzet');
+      if (monthOmz) monthOmz.textContent = this.dataset.omzet || '-';
+      const volDisp = document.getElementById('mfVolumeDisplay');
+      if (volDisp) volDisp.textContent = this.dataset.volume || 'Laporan Publik BEI';
+      const prcDisp = document.getElementById('mfPriceDisplay');
+      if (prcDisp) prcDisp.textContent = this.dataset.price || 'Segmen Terbuka BEI';
+      const audNote = document.getElementById('mfAuditNote');
+      if (audNote) audNote.textContent = this.dataset.note || '-';
+      const datSrc = document.getElementById('mfDataSource');
+      if (datSrc) datSrc.textContent = this.dataset.source || '-';
+
+      const modalEl = document.getElementById('modalCompanyFormula');
+      if (modalEl && typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+        modal.show();
+      }
+    });
+  });
+
+  // 6. Filter & Search on Formula Table
+  const formulaSearch = document.getElementById('searchFormulaInput');
+  const formulaBtns = document.querySelectorAll('.filter-formula-btn');
+  const formulaRows = document.querySelectorAll('.formula-row');
+
+  function filterFormulaTable() {
+    const q = (formulaSearch ? formulaSearch.value : '').toLowerCase().trim();
+    const activeBtn = document.querySelector('.filter-formula-btn.active');
+    const method = activeBtn ? activeBtn.getAttribute('data-method') : 'all';
+
+    formulaRows.forEach(row => {
+      const name = (row.getAttribute('data-name') || '').toLowerCase();
+      const rowMethod = row.getAttribute('data-method') || '';
+
+      const matchQ = !q || name.includes(q) || row.textContent.toLowerCase().includes(q);
+      const matchMethod = (method === 'all') || (rowMethod === method);
+
+      if (matchQ && matchMethod) {
+        row.style.display = '';
+      } else {
+        row.style.display = 'none';
+      }
+    });
+  }
+
+  if (formulaSearch) {
+    formulaSearch.addEventListener('input', filterFormulaTable);
+  }
+
+  formulaBtns.forEach(btn => {
+    btn.addEventListener('click', function() {
+      formulaBtns.forEach(b => {
+        b.classList.remove('active', 'btn-primary');
+        b.classList.add('btn-outline-secondary');
+      });
+      this.classList.remove('btn-outline-secondary');
+      this.classList.add('active', 'btn-primary');
+      filterFormulaTable();
+    });
+  });
 });
 </script>
 {% endblock %}

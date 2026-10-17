@@ -278,13 +278,27 @@
                 {% endif %}
               {% endif %}
               {% if org.email %}
-              <span class="badge bg-info-subtle text-info" title="Email: {{ org.email }}"><i class="bi bi-envelope-fill"></i></span>
+              <a href="mailto:{{ org.email }}" class="badge bg-info-subtle text-info text-decoration-none border border-info-subtle d-inline-flex align-items-center" data-bs-toggle="tooltip" title="Email: {{ org.email }}">
+                <i class="bi bi-envelope-fill"></i>
+              </a>
               {% endif %}
-              {% if org.website or org.domain %}
-              <span class="badge bg-primary-subtle text-primary" title="Website/Domain: {{ org.website or org.domain }}"><i class="bi bi-globe"></i></span>
+              {% if org.clean_website_url %}
+              <a href="{{ org.clean_website_url }}" target="_blank" rel="noopener noreferrer" class="badge bg-primary-subtle text-primary text-decoration-none border border-primary-subtle d-inline-flex align-items-center" data-bs-toggle="tooltip" title="Buka Website: {{ org.clean_website_url }}">
+                <i class="bi bi-globe"></i>
+              </a>
               {% endif %}
-              {% if not org.phone and not org.email and not org.domain and not org.website %}
-              <span class="text-muted small">-</span>
+              {% if org.instagram_url %}
+              <a href="{{ org.instagram_url }}" target="_blank" rel="noopener noreferrer" class="badge bg-danger-subtle text-danger text-decoration-none border border-danger-subtle d-inline-flex align-items-center" data-bs-toggle="tooltip" title="Buka Instagram Resmi">
+                <i class="bi bi-instagram"></i>
+              </a>
+              {% endif %}
+              {% if org.linkedin_url %}
+              <a href="{{ org.linkedin_url }}" target="_blank" rel="noopener noreferrer" class="badge bg-primary-subtle text-primary-emphasis text-decoration-none border border-primary-subtle d-inline-flex align-items-center" data-bs-toggle="tooltip" title="Buka LinkedIn Resmi">
+                <i class="bi bi-linkedin"></i>
+              </a>
+              {% endif %}
+              {% if not org.phone and not org.email and not org.clean_website_url and not org.instagram_url and not org.linkedin_url %}
+              <span class="badge bg-light text-muted border small"><i class="bi bi-dash"></i></span>
               {% endif %}
             </div>
           </td>

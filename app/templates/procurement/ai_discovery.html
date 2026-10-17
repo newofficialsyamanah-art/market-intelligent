@@ -106,6 +106,11 @@
             <i class="bi bi-link-45deg me-1"></i> 2. Direct Web Scraper
           </button>
         </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link fw-semibold" id="meta-tab" data-bs-toggle="tab" data-bs-target="#tabMetaAds" type="button" role="tab">
+            <i class="bi bi-meta me-1 text-primary"></i> 3. Meta Ad Library Sourcing
+          </button>
+        </li>
       </ul>
 
       <div class="tab-content" id="sourcingTabContent">
@@ -127,7 +132,7 @@
             
             <div class="col-12 col-md-3">
               <label class="form-label small text-muted mb-1">Bahan / Spesifikasi</label>
-              <input type="text" name="material" class="form-control form-control-sm" placeholder="Contoh: MCB Schneider, Baja WF, Raw Cotton">
+              <input type="text" name="material" class="form-control form-control-sm" placeholder="Contoh: Kain Sublim, Dryfit Milano, Cotton Combed">
             </div>
 
             <div class="col-12 col-md-2">
@@ -180,6 +185,35 @@
             <div class="col-12 col-md-2">
               <button type="submit" class="btn btn-sm text-white w-100 fw-semibold" style="background-color: #3A7D8A;">
                 <i class="bi bi-box-arrow-in-down me-1"></i> Analisis & Simpan
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Tab 3: Meta Ad Library Sourcing -->
+        <div class="tab-pane fade" id="tabMetaAds" role="tabpanel">
+          <p class="small text-muted mb-3">Tarik kandidat supplier aktif yang sedang beriklan di Facebook &amp; Instagram. AI akan mengekstrak kontak WhatsApp/PIC dan jenis material kain dari materi iklan secara otomatis.</p>
+          <form method="post" action="{{ url_for('procurement.meta_ad_search') }}" class="row g-2 align-items-end">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <div class="col-12 col-md-7">
+              <label class="form-label small text-muted mb-1">Kata Kunci Iklan Supplier</label>
+              <input type="text" name="query" class="form-control form-control-sm" placeholder="Contoh: supplier kain, print sublim, bahan kaos, jersey sublimasi, pabrik konveksi" value="supplier kain" required>
+            </div>
+
+            <div class="col-12 col-md-3">
+              <label class="form-label small text-muted mb-1">Maks. Iklan</label>
+              <select name="limit" class="form-select form-select-sm">
+                <option value="10">10 Iklan Teratas</option>
+                <option value="15" selected>15 Iklan Teratas</option>
+                <option value="30">30 Iklan Teratas</option>
+                <option value="50">50 Iklan Teratas</option>
+              </select>
+            </div>
+
+            <div class="col-12 col-md-2">
+              <button type="submit" class="btn btn-sm btn-primary w-100 fw-semibold">
+                <i class="bi bi-cloud-arrow-down me-1"></i> Tarik Iklan
               </button>
             </div>
           </form>

@@ -513,6 +513,106 @@ class Organization(db.Model):
     def size_badge_label(self) -> str:
         return "Aktual Terverifikasi" if self.is_actual_size else "Estimasi Baseline"
 
+    @property
+    def clean_website_url(self):
+        """Mengembalikan URL website resmi yang valid dan siap diklik."""
+        raw = (self.website or "").strip()
+        if not raw and self.domain:
+            raw = self.domain.strip()
+        if not raw:
+            return None
+        low = raw.lower()
+        if any(low == bad or low.startswith(bad) for bad in ["nan", "null", "none", "-", "http://nan", "https://nan"]):
+            return None
+        # Reject generic directories & domain brokers
+        bad_domains = [
+            "volza.com", "biggo.id", "dnb.com", "companyhouse.id", "sini.id", "daftarperusahaan.com",
+            "domainmarket.com", "brandbucket.com", "propertygenie", "lazada.co.id", "pattilabelle.com",
+            "enanyang.my", "damart.fr", "kotak.bank.in"
+        ]
+        if any(x in low for x in bad_domains):
+            return None
+        if not (low.startswith("http://") or low.startswith("https://")):
+            return f"https://{raw}"
+        return raw
+
+    @property
+    def social_media_dict(self) -> dict:
+        """Mengembalikan dictionary media sosial resmi yang bersih dan terverifikasi."""
+        import json
+        if not self.social_json:
+            return {}
+        try:
+            parsed = json.loads(self.social_json)
+            if not isinstance(parsed, dict):
+                return {}
+            clean = {}
+            for k, v in parsed.items():
+                if not v or not isinstance(v, str):
+                    continue
+                v_str = v.strip()
+                v_low = v_str.lower()
+                # Filter share buttons & generic endpoints
+                if any(x in v_low for x in ["sharer.php", "sharearticle", "intent/tweet", "share?url", "example.com", "domainmarket", "brandbucket", "/popular", "/explore"]):
+                    continue
+                # Filter bare root domains
+                if v_low.rstrip('/') in ["https://www.facebook.com", "http://www.facebook.com", "https://facebook.com", "http://facebook.com", "https://www.instagram.com", "https://instagram.com", "https://www.linkedin.com", "https://linkedin.com"]:
+                    continue
+                clean[k] = v_str
+            return clean
+        except Exception:
+            return {}
+
+    @property
+    def instagram_url(self):
+        ig = self.social_media_dict.get("instagram")
+        if not ig:
+            return None
+        handle = ig.strip().lower()
+        if "instagram.com/" in handle:
+            handle = handle.split("instagram.com/")[-1].split("/")[0].split("?")[0]
+        handle = handle.lstrip("@")
+        # Reject generic non-existent handles
+        if handle in ["lazada_id", "domainmarketcom", "brandbucket", "global", "popular", "explore", "accounts", "instagram"]:
+            return None
+        if ig.startswith("http://") or ig.startswith("https://"):
+            return ig
+        return f"https://www.instagram.com/{handle}/"
+
+    @property
+    def facebook_url(self):
+        fb = self.social_media_dict.get("facebook")
+        if not fb:
+            return None
+        fb_low = fb.strip().lower().rstrip('/')
+        if fb_low in ["https://www.facebook.com", "http://www.facebook.com", "https://facebook.com", "http://facebook.com"]:
+            return None
+        if fb.startswith("http://") or fb.startswith("https://"):
+            return fb
+        return f"https://www.facebook.com/{fb.lstrip('@')}"
+
+    @property
+    def linkedin_url(self):
+        li = self.social_media_dict.get("linkedin")
+        if not li:
+            return None
+        li_low = li.strip().lower()
+        if any(x in li_low for x in ["/feed", "/posts", "/share"]):
+            return None
+        if li.startswith("http://") or li.startswith("https://"):
+            return li
+        return f"https://www.linkedin.com/{li.lstrip('@')}"
+
+    @property
+    def tiktok_url(self):
+        tk = self.social_media_dict.get("tiktok")
+        if not tk:
+            return None
+        if tk.startswith("http://") or tk.startswith("https://"):
+            return tk
+        return f"https://www.tiktok.com/@{tk.lstrip('@')}"
+
+
 
 
 class Event(db.Model):
@@ -563,6 +663,46 @@ class Event(db.Model):
     def panitia_contact(self) -> dict:
         contacts = self.get_department_contacts()
         return contacts.get("panitia") or contacts.get("sponsorship") or contacts.get("sekretariat") or {}
+
+    @property
+    def clean_website(self):
+        if not self.website:
+            return None
+        w = self.website.strip()
+        if w.upper() in ["TBD", "N/A", "NONE", "-", ""] or len(w) < 4:
+            return None
+        if not (w.startswith("http://") or w.startswith("https://")):
+            return f"https://{w}"
+        return w
+
+    @property
+    def clean_source_url(self):
+        if not self.source_url:
+            return None
+        s = self.source_url.strip()
+        if s.startswith("http://") or s.startswith("https://"):
+            return s
+        return None
+
+    @property
+    def social_dict(self) -> dict:
+        import json
+        if not self.social_json:
+            return {}
+        try:
+            val = json.loads(self.social_json)
+            return val if isinstance(val, dict) else {}
+        except Exception:
+            return {}
+
+    @property
+    def instagram_url(self):
+        ig = self.social_dict.get("instagram")
+        if not ig:
+            return None
+        if ig.startswith("http://") or ig.startswith("https://"):
+            return ig
+        return f"https://www.instagram.com/{ig.lstrip('@')}"
 
 
 class EventParticipant(db.Model):

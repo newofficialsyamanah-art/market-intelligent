@@ -56,7 +56,8 @@ CATEGORY_KEYWORDS = {
     "raw material": {
         "bahan baku", "raw material", "tekstil", "kain", "polimer", "kimia", "baja", "logam",
         "plastik", "resin", "komoditas", "pabrik", "manufaktur", "pasokan", "material", "serena",
-        "dryfit", "katun", "combed", "drill", "fleece", "taslan", "fabric", "textile"
+        "dryfit", "katun", "combed", "drill", "fleece", "taslan", "fabric", "textile",
+        "sublim", "sublimasi", "print sublim", "printing sublim", "kain sublim", "kertas sublim"
     },
     "distributor": {
         "distributor", "agen resmi", "keagenan", "grosir", "supply chain", "distribusi",
@@ -70,7 +71,7 @@ CATEGORY_KEYWORDS = {
     "services": {
         "services", "jasa", "konsultan", "outsourcing", "facility management", "logistik",
         "maintenance", "vendor layanan", "cleaning service", "security", "inspeksi", "kalibrasi",
-        "ekspedisi", "pengiriman", "instalasi", "layanan"
+        "ekspedisi", "pengiriman", "instalasi", "layanan", "jasa sublim", "maklon sublim", "sublimasi"
     },
     "pharmaceutical": {
         "pharmaceutical", "farmasi", "obat", "alat kesehatan", "alkes", "pbf", "medis",

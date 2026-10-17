@@ -112,7 +112,10 @@
     <p class="text-muted small mb-0">Format Slide Presentasi Resmi & Dokumen Analisis Strategis Siap Cetak/PDF.</p>
   </div>
   <div class="d-flex gap-2">
-    <button onclick="window.print()" class="btn btn-primary">
+    <a href="{{ url_for('market_analysis.export_market_size_excel') }}" class="btn btn-success shadow-sm fw-semibold" title="Download Spreadsheet Lengkap (.xlsx)">
+      <i class="bi bi-file-earmark-excel-fill me-1"></i> Download Excel (.xlsx)
+    </a>
+    <button onclick="window.print()" class="btn btn-primary shadow-sm">
       <i class="bi bi-printer-fill me-1"></i> Cetak / Simpan PDF
     </button>
   </div>
@@ -268,21 +271,52 @@
   </div>
   <p class="text-muted small mb-3">Peta peringkat 20 produsen & vendor apparel B2B terbesar di Indonesia berdasarkan volume pengadaan institusional 2026. Syamanah Group menempati <strong>Peringkat #5 Nasional se-Indonesia</strong>.</p>
 
+  <!-- Kapasitas Manufaktur & Model Operasional Syamanah -->
+  <div class="p-3 mb-3 rounded border border-start border-4 border-success bg-success-subtle bg-opacity-25">
+    <div class="d-flex justify-content-between align-items-center mb-1">
+      <h6 class="fw-bold text-success mb-0 small"><i class="bi bi-gear-wide-connected me-2"></i>Kapasitas Manufaktur & Model Operasional Syamanah:</h6>
+      <span class="badge bg-success text-white" style="font-size: 0.68rem;">Asset-Light Strategic Model</span>
+    </div>
+    <div class="row g-2 text-dark mt-1" style="font-size: 0.72rem;">
+      <div class="col-md-4">
+        <div class="p-2 bg-white rounded border h-100">
+          <strong class="text-success d-block mb-1"><i class="bi bi-printer-fill me-1"></i>Jersey Sublimasi (Core In-House):</strong>
+          <span>Kapasitas mesin: <strong>75.000 pcs / bulan</strong>. Jika order bulanan >75.000 pcs, volume dialihkan ke vendor maklon CMT luar sebagai buffer cadangan tak terbatas.</span>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="p-2 bg-white rounded border h-100">
+          <strong class="text-primary d-block mb-1"><i class="bi bi-shield-shaded me-1"></i>Jaket & Outerwear (Dedicated Line):</strong>
+          <span>Kapasitas lini konveksi in-house: <strong>6.000 pcs / bulan</strong> (Realisasi: 2.500+ pcs/bln @ Rp 392.500) khusus outerwear presisi taslan/parasut.</span>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="p-2 bg-white rounded border h-100">
+          <strong class="text-warning-emphasis d-block mb-1"><i class="bi bi-diagram-2 me-1"></i>Seragam, Kaos, Polo (Substitusi):</strong>
+          <span>100% diproduksi melalui kemitraan <strong>Vendor Maklon CMT Luar Mitra Terverifikasi</strong> untuk menjaga fleksibilitas biaya & skala kapasitas.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Metodologi & Sumber Data Omzet -->
   <div class="p-3 mb-3 bg-light rounded border border-start border-4 border-info">
     <div class="d-flex justify-content-between align-items-center mb-1">
-      <h6 class="fw-bold text-dark mb-0 small"><i class="bi bi-info-circle-fill text-info me-2"></i>Transparansi Sumber & Metodologi Data Omzet:</h6>
-      <span class="badge bg-info-subtle text-info-emphasis" style="font-size: 0.68rem;">Audit Trail B2B</span>
+      <h6 class="fw-bold text-dark mb-0 small"><i class="bi bi-calculator-fill text-info me-2"></i>3 Pilar Metodologi Rumus Omzet Perusahaan:</h6>
+      <span class="badge bg-info-subtle text-info-emphasis" style="font-size: 0.68rem;">Audit Trail & Kalkulasi B2B</span>
     </div>
     <div class="row g-2 text-secondary mt-1" style="font-size: 0.72rem;">
       <div class="col-md-4">
-        <strong class="text-dark">1. Syamanah Group (Rp 3,24 M/bln):</strong> 100% Realisasi Finansial Riil Internal 2026 (Jan–Sep Rp 29,18 Miliar, rekor Juli Rp 4,94 Miliar).
+        <strong class="text-dark">1. Emiten BEI Tbk (Pan Brothers, Trisula):</strong>
+        <div class="font-monospace text-primary fw-bold mt-1">Omzet = Pendapatan Kuartal BEI ÷ 3 Bulan</div>
       </div>
       <div class="col-md-4">
-        <strong class="text-dark">2. Emiten Tbk (Pan Brothers & Trisula):</strong> Laporan Keuangan Publik Resmi Bursa Efek Indonesia (IDX/BEI).
+        <strong class="text-dark">2. Pabrik Swasta Non-Tbk (Regarsport, Moko, dll.):</strong>
+        <div class="font-monospace text-warning-emphasis fw-bold mt-1">Omzet = Volume (pcs/bln) × Harga SPK (Rp)</div>
       </div>
       <div class="col-md-4">
-        <strong class="text-dark">3. Produsen Swasta (Regarsport, Moko, dll.):</strong> Estimasi Kapasitas Industri (output mesin printing & jahit bulanan x harga pasar B2B).
+        <strong class="text-dark">3. Syamanah Group (Audited Finansial 2026):</strong>
+        <div class="font-monospace text-success fw-bold mt-1">Omzet = Kas Masuk 9 Bulan (Rp 29,18 M) ÷ 9 Bln</div>
       </div>
     </div>
   </div>
@@ -335,6 +369,11 @@
                 <i class="bi bi-instagram me-1"></i>{{ b.social_handle }}
               </a>
               {% endif %}
+              {% if b.marketplace_url %}
+              <a href="{{ b.marketplace_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-xs {% if b.has_marketplace %}btn-outline-warning text-dark{% else %}btn-outline-secondary{% endif %} py-0 px-2 text-nowrap rounded-pill" style="font-size: 0.70rem;" title="Buka Toko/Katalog {{ b.shop_name }}">
+                <i class="bi {% if b.has_marketplace %}bi-shop text-warning{% else %}bi-briefcase text-secondary{% endif %} me-1"></i>{{ b.marketplace_name }}
+              </a>
+              {% endif %}
             </div>
           </td>
           <td class="text-end fw-bold">Rp {{ (b.monthly_rev / 1e9)|round(2) }} M</td>
@@ -343,6 +382,44 @@
         {% endfor %}
       </tbody>
     </table>
+  </div>
+
+  <!-- Tabel Rincian Rumus Matematika 20 Perusahaan Apparel B2B -->
+  <div class="p-3 rounded border bg-light mt-3">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <h6 class="fw-bold text-dark mb-0 small"><i class="bi bi-table text-primary me-2"></i>Tabel Rumus Matematis & Kalkulasi Estimasi Omzet 20 Perusahaan:</h6>
+      <span class="badge bg-primary text-white" style="font-size: 0.68rem;">20 Produsen Nasional</span>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-sm table-striped align-middle mb-0 small" style="font-size: 0.72rem;">
+        <thead class="table-light">
+          <tr>
+            <th style="width: 45px;" class="text-center">Rank</th>
+            <th>Brand / Pabrik</th>
+            <th>Metode Perhitungan</th>
+            <th>Estimasi Output (pcs/bln)</th>
+            <th>Harga Acuan (Rp)</th>
+            <th>Rumus Matematika</th>
+            <th class="text-end">Estimasi Omzet</th>
+            <th>Sumber Validasi</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for f in omzet_formulas %}
+          <tr class="{% if f.rank == 5 %}table-success fw-bold{% endif %}">
+            <td class="text-center">#{{ f.rank }}</td>
+            <td><strong>{{ f.company_name }}</strong></td>
+            <td><span class="badge bg-secondary-subtle text-secondary-emphasis">{{ f.method_label }}</span></td>
+            <td>{{ f.volume_display }}</td>
+            <td>{{ f.price_unit_display }}</td>
+            <td class="font-monospace">{{ f.math_formula }}</td>
+            <td class="text-end fw-bold">{{ f.monthly_revenue_formatted }}</td>
+            <td class="text-muted">{{ f.data_source }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
 
@@ -397,7 +474,14 @@
             <a href="{{ top.store_url }}" target="_blank" rel="noopener noreferrer" class="text-decoration-none {% if top.is_syamanah %}text-success fs-6 fw-bold{% else %}text-dark fw-bold{% endif %}" title="Buka Website Resmi {{ top.shop_name }}">
               {{ top.shop_name }} <i class="bi bi-box-arrow-up-right {% if top.is_syamanah %}text-success{% else %}text-primary{% endif %} small"></i>
             </a>
-            {% if top.is_syamanah %}<span class="badge bg-success text-white ms-1">Brand Anda</span>{% endif %}
+            {% if top.is_syamanah %}
+            <span class="badge bg-success text-white ms-1">Brand Anda</span>
+            <div class="mt-1">
+              <span class="badge bg-success-subtle text-success-emphasis border border-success-subtle" style="font-size: 0.68rem;">
+                <i class="bi bi-printer-fill me-1"></i>Kapasitas Mesin In-House: 75.000 pcs/bln (Vendor Cadangan jika >75k)
+              </span>
+            </div>
+            {% endif %}
             <div class="text-muted" style="font-size: 0.68rem;"><i class="bi bi-shield-check me-1"></i>{{ top.procurement_model|default(top.badge) }}</div>
           </td>
           <td class="text-center">
@@ -417,6 +501,11 @@
               {% if top.social_url %}
               <a href="{{ top.social_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-xs btn-outline-danger py-0 px-2 text-nowrap rounded-pill" style="font-size: 0.72rem;" title="{{ top.social_handle }}">
                 <i class="bi bi-instagram me-1"></i>{{ top.social_handle }}
+              </a>
+              {% endif %}
+              {% if top.marketplace_url %}
+              <a href="{{ top.marketplace_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-xs {% if top.has_marketplace %}btn-outline-warning text-dark{% else %}btn-outline-secondary{% endif %} py-0 px-2 text-nowrap rounded-pill" style="font-size: 0.72rem;" title="Buka Toko/Katalog {{ top.shop_name }}">
+                <i class="bi {% if top.has_marketplace %}bi-shop text-warning{% else %}bi-briefcase text-secondary{% endif %} me-1"></i>{{ top.marketplace_name }}
               </a>
               {% endif %}
             </div>
@@ -554,10 +643,16 @@
               <tr>
                 <td class="text-center"><span class="badge {% if j.rank == 1 %}rank-badge-1{% else %}bg-light text-dark border{% endif %}">#{{ j.rank }}</span></td>
                 <td>
-                  <a href="{{ j.store_url }}" target="_blank" rel="noopener noreferrer" class="text-decoration-none text-dark fw-bold" title="Buka Website Resmi {{ j.shop_name }}">
+                  <a href="{{ j.store_url }}" target="_blank" rel="noopener noreferrer" class="text-decoration-none {% if j.is_syamanah %}text-success{% else %}text-dark{% endif %} fw-bold" title="Buka Website Resmi {{ j.shop_name }}">
                     {{ j.shop_name }} <i class="bi bi-box-arrow-up-right text-primary small"></i>
                   </a>
-                  <div class="text-muted" style="font-size: 0.68rem;"><i class="bi bi-shield-check me-1"></i>{{ j.procurement_model|default(j.badge) }} &bull; Rp {{ "{:,}".format(j.avg_price) }}</div>
+                  {% if j.is_syamanah %}<span class="badge bg-success text-white ms-1">Brand Anda</span>{% endif %}
+                  <div class="text-muted" style="font-size: 0.68rem;">
+                    <i class="bi bi-shield-check me-1"></i>{{ j.procurement_model|default(j.badge) }} &bull; Rp {{ "{:,}".format(j.avg_price) }}
+                    {% if j.is_syamanah %}
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle ms-1">Kapasitas In-House: 6.000 pcs/bln</span>
+                    {% endif %}
+                  </div>
                 </td>
                 <td class="text-center">
                   {% for ch in j.sales_channels %}
@@ -575,6 +670,11 @@
                     {% if j.social_url %}
                     <a href="{{ j.social_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-xs btn-outline-danger py-0 px-2 text-nowrap rounded-pill" style="font-size: 0.70rem;" title="{{ j.social_handle }}">
                       <i class="bi bi-instagram me-1"></i>{{ j.social_handle }}
+                    </a>
+                    {% endif %}
+                    {% if j.marketplace_url %}
+                    <a href="{{ j.marketplace_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-xs {% if j.has_marketplace %}btn-outline-warning text-dark{% else %}btn-outline-secondary{% endif %} py-0 px-2 text-nowrap rounded-pill" style="font-size: 0.70rem;" title="Buka Toko/Katalog {{ j.shop_name }}">
+                      <i class="bi {% if j.has_marketplace %}bi-shop text-warning{% else %}bi-briefcase text-secondary{% endif %} me-1"></i>{{ j.marketplace_name }}
                     </a>
                     {% endif %}
                   </div>
@@ -669,8 +769,8 @@
           </div>
         </div>
         <div class="small text-dark mb-2">
-          <strong>Posisi Kompetitif Syamanah di Kategori Seragam:</strong>
-          Dengan skala omzet Rp 3,24 Miliar/bulan, <strong>Syamanah menempati Top #4 Produsen Seragam B2B Nasional</strong>, melayani kontrak pengadaan seragam kerja korporat, kemeja PDH dinas instansi pemerintah, dan seragam pabrik dengan kuantitas ratusan hingga ribuan pcs per PO institusional.
+          <strong>Posisi Kompetitif & Model Operasional Syamanah:</strong>
+          Dengan skala omzet Rp 3,24 Miliar/bulan, <strong>Syamanah menempati Top #4 Produsen Seragam B2B Nasional</strong>. Untuk seragam kemeja PDH, kaos promosi, dan polo shirt, Syamanah menerapkan model <strong>produk substitusi & komplementer terpadu yang dimanufaktur melalui kemitraan vendor maklon CMT luar terverifikasi</strong>, menjaga efisiensi operasional dan fleksibilitas kapasitas partai besar.
         </div>
         <div class="small fw-semibold text-success">
           <i class="bi bi-check-all me-1"></i>Harga Kemeja PDH Syamanah (Rp 170.000) berada tepat di pusat rentang sweet spot tender instansi nasional (Rp 140k – Rp 220k).
@@ -722,6 +822,11 @@
                 {% if s.social_url %}
                 <a href="{{ s.social_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-xs btn-outline-danger py-0 px-2 text-nowrap rounded-pill" style="font-size: 0.70rem;" title="{{ s.social_handle }}">
                   <i class="bi bi-instagram me-1"></i>{{ s.social_handle }}
+                </a>
+                {% endif %}
+                {% if s.marketplace_url %}
+                <a href="{{ s.marketplace_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-xs {% if s.has_marketplace %}btn-outline-warning text-dark{% else %}btn-outline-secondary{% endif %} py-0 px-2 text-nowrap rounded-pill" style="font-size: 0.70rem;" title="Buka Toko/Katalog {{ s.shop_name }}">
+                  <i class="bi {% if s.has_marketplace %}bi-shop text-warning{% else %}bi-briefcase text-secondary{% endif %} me-1"></i>{{ s.marketplace_name }}
                 </a>
                 {% endif %}
               </div>

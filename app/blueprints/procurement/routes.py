@@ -369,6 +369,47 @@ def add_direct():
     return redirect(url_for("procurement.ai_discovery", product=product, material=material))
 
 
+@procurement_bp.route("/meta-ad-search", methods=["POST"])
+@login_required
+@roles_required("admin", "business_analyst", "marketing", "procurement")
+def meta_ad_search():
+    """Tarik supplier aktif langsung dari Meta Ad Library API (Facebook & Instagram Ads)."""
+    _ensure_table()
+    from app.services.meta_ad_supplier_service import MetaAdSupplierService
+
+    query = request.form.get("query", "supplier kain").strip() or "supplier kain"
+    token = request.form.get("token", "").strip()
+    limit = max(1, min(50, int(request.form.get("limit", 15))))
+
+    if not token:
+        token = os.environ.get("META_AD_ACCESS_TOKEN", "")
+
+    if not token:
+        flash("Integrasi Meta Ads belum terkonfigurasi di sistem. Silakan gunakan AI Autonomous Search (Tab 1).", "warning")
+        return redirect(url_for("procurement.ai_discovery"))
+
+    res = MetaAdSupplierService.fetch_supplier_ads(access_token=token, search_terms=query, limit=limit)
+    if not res.get("success"):
+        err_msg = res.get("error", "Gagal menghubungi layanan Meta Ads.")
+        if "facebook.com/ads/library/api" in str(res.get("error_user_msg", "")) or res.get("error_subcode") == 2332002:
+            flash("Layanan Meta Ads saat ini masih dalam antrean verifikasi oleh pihak Meta. Sembari menunggu persetujuan selesai, silakan gunakan '1. AI Autonomous Search' untuk mencari supplier.", "info")
+        else:
+            flash(f"Layanan Meta Ads sedang tidak dapat diakses ({err_msg}). Silakan gunakan AI Autonomous Search.", "warning")
+        return redirect(url_for("procurement.ai_discovery"))
+
+    ads_list = res.get("data", [])
+    if not ads_list:
+        flash(f"Meta Ad Library tidak menemukan iklan aktif untuk kata kunci '{query}'.", "info")
+        return redirect(url_for("procurement.ai_discovery"))
+
+    ingest_res = MetaAdSupplierService.ingest_ads_to_suppliers(ads_list, user_id=current_user.id)
+    created = ingest_res.get("created", 0)
+    updated = ingest_res.get("updated", 0)
+    log_activity("meta_ad_search", f"Meta Ad Sourcing '{query}': {created} baru, {updated} diperbarui")
+    flash(f"Sukses menarik iklan Meta! Ditemukan {len(ads_list)} iklan supplier: {created} supplier baru disimpan, {updated} diperbarui.", "success")
+    return redirect(url_for("procurement.ai_discovery"))
+
+
 @procurement_bp.route("/<int:supplier_id>/verify", methods=["POST"])
 @login_required
 @roles_required("admin", "business_analyst", "management", "procurement")

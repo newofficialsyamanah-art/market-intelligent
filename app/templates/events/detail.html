@@ -92,22 +92,37 @@
       </div>
       <div class="col-md-3">
         <span class="text-muted small d-block">Website & Sumber</span>
-        {% if event.website %}
-          <a href="{{ event.website }}" target="_blank" rel="noopener" class="text-primary text-decoration-none small d-block text-truncate">
-            <i class="bi bi-globe me-1"></i>{{ event.website }}
+        {% if event.clean_website %}
+          <a href="{{ event.clean_website }}" target="_blank" rel="noopener" class="text-primary text-decoration-none small d-block text-truncate fw-medium" title="Situs Resmi Event">
+            <i class="bi bi-globe me-1"></i>{{ event.clean_website }}
+          </a>
+        {% elif event.clean_source_url %}
+          <a href="{{ event.clean_source_url }}" target="_blank" rel="noopener" class="text-secondary text-decoration-none small d-block text-truncate fw-medium" title="Sumber Berita/Dokumentasi">
+            <i class="bi bi-journal-text me-1"></i>Dokumentasi / Liputan
+          </a>
+        {% else %}
+          <span class="text-muted small d-block mb-1">Website belum terdata</span>
+          <a href="https://www.google.com/search?q={{ event.name|urlencode }}+website+resmi+Indonesia" target="_blank" rel="noopener" class="btn btn-sm btn-outline-primary py-0 px-2 rounded-pill small" style="font-size: 0.72rem;" title="Cari Website Resmi di Google">
+            <i class="bi bi-search me-1"></i>Cari Website
           </a>
         {% endif %}
         {% if socials %}
-          <div class="d-flex gap-2 mt-1">
+          <div class="d-flex gap-2 mt-2">
             {% if socials.get('instagram') %}
-              <a href="{{ socials.instagram }}" target="_blank" class="text-danger fs-6" title="Instagram"><i class="bi bi-instagram"></i></a>
+              <a href="{{ socials.instagram }}" target="_blank" rel="noopener" class="text-danger fs-6" title="Instagram Resmi"><i class="bi bi-instagram"></i></a>
             {% endif %}
             {% if socials.get('facebook') %}
-              <a href="{{ socials.facebook }}" target="_blank" class="text-primary fs-6" title="Facebook"><i class="bi bi-facebook"></i></a>
+              <a href="{{ socials.facebook }}" target="_blank" rel="noopener" class="text-primary fs-6" title="Facebook Resmi"><i class="bi bi-facebook"></i></a>
             {% endif %}
             {% if socials.get('linkedin') %}
-              <a href="{{ socials.linkedin }}" target="_blank" class="text-info fs-6" title="LinkedIn"><i class="bi bi-linkedin"></i></a>
+              <a href="{{ socials.linkedin }}" target="_blank" rel="noopener" class="text-info fs-6" title="LinkedIn Resmi"><i class="bi bi-linkedin"></i></a>
             {% endif %}
+          </div>
+        {% else %}
+          <div class="mt-1">
+            <a href="https://www.instagram.com/explore/tags/{{ event.name|replace(' ', '')|urlencode }}/" target="_blank" rel="noopener" class="text-danger small text-decoration-none" style="font-size: 0.75rem;" title="Cek Tagar Instagram">
+              <i class="bi bi-instagram me-1"></i>Cari di Instagram
+            </a>
           </div>
         {% endif %}
       </div>
@@ -127,12 +142,18 @@
       </div>
       <div class="col-md-3">
         <span class="text-muted d-block">URL Sumber Resmi:</span>
-        {% if event.source_url or event.website %}
-          <a href="{{ event.source_url or event.website }}" target="_blank" rel="noopener" class="text-primary text-truncate d-inline-block" style="max-width: 220px;">
-            <i class="bi bi-link-45deg me-1"></i>{{ event.source_url or event.website }}
+        {% if event.clean_website %}
+          <a href="{{ event.clean_website }}" target="_blank" rel="noopener" class="text-primary text-truncate d-inline-block" style="max-width: 220px;" title="{{ event.clean_website }}">
+            <i class="bi bi-globe me-1"></i>{{ event.clean_website }}
+          </a>
+        {% elif event.clean_source_url %}
+          <a href="{{ event.clean_source_url }}" target="_blank" rel="noopener" class="text-primary text-truncate d-inline-block" style="max-width: 220px;" title="{{ event.clean_source_url }}">
+            <i class="bi bi-link-45deg me-1"></i>{{ event.clean_source_url }}
           </a>
         {% else %}
-          <span class="text-muted">-</span>
+          <a href="https://www.google.com/search?q={{ event.name|urlencode }}+event+Indonesia" target="_blank" rel="noopener" class="text-primary text-decoration-none small" title="Cari Arsip / Dokumen Media">
+            <i class="bi bi-search me-1"></i>Cari Arsip Media
+          </a>
         {% endif %}
       </div>
       <div class="col-md-3">

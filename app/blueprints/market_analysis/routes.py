@@ -146,6 +146,25 @@ def market_size_report():
     return render_template("market_analysis/market_size_report.html", **data)
 
 
+@market_analysis_bp.route("/market-size/export-excel")
+@login_required
+@roles_required("business_analyst", "management", "marketing")
+def export_market_size_excel():
+    """Ekspor Komprehensif Laporan Market Size, Market Share & Brand Leaderboard ke file Excel (.xlsx)."""
+    from flask import send_file
+    from app.services.market_size_excel import generate_market_size_excel_bytes
+
+    excel_buffer = generate_market_size_excel_bytes()
+    filename = "Laporan_Market_Size_Share_Syamanah_2026.xlsx"
+    return send_file(
+        excel_buffer,
+        as_attachment=True,
+        download_name=filename,
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+
+
+
 # ---------- Company Intelligence Explorer & Drill-Down (Phase 4) ----------
 
 @market_analysis_bp.route("/explorer")

@@ -27,8 +27,10 @@
         {% if org.normalized_name %}
         <span><i class="bi bi-fingerprint"></i> Normalisasi: <code>{{ org.normalized_name }}</code></span>
         {% endif %}
-        {% if org.domain %}
-        <span><i class="bi bi-globe text-primary"></i> <a href="http://{{ org.domain }}" target="_blank" rel="noopener" class="text-decoration-none">{{ org.domain }}</a></span>
+        {% if org.clean_website_url %}
+        <span><i class="bi bi-globe text-primary"></i> <a href="{{ org.clean_website_url }}" target="_blank" rel="noopener noreferrer" class="text-decoration-none fw-semibold">{{ org.clean_website_url }}</a></span>
+        {% elif org.domain %}
+        <span><i class="bi bi-globe text-muted"></i> {{ org.domain }}</span>
         {% endif %}
         <span><i class="bi bi-calendar-event"></i> Terakhir Diperbarui: {{ org.data_freshness.strftime('%d %b %Y, %H:%M') if org.data_freshness else '-' }}</span>
       </div>
@@ -110,47 +112,56 @@
 
         <dt class="col-sm-4 text-muted">Website Resmi</dt>
         <dd class="col-sm-8">
-          {% if org.website %}
-          <a href="{{ org.website if org.website.startswith('http') else 'http://' + org.website }}" target="_blank" rel="noopener" class="text-decoration-none">
-            <i class="bi bi-box-arrow-up-right me-1 text-primary"></i>{{ org.website }}
+          {% if org.clean_website_url %}
+          <a href="{{ org.clean_website_url }}" target="_blank" rel="noopener noreferrer" class="text-decoration-none fw-semibold text-primary">
+            <i class="bi bi-box-arrow-up-right me-1"></i>{{ org.clean_website_url }}
           </a>
           {% else %}
-          <span class="text-muted">-</span>
+          <span class="badge bg-light text-muted border"><i class="bi bi-dash-circle me-1"></i>Belum terdata</span>
           {% endif %}
         </dd>
 
         <dt class="col-sm-4 text-muted">Instagram</dt>
         <dd class="col-sm-8">
-          {% if social and social.instagram %}
-          <a href="{{ social.instagram if social.instagram.startswith('http') else 'https://instagram.com/' + social.instagram.lstrip('@') }}" target="_blank" rel="noopener" class="text-decoration-none fw-semibold text-danger">
-            <i class="bi bi-instagram me-1"></i>{{ social.instagram }}
+          {% if org.instagram_url or (social and social.instagram) %}
+          <a href="{{ org.instagram_url or social.instagram }}" target="_blank" rel="noopener noreferrer" class="text-decoration-none fw-semibold text-danger">
+            <i class="bi bi-instagram me-1"></i>{{ org.instagram_url or social.instagram }}
           </a>
           {% else %}
-          <span class="text-muted">-</span>
+          <span class="badge bg-light text-muted border"><i class="bi bi-dash-circle me-1"></i>Belum terdata</span>
           {% endif %}
         </dd>
 
         <dt class="col-sm-4 text-muted">Facebook</dt>
         <dd class="col-sm-8">
-          {% if social and social.facebook %}
-          <a href="{{ social.facebook if social.facebook.startswith('http') else 'https://facebook.com/' + social.facebook }}" target="_blank" rel="noopener" class="text-decoration-none fw-semibold text-primary">
-            <i class="bi bi-facebook me-1"></i>{{ social.facebook }}
+          {% if org.facebook_url or (social and social.facebook) %}
+          <a href="{{ org.facebook_url or social.facebook }}" target="_blank" rel="noopener noreferrer" class="text-decoration-none fw-semibold text-primary">
+            <i class="bi bi-facebook me-1"></i>{{ org.facebook_url or social.facebook }}
           </a>
           {% else %}
-          <span class="text-muted">-</span>
+          <span class="badge bg-light text-muted border"><i class="bi bi-dash-circle me-1"></i>Belum terdata</span>
           {% endif %}
         </dd>
 
         <dt class="col-sm-4 text-muted">LinkedIn</dt>
         <dd class="col-sm-8">
-          {% if social and social.linkedin %}
-          <a href="{{ social.linkedin if social.linkedin.startswith('http') else 'https://linkedin.com/' + social.linkedin }}" target="_blank" rel="noopener" class="text-decoration-none fw-semibold text-primary-emphasis">
-            <i class="bi bi-linkedin me-1"></i>{{ social.linkedin }}
+          {% if org.linkedin_url or (social and social.linkedin) %}
+          <a href="{{ org.linkedin_url or social.linkedin }}" target="_blank" rel="noopener noreferrer" class="text-decoration-none fw-semibold text-primary-emphasis">
+            <i class="bi bi-linkedin me-1"></i>{{ org.linkedin_url or social.linkedin }}
           </a>
           {% else %}
-          <span class="text-muted">-</span>
+          <span class="badge bg-light text-muted border"><i class="bi bi-dash-circle me-1"></i>Belum terdata</span>
           {% endif %}
         </dd>
+
+        {% if org.tiktok_url or (social and social.tiktok) %}
+        <dt class="col-sm-4 text-muted">TikTok</dt>
+        <dd class="col-sm-8">
+          <a href="{{ org.tiktok_url or social.tiktok }}" target="_blank" rel="noopener noreferrer" class="text-decoration-none fw-semibold text-dark">
+            <i class="bi bi-tiktok me-1"></i>{{ org.tiktok_url or social.tiktok }}
+          </a>
+        </dd>
+        {% endif %}
 
         <dt class="col-sm-4 text-muted">Jumlah Anggota / Karyawan</dt>
         <dd class="col-sm-8">
