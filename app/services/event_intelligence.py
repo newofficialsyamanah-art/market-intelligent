@@ -811,8 +811,9 @@ Kembalikan format HANYA JSON array:
         source: str = "",
         verification_status: str = "",
         year: str = "",
+        month: str = "",
         page: int = 1,
-        per_page: int = 20
+        per_page: Optional[int] = 20
     ) -> Tuple[List[Event], int, int]:
         """Pencarian dan penyaringan data Event Intelligence Workspace."""
         query = Event.query
@@ -861,14 +862,24 @@ Kembalikan format HANYA JSON array:
             year_clean = year.strip()
             if year_clean.isdigit():
                 y_int = int(year_clean)
+                other_years = [str(y) for y in [2024, 2025, 2026, 2027, 2028, 2029] if y != y_int]
                 query = query.filter(
                     db.or_(
                         Event.name.like(f"%{year_clean}%"),
-                        db.extract("year", Event.start_date) == y_int
+                        db.and_(
+                            db.extract("year", Event.start_date) == y_int,
+                            *[~Event.name.like(f"%{oy}%") for oy in other_years]
+                        )
                     )
                 )
             else:
                 query = query.filter(Event.name.like(f"%{year_clean}%"))
+
+        if month:
+            month_clean = month.strip()
+            if month_clean.isdigit():
+                m_int = int(month_clean)
+                query = query.filter(db.extract("month", Event.start_date) == m_int)
 
         if organizer:
             query = query.filter(Event.organizer.like(f"%{organizer}%"))
@@ -898,6 +909,18 @@ Kembalikan format HANYA JSON array:
             query = query.filter(Event.relevance_score < 50)
 
         total_count = query.count()
+        has_info = db.case(
+            (db.or_(Event.website.isnot(None), Event.social_json.isnot(None), Event.source_url.like('http%')), 1),
+            else_=0
+        )
+        if per_page is None or per_page <= 0:
+            items = query.order_by(
+                has_info.desc(),
+                Event.relevance_score.desc(),
+                Event.start_date.desc().nullslast()
+            ).all()
+            return items, total_count, 1
+
         total_pages = (total_count + per_page - 1) // per_page if total_count > 0 else 1
 
         has_info = db.case(
@@ -956,3 +979,116 @@ Kembalikan format HANYA JSON array:
             "by_role": by_role,
             "relevance_badge": "HIGH" if (event.relevance_score or 0) >= 80 else ("MEDIUM" if (event.relevance_score or 0) >= 50 else "LOW")
         }
+
+
+    @classmethod
+    def export_events_to_excel(cls, events: List[Event], filter_summary: str = ""):
+        """Mengekspor daftar event terfilter ke file Excel (.xlsx) dengan formatting profesional."""
+        import io
+        import openpyxl
+        from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+        from openpyxl.utils import get_column_letter
+
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Daftar Event"
+
+        # Judul & Info Metadata
+        ws.merge_cells("A1:O1")
+        title_cell = ws["A1"]
+        title_cell.value = "MARKET INTELLIGENCE - DAFTAR EVENT B2B & EXPO"
+        title_cell.font = Font(name="Calibri", size=14, bold=True, color="FFFFFF")
+        title_cell.fill = PatternFill(start_color="1B365D", end_color="1B365D", fill_type="solid")
+        title_cell.alignment = Alignment(horizontal="center", vertical="center")
+        ws.row_dimensions[1].height = 32
+
+        ws.merge_cells("A2:O2")
+        meta_cell = ws["A2"]
+        meta_cell.value = f"Ringkasan Filter: {filter_summary or 'Semua Data'} | Diunduh pada: {datetime.now().strftime('%d %B %Y %H:%M WIB')} | Total: {len(events)} Event"
+        meta_cell.font = Font(name="Calibri", size=9, italic=True, color="475569")
+        meta_cell.fill = PatternFill(start_color="F1F5F9", end_color="F1F5F9", fill_type="solid")
+        meta_cell.alignment = Alignment(horizontal="center", vertical="center")
+        ws.row_dimensions[2].height = 20
+
+        # Baris Header Kolom
+        headers = [
+            ("No", 6, "center"),
+            ("Nama Event", 35, "left"),
+            ("Jenis Event", 20, "left"),
+            ("Tanggal Pelaksanaan", 25, "center"),
+            ("Status Tanggal", 15, "center"),
+            ("Tahun", 10, "center"),
+            ("Venue / Gedung", 28, "left"),
+            ("Kota", 16, "left"),
+            ("Provinsi", 16, "left"),
+            ("Penyelenggara", 28, "left"),
+            ("Status", 14, "center"),
+            ("Skor", 10, "right"),
+            ("Peluang B2B / Apparel", 35, "left"),
+            ("Website Resmi", 25, "left"),
+            ("URL Sumber Bukti", 30, "left")
+        ]
+
+        header_font = Font(name="Calibri", size=10, bold=True, color="FFFFFF")
+        header_fill = PatternFill(start_color="203A43", end_color="203A43", fill_type="solid")
+        thin_border = Border(
+            left=Side(style="thin", color="CBD5E1"),
+            right=Side(style="thin", color="CBD5E1"),
+            top=Side(style="thin", color="CBD5E1"),
+            bottom=Side(style="thin", color="CBD5E1")
+        )
+
+        ws.row_dimensions[4].height = 26
+        for col_idx, (h_name, width, align) in enumerate(headers, 1):
+            cell = ws.cell(row=4, column=col_idx, value=h_name)
+            cell.font = header_font
+            cell.fill = header_fill
+            cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+            cell.border = thin_border
+            ws.column_dimensions[get_column_letter(col_idx)].width = width
+
+        # Data Rows
+        zebra_fill = PatternFill(start_color="F8FAFC", end_color="F8FAFC", fill_type="solid")
+        white_fill = PatternFill(start_color="FFFFFF", end_color="FFFFFF", fill_type="solid")
+        data_font = Font(name="Calibri", size=10)
+
+        for row_idx, ev in enumerate(events, 5):
+            is_even = (row_idx % 2 == 0)
+            row_fill = zebra_fill if is_even else white_fill
+            ws.row_dimensions[row_idx].height = 22
+
+            status_tgl = "Pasti / Terkonfirmasi" if ev.is_date_confirmed else ("Bulan (Estimasi)" if ev.date_precision == "month" else "Tentatif (Estimasi)")
+
+            row_data = [
+                (row_idx - 4, "center"),
+                (ev.name or "", "left"),
+                (ev.event_type or "-", "left"),
+                (ev.date_display or "-", "center"),
+                (status_tgl, "center"),
+                (ev.event_year or "-", "center"),
+                (ev.venue or "-", "left"),
+                (ev.city or "-", "left"),
+                (ev.province or "-", "left"),
+                (ev.organizer or "-", "left"),
+                ((ev.status or "upcoming").capitalize(), "center"),
+                (ev.relevance_score or 0, "right"),
+                (ev.relevance_notes or ev.description or "-", "left"),
+                (ev.clean_website or "-", "left"),
+                (ev.clean_source_url or ev.source_url or "-", "left")
+            ]
+
+            for col_idx, (val, align) in enumerate(row_data, 1):
+                cell = ws.cell(row=row_idx, column=col_idx, value=val)
+                cell.font = data_font
+                cell.fill = row_fill
+                cell.border = thin_border
+                cell.alignment = Alignment(horizontal=align, vertical="center")
+
+                if col_idx in [14, 15] and isinstance(val, str) and val.startswith("http"):
+                    cell.hyperlink = val
+                    cell.font = Font(name="Calibri", size=10, color="0044CC", underline="single")
+
+        stream = io.BytesIO()
+        wb.save(stream)
+        stream.seek(0)
+        return stream

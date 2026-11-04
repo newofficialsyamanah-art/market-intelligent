@@ -726,13 +726,13 @@ class Event(db.Model):
         """Format tanggal yang manusiawi, akurat, dan tidak menipu (anti 1 Januari palsu)."""
         if self.date_precision == "tentative" or not self.start_date:
             yr = self.event_year or ""
-            return f"Tahun {yr} (Jadwal Segera Diumumkan)" if yr else "Jadwal Segera Diumumkan"
+            return f"Tahun {yr} (Estimasi / Tanggal TBD)" if yr else "Jadwal Estimasi / TBD"
 
         months_id = ["", "Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags", "Sep", "Okt", "Nov", "Des"]
         
         if self.date_precision == "month":
             mo_name = months_id[self.start_date.month] if 1 <= self.start_date.month <= 12 else ""
-            return f"{mo_name} {self.start_date.year} (Tanggal TBD)"
+            return f"{mo_name} {self.start_date.year} (Estimasi / Tanggal TBD)"
 
         s_d = self.start_date
         e_d = self.end_date
