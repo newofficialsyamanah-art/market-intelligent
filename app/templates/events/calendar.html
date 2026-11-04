@@ -38,10 +38,15 @@
                       {% endif %}
                       <span class="badge bg-primary-subtle text-primary">{{ ev.status|upper }}</span>
                     </div>
-                    <h5 class="fw-bold mb-1">
+                    <h5 class="fw-bold mb-1 d-flex align-items-center flex-wrap gap-1">
                       <a href="{{ url_for('events.detail', event_id=ev.id) }}" class="text-dark text-decoration-none hover-primary">
                         {{ ev.name }}
                       </a>
+                      {% if ev.event_year %}
+                        <span class="badge {% if ev.event_year >= 2027 %}bg-success text-white{% else %}bg-primary text-white{% endif %} font-monospace" style="font-size: 0.7rem;">
+                          {{ ev.event_year }}
+                        </span>
+                      {% endif %}
                     </h5>
                     <div class="text-muted small">
                       <i class="bi bi-geo-alt me-1 text-danger"></i>{{ ev.venue or 'TBA' }}, {{ ev.city or '-' }}
@@ -49,15 +54,9 @@
                     </div>
                   </div>
                   <div class="text-end">
-                    <div class="fs-6 fw-bold text-primary">
-                      {% if ev.start_date %}
-                        {{ ev.start_date.strftime('%d %b %Y') }}
-                        {% if ev.end_date and ev.end_date != ev.start_date %}
-                          - {{ ev.end_date.strftime('%d %b %Y') }}
-                        {% endif %}
-                      {% else %}
-                        TBA
-                      {% endif %}
+                    <div class="fs-6 fw-bold {% if ev.is_date_confirmed %}text-primary{% else %}text-secondary{% endif %}">
+                      <i class="bi {% if ev.is_date_confirmed %}bi-calendar-check{% else %}bi-clock-history{% endif %} me-1"></i>
+                      {{ ev.date_display }}
                     </div>
                     <a href="{{ url_for('events.detail', event_id=ev.id) }}" class="btn btn-sm btn-outline-primary mt-2">
                       Detail Event <i class="bi bi-arrow-right ms-1"></i>

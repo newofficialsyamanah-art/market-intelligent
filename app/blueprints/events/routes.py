@@ -30,6 +30,7 @@ def index():
     organizer = request.args.get("organizer", "").strip()
     source = request.args.get("source", "").strip()
     verification_status = request.args.get("verification_status", "").strip()
+    year = request.args.get("year", "").strip()
     start_date_from_raw = request.args.get("start_date_from", "").strip()
     start_date_to_raw = request.args.get("start_date_to", "").strip()
     page = request.args.get("page", 1, type=int)
@@ -61,6 +62,7 @@ def index():
         start_date_to=start_date_to,
         source=source,
         verification_status=verification_status,
+        year=year,
         page=page,
         per_page=15,
     )
@@ -113,6 +115,7 @@ def index():
             "organizer": organizer,
             "source": source,
             "verification_status": verification_status,
+            "year": year,
             "start_date_from": start_date_from_raw,
             "start_date_to": start_date_to_raw,
         },
@@ -233,12 +236,13 @@ def create_event():
 @login_required
 @roles_required("business_analyst", "marketing")
 def discover_events_action():
-    """Trigger dynamic live event discovery across Indonesia."""
-    query = request.form.get("query", "").strip()
-    sport = request.form.get("sport", "").strip()
-    city = request.form.get("city", "").strip()
-    province = request.form.get("province", "").strip()
-    limit = int(request.form.get("limit", 8))
+    """Trigger dynamic live event discovery across Indonesia via Google Search."""
+    query = (request.form.get("query") or "").strip()
+    sport = (request.form.get("sport") or "").strip()
+    city = (request.form.get("city") or "").strip()
+    province = (request.form.get("province") or "").strip()
+    year = (request.form.get("year") or "2026, 2027").strip() or "2026, 2027"
+    limit = int(request.form.get("limit", 15))
 
     if sport:
         if query:
@@ -247,15 +251,34 @@ def discover_events_action():
             query = f"Turnamen {sport} kejuaraan kompetisi"
 
     try:
-        res = EventIntelligenceService.discover_events(query=query, city=city, province=province, limit=limit)
+        res = EventIntelligenceService.discover_events(
+            query=query,
+            city=city,
+            province=province,
+            year=year,
+            limit=limit,
+            user_id=current_user.id
+        )
         wilayah_label = city or province or "Seluruh Indonesia"
         if sport:
             wilayah_label += f" [Olahraga: {sport}]"
-        flash(f"Discovery Event ({wilayah_label}) selesai: {res['total_processed']} event diproses ({res['created']} event baru, {res['updated']} diperbarui).", "success")
-        log_activity("discover_events", f"Discovery event {wilayah_label}: {res['created']} baru")
+
+        created = res.get("created", 0)
+        updated = res.get("updated", 0)
+        total = res.get("total_processed", 0)
+
+        if total == 0 and res.get("message"):
+            flash(res["message"], "info")
+        else:
+            flash(
+                f"Discovery Event Google ({wilayah_label} - Tahun {year}) selesai: "
+                f"{total} event faktual ditemukan ({created} event baru disimpan, {updated} diperbarui).",
+                "success"
+            )
+            log_activity("discover_events", f"Discovery event {wilayah_label} ({year}): {created} baru")
     except Exception as e:
         flash(f"Discovery Event gagal: {e}", "danger")
-    return redirect(url_for("events.index"))
+    return redirect(url_for("events.index", year=year if year in ['2026', '2027'] else ""))
 
 
 

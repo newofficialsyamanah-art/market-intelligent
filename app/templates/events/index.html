@@ -169,6 +169,13 @@
           <option value="completed" {% if filters.status == 'completed' %}selected{% endif %}>Completed</option>
         </select>
       </div>
+      <div class="col-md-2">
+        <select name="year" class="form-select fw-semibold text-primary">
+          <option value="">Semua Tahun</option>
+          <option value="2027" {% if filters.year == '2027' %}selected{% endif %}>Tahun 2027</option>
+          <option value="2026" {% if filters.year == '2026' %}selected{% endif %}>Tahun 2026</option>
+        </select>
+      </div>
       <div class="col-md-1">
         <input type="text" name="source" class="form-control" placeholder="Domain..." value="{{ filters.source }}">
       </div>
@@ -207,7 +214,14 @@
           {% for ev in items %}
           <tr>
             <td>
-              <div class="fw-bold text-dark fs-6">{{ ev.name }}</div>
+              <div class="fw-bold text-dark fs-6 d-flex align-items-center flex-wrap gap-1">
+                <span>{{ ev.name }}</span>
+                {% if ev.event_year %}
+                  <span class="badge {% if ev.event_year >= 2027 %}bg-success text-white{% else %}bg-primary text-white{% endif %} font-monospace" style="font-size: 0.65rem;">
+                    {{ ev.event_year }}
+                  </span>
+                {% endif %}
+              </div>
               <div class="text-muted small text-truncate" style="max-width: 300px;">
                 {{ ev.description or 'Tidak ada deskripsi detail.' }}
               </div>
@@ -260,15 +274,14 @@
               <span class="badge bg-light text-dark border">{{ ev.event_type or 'General' }}</span>
             </td>
             <td>
-              {% if ev.start_date %}
-                <div class="fw-medium text-dark"><i class="bi bi-calendar-check me-1 text-primary"></i>{{ ev.start_date.strftime('%d %b %Y') }}</div>
-                {% if ev.end_date and ev.end_date != ev.start_date %}
-                  <div class="text-muted small">s/d {{ ev.end_date.strftime('%d %b %Y') }}</div>
-                {% endif %}
+              {% if ev.is_date_confirmed %}
+                <div class="fw-medium text-dark"><i class="bi bi-calendar-check me-1 text-primary"></i>{{ ev.date_display }}</div>
+              {% elif ev.date_precision == 'month' and ev.start_date %}
+                <div class="fw-medium text-info"><i class="bi bi-calendar-month me-1"></i>{{ ev.date_display }}</div>
               {% else %}
-                <span class="text-muted small">TBA</span>
+                <span class="badge bg-secondary-subtle text-secondary border py-1 px-2"><i class="bi bi-clock-history me-1"></i>{{ ev.date_display }}</span>
               {% endif %}
-              <div class="text-secondary small mt-1"><i class="bi bi-geo-alt me-1"></i>{{ ev.venue or 'Venue TBA' }}</div>
+              <div class="text-secondary small mt-1"><i class="bi bi-geo-alt me-1 text-danger"></i>{{ ev.venue or 'Venue TBA' }}</div>
             </td>
             <td>
               <span class="fw-medium">{{ ev.city or '-' }}</span>
@@ -409,6 +422,36 @@
             <input type="text" name="query" class="form-control form-control-sm" placeholder="Contoh: Expo Industri, Pameran UMKM, Turnamen Lari" value="Pameran Bisnis dan Turnamen Olahraga">
           </div>
 
+          <!-- Target Tahun Event 2026 / 2027 -->
+          <div class="mb-3 p-2 bg-light rounded border">
+            <label class="form-label small fw-semibold text-dark mb-1 d-flex align-items-center gap-1">
+              <i class="bi bi-calendar-event text-primary"></i> Target Tahun Event:
+            </label>
+            <div class="d-flex flex-wrap gap-3 mt-1">
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="year" id="year2027" value="2027" checked>
+                <label class="form-check-label fw-bold text-success" for="year2027">
+                  Tahun 2027
+                </label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="year" id="year2026" value="2026">
+                <label class="form-check-label fw-semibold text-primary" for="year2026">
+                  Tahun 2026
+                </label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="year" id="yearBoth" value="2026, 2027">
+                <label class="form-check-label text-muted" for="yearBoth">
+                  2026 &amp; 2027
+                </label>
+              </div>
+            </div>
+            <div class="small text-muted mt-1" style="font-size: 0.75rem;">
+              <i class="bi bi-google text-primary me-1"></i>Pencarian Google akan secara otomatis menargetkan berita &amp; liputan event resmi di tahun yang dipilih.
+            </div>
+          </div>
+
           <div class="mb-3">
             <label class="form-label small fw-semibold text-muted mb-1"><i class="bi bi-trophy text-primary me-1"></i>Fokus Cabang Olahraga (Opsional)</label>
             <select name="sport" id="modalEventSportSelect" class="form-select form-select-sm">
@@ -435,7 +478,7 @@
           </div>
 
           <div class="mb-2">
-            <label class="form-label small fw-semibold text-muted mb-1">Jumlah Event Target (Tavily AI Engine)</label>
+            <label class="form-label small fw-semibold text-muted mb-1">Maksimal Temuan Berita Google</label>
             <select name="limit" class="form-select form-select-sm">
               <option value="10">10 Event</option>
               <option value="20" selected>20 Event (Standar)</option>

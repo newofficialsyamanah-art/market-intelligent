@@ -102,9 +102,9 @@ def _chat_json(system_prompt: str, user_prompt: str, temperature: float = 0.2, t
 
     client = _client()
     models_to_try = [model_name]
-    fallback = "openai/gpt-oss-20b" if model_name != "openai/gpt-oss-20b" else "qwen/qwen3.8-27b"
-    if fallback not in models_to_try:
-        models_to_try.append(fallback)
+    for alt in ["llama-3.3-70b-versatile", "llama-3.1-8b-instant", "qwen/qwen3.8-27b", "openai/gpt-oss-20b"]:
+        if alt not in models_to_try:
+            models_to_try.append(alt)
 
     last_error = None
     for m in models_to_try:
@@ -144,9 +144,9 @@ def _chat_text(system_prompt: str, user_prompt: str, temperature: float = 0.4, t
 
     client = _client()
     models_to_try = [model_name]
-    fallback = "openai/gpt-oss-20b" if model_name != "openai/gpt-oss-20b" else "qwen/qwen3.8-27b"
-    if fallback not in models_to_try:
-        models_to_try.append(fallback)
+    for alt in ["llama-3.3-70b-versatile", "llama-3.1-8b-instant", "qwen/qwen3.8-27b", "openai/gpt-oss-20b"]:
+        if alt not in models_to_try:
+            models_to_try.append(alt)
 
     last_error = None
     for m in models_to_try:

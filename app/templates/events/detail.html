@@ -62,15 +62,8 @@
       <div class="col-md-3">
         <span class="text-muted small d-block">Tanggal Pelaksanaan</span>
         <span class="fw-bold text-dark">
-          {% if event.start_date %}
-            <i class="bi bi-calendar3 me-1 text-primary"></i>
-            {{ event.start_date.strftime('%d %B %Y') }}
-            {% if event.end_date and event.end_date != event.start_date %}
-              <br><small class="text-muted">s/d {{ event.end_date.strftime('%d %B %Y') }}</small>
-            {% endif %}
-          {% else %}
-            TBA
-          {% endif %}
+          <i class="bi {% if event.is_date_confirmed %}bi-calendar-check text-primary{% else %}bi-clock-history text-warning{% endif %} me-1"></i>
+          {{ event.date_display }}
         </span>
       </div>
       <div class="col-md-3">

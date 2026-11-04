@@ -258,7 +258,7 @@ class ProcurementSupplier(db.Model):
     product = db.Column(db.String(100), nullable=False)
     material = db.Column(db.String(255))
     region = db.Column(db.String(150))
-    website = db.Column(db.String(500))
+    website = db.Column(db.Text)
     source_url = db.Column(db.String(500), nullable=False)
     contact_email = db.Column(db.String(150))
     contact_phone = db.Column(db.String(100))
@@ -414,9 +414,9 @@ class Organization(db.Model):
     province = db.Column(db.String(100))
     phone = db.Column(db.String(100))
     email = db.Column(db.String(150))
-    website = db.Column(db.String(500))
+    website = db.Column(db.Text)
     social_json = db.Column(db.Text)
-    source_url = db.Column(db.String(500), nullable=True)
+    source_url = db.Column(db.Text, nullable=True)
     description = db.Column(db.Text)
     product_fit = db.Column(db.String(255), nullable=True)
     opportunity_score = db.Column(db.Integer, default=0, index=True)
@@ -631,13 +631,14 @@ class Event(db.Model):
     status = db.Column(db.String(50), default="upcoming", index=True)
     start_date = db.Column(db.DateTime, nullable=True)
     end_date = db.Column(db.DateTime, nullable=True)
+    date_precision = db.Column(db.String(30), default="exact")  # 'exact', 'month', 'tentative'
     venue = db.Column(db.String(255))
     city = db.Column(db.String(100))
     province = db.Column(db.String(100))
     address = db.Column(db.String(500))
-    website = db.Column(db.String(500))
+    website = db.Column(db.Text)
     social_json = db.Column(db.Text)
-    source_url = db.Column(db.String(500), nullable=True)
+    source_url = db.Column(db.Text, nullable=True)
     description = db.Column(db.Text)
     relevance_notes = db.Column(db.Text, nullable=True)
     relevance_score = db.Column(db.Integer, default=0)
@@ -703,6 +704,50 @@ class Event(db.Model):
         if ig.startswith("http://") or ig.startswith("https://"):
             return ig
         return f"https://www.instagram.com/{ig.lstrip('@')}"
+
+    @property
+    def event_year(self):
+        """Mengekstrak tahun event dari start_date atau nama event."""
+        if self.start_date:
+            return self.start_date.year
+        import re
+        m = re.search(r'\b(202\d)\b', self.name or "")
+        if m:
+            return int(m.group(1))
+        return None
+
+    @property
+    def is_date_confirmed(self) -> bool:
+        """Menandakan apakah tanggal sudah fix pasti (bukan tentatif)."""
+        return self.date_precision == "exact" and self.start_date is not None
+
+    @property
+    def date_display(self) -> str:
+        """Format tanggal yang manusiawi, akurat, dan tidak menipu (anti 1 Januari palsu)."""
+        if self.date_precision == "tentative" or not self.start_date:
+            yr = self.event_year or ""
+            return f"Tahun {yr} (Jadwal Segera Diumumkan)" if yr else "Jadwal Segera Diumumkan"
+
+        months_id = ["", "Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags", "Sep", "Okt", "Nov", "Des"]
+        
+        if self.date_precision == "month":
+            mo_name = months_id[self.start_date.month] if 1 <= self.start_date.month <= 12 else ""
+            return f"{mo_name} {self.start_date.year} (Tanggal TBD)"
+
+        s_d = self.start_date
+        e_d = self.end_date
+        s_mo = months_id[s_d.month] if 1 <= s_d.month <= 12 else ""
+
+        if not e_d or s_d == e_d or (s_d.year == e_d.year and s_d.month == e_d.month and s_d.day == e_d.day):
+            return f"{s_d.day:02d} {s_mo} {s_d.year}"
+
+        e_mo = months_id[e_d.month] if 1 <= e_d.month <= 12 else ""
+        if s_d.year == e_d.year and s_d.month == e_d.month:
+            return f"{s_d.day:02d} - {e_d.day:02d} {s_mo} {s_d.year}"
+        elif s_d.year == e_d.year:
+            return f"{s_d.day:02d} {s_mo} - {e_d.day:02d} {e_mo} {s_d.year}"
+        else:
+            return f"{s_d.day:02d} {s_mo} {s_d.year} - {e_d.day:02d} {e_mo} {e_d.year}"
 
 
 class EventParticipant(db.Model):

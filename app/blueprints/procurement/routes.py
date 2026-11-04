@@ -5,6 +5,7 @@ from datetime import datetime
 from werkzeug.utils import secure_filename
 from flask import Blueprint, flash, redirect, render_template, request, url_for, current_app
 from flask_login import current_user, login_required
+from markupsafe import Markup
 
 from app.extensions import db
 from app.models import ProcurementSupplier, SupplierProduct, QuotationRequest, User, utc_now
@@ -407,6 +408,54 @@ def meta_ad_search():
     updated = ingest_res.get("updated", 0)
     log_activity("meta_ad_search", f"Meta Ad Sourcing '{query}': {created} baru, {updated} diperbarui")
     flash(f"Sukses menarik iklan Meta! Ditemukan {len(ads_list)} iklan supplier: {created} supplier baru disimpan, {updated} diperbarui.", "success")
+    return redirect(url_for("procurement.ai_discovery"))
+
+
+@procurement_bp.route("/gmaps-search", methods=["POST"])
+@login_required
+@roles_required("admin", "business_analyst", "marketing", "procurement")
+def gmaps_search():
+    """Tarik data supplier fisik, toko bahan kain & konveksi langsung dari Google Maps (Google Places API)."""
+    _ensure_table()
+    from app.services.google_maps_supplier_service import GoogleMapsSupplierService
+
+    query = request.form.get("query", "toko kain").strip() or "toko kain"
+    location = request.form.get("location", "Bandung").strip()
+    material = request.form.get("material", "").strip()
+    limit = max(1, min(20, int(request.form.get("limit", 15))))
+
+    res = GoogleMapsSupplierService.search_places(query=query, location=location, limit=limit)
+    if not res.get("success"):
+        if res.get("is_service_disabled"):
+            activation_url = res.get("activation_url")
+            flash(
+                Markup(
+                    f"Fitur Google Maps memerlukan aktivasi <strong>Places API (New)</strong> di Google Cloud Console. "
+                    f"Silakan <a href='{activation_url}' target='_blank' class='fw-bold text-decoration-underline'>Klik di sini untuk mengaktifkan Places API (Gratis)</a>, "
+                    f"lalu coba kembali pencarian."
+                ),
+                "warning"
+            )
+        else:
+            flash(f"Gagal mencari di Google Maps: {res.get('error')}", "warning")
+        return redirect(url_for("procurement.ai_discovery"))
+
+    places_list = res.get("data", [])
+    if not places_list:
+        flash(f"Google Maps tidak menemukan tempat yang cocok untuk '{query}' di wilayah '{location}'.", "info")
+        return redirect(url_for("procurement.ai_discovery"))
+
+    ingest_res = GoogleMapsSupplierService.ingest_places_to_suppliers(
+        places_data=places_list,
+        default_material=material or query,
+        region_label=location if location.lower() not in ["semua", "indonesia"] else None,
+        user_id=current_user.id
+    )
+
+    created = ingest_res.get("created", 0)
+    updated = ingest_res.get("updated", 0)
+    log_activity("gmaps_supplier_search", f"Google Maps Sourcing '{query}' di '{location}': {created} baru, {updated} diperbarui")
+    flash(f"Sukses menarik data Google Maps! Ditemukan {len(places_list)} supplier/toko: {created} vendor baru disimpan, {updated} diperbarui.", "success")
     return redirect(url_for("procurement.ai_discovery"))
 
 

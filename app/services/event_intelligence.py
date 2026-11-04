@@ -48,6 +48,16 @@ REJECT_KEYWORDS = [
     "spam", "judi", "slot", "togel", "casino", "porn", "dating", "crypto giveaway"
 ]
 
+NEWS_AND_MEDIA_DOMAINS = {
+    "google.com", "news.google.com", "tavily.com", "bing.com", "yahoo.com", "duckduckgo.com",
+    "kompas.com", "detik.com", "antaranews.com", "tempo.co", "liputan6.com", "tribunnews.com",
+    "sindonews.com", "kumparan.com", "republika.co.id", "rm.id", "rri.co.id", "jawapos.com",
+    "bisnis.com", "kontan.co.id", "suara.com", "merdeka.com", "viva.co.id", "inews.id",
+    "idntimes.com", "beritasatu.com", "cnbcindonesia.com", "katadata.co.id", "okezone.com",
+    "mediaindonesia.com", "jpnn.com", "idxchannel.com", "metrotvnews.com", "swa.co.id",
+    "beritakota.id", "voiceofasean.com", "indotelko.com", "elshinta.com", "kemenpar.go.id"
+}
+
 
 def normalize_event_name(name: str) -> str:
     """Menormalisasi nama event untuk perbandingan deduplikasi."""
@@ -58,6 +68,283 @@ def normalize_event_name(name: str) -> str:
     text = re.sub(r"[^\w\s]", " ", text)
     tokens = [t.strip() for t in text.split() if len(t.strip()) > 1]
     return " ".join(tokens)
+
+
+def parse_extracted_date(date_raw: Any, default_year: Optional[int] = None) -> Tuple[Optional[datetime], str]:
+    """Mengubah string tanggal/tahun menjadi tuple (datetime, precision):
+    - ('exact', datetime): Jika hari, bulan, dan tahun terdefinisi pasti (contoh: 15-18 Agustus 2027)
+    - ('month', datetime): Jika hanya bulan dan tahun (tanggal tbd)
+    - ('tentative', None): Jika HANYA tahun tanpa bulan/hari (TIDAK MEMAKSAKAN 1 JANUARI!)
+    """
+    if not date_raw:
+        return None, "tentative"
+    if isinstance(date_raw, datetime):
+        return date_raw, "exact"
+    if isinstance(date_raw, date):
+        return datetime(date_raw.year, date_raw.month, date_raw.day), "exact"
+
+    val_str = str(date_raw).strip()
+    val_low = val_str.lower()
+
+    # 1. Cek format ISO (YYYY-MM-DD)
+    iso_match = re.search(r'(\d{4})-(\d{2})-(\d{2})', val_str)
+    if iso_match:
+        try:
+            return datetime(int(iso_match.group(1)), int(iso_match.group(2)), int(iso_match.group(3))), "exact"
+        except Exception:
+            pass
+
+    months = {
+        "januari": 1, "jan": 1, "februari": 2, "feb": 2, "maret": 3, "mar": 3,
+        "april": 4, "apr": 4, "mei": 5, "may": 5, "juni": 6, "jun": 6,
+        "juli": 7, "jul": 7, "agustus": 8, "agt": 8, "aug": 8, "september": 9, "sep": 9,
+        "oktober": 10, "okt": 10, "oct": 10, "november": 11, "nov": 11, "desember": 12, "des": 12, "dec": 12
+    }
+
+    year_match = re.search(r'\b(202\d)\b', val_low)
+    yr = int(year_match.group(1)) if year_match else default_year
+
+    found_mo = None
+    for m_name, m_num in months.items():
+        if re.search(r'\b' + m_name + r'\b', val_low):
+            found_mo = m_num
+            break
+
+    no_yr = re.sub(r'\b202\d\b', ' ', val_low)
+    day_match = re.search(r'\b([0-2]?\d|3[01])\b', no_yr)
+    found_dy = int(day_match.group(1)) if day_match and int(day_match.group(1)) > 0 else None
+
+    if yr:
+        if found_mo and found_dy:
+            try:
+                return datetime(yr, found_mo, min(found_dy, 28)), "exact"
+            except Exception:
+                return datetime(yr, found_mo, 1), "month"
+        elif found_mo:
+            return datetime(yr, found_mo, 1), "month"
+        else:
+            # HANYA TAHUN -> TENTATIF! TIDAK PERNAH DIJADIKAN 1 JANUARI PALSU!
+            return None, "tentative"
+
+    return None, "unknown"
+
+
+def extract_deep_event_metadata(url: str, timeout: int = 4) -> Dict[str, Any]:
+    """Mengunjungi halaman web resmi/berita asli untuk mengekstrak Schema.org JSON-LD dan paragraf utuh."""
+    import json
+    import requests
+    from bs4 import BeautifulSoup
+
+    result = {
+        "final_url": url,
+        "name": None,
+        "start_date": None,
+        "end_date": None,
+        "venue": None,
+        "city": None,
+        "organizer": None,
+        "page_text": "",
+        "date_precision": "unknown"
+    }
+
+    if not url or not url.startswith("http"):
+        return result
+
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    }
+
+    try:
+        resp = requests.get(url, headers=headers, timeout=timeout, allow_redirects=True)
+        if resp.status_code != 200:
+            return result
+
+        result["final_url"] = resp.url
+        soup = BeautifulSoup(resp.text, "html.parser")
+
+        # 1. Ekstrak Schema.org JSON-LD Event
+        for s in soup.find_all("script", type="application/ld+json"):
+            try:
+                raw_json = s.string
+                if not raw_json:
+                    continue
+                data = json.loads(raw_json)
+                items = data.get("@graph", [data]) if isinstance(data, dict) else (data if isinstance(data, list) else [])
+                for item in items:
+                    if not isinstance(item, dict):
+                        continue
+                    item_type = str(item.get("@type", "")).lower()
+                    if "event" in item_type or item_type in ["exhibitionevent", "businessevent", "sports_event", "socialevent"]:
+                        if item.get("name") and not result["name"]:
+                            result["name"] = item["name"]
+                        if item.get("startDate") and not result["start_date"]:
+                            result["start_date"] = item["startDate"]
+                            result["date_precision"] = "exact"
+                        if item.get("endDate") and not result["end_date"]:
+                            result["end_date"] = item["endDate"]
+                        
+                        loc = item.get("location")
+                        if isinstance(loc, dict):
+                            result["venue"] = loc.get("name")
+                            addr = loc.get("address")
+                            if isinstance(addr, dict):
+                                result["city"] = addr.get("addressLocality")
+                            elif isinstance(addr, str):
+                                result["city"] = addr
+                        elif isinstance(loc, str):
+                            result["venue"] = loc
+                        
+                        org = item.get("organizer")
+                        if isinstance(org, dict):
+                            result["organizer"] = org.get("name")
+                        elif isinstance(org, str):
+                            result["organizer"] = org
+                        break
+            except Exception:
+                continue
+
+        # 2. Ekstrak teks paragraf untuk AI reading
+        for tag in soup(["script", "style", "nav", "footer", "header", "noscript"]):
+            tag.decompose()
+        
+        paragraphs = [p.get_text(strip=True) for p in soup.find_all(["p", "h1", "h2", "h3", "li"]) if len(p.get_text(strip=True)) > 25]
+        full_text = " ".join(paragraphs[:20])
+        result["page_text"] = full_text[:2000]
+
+    except Exception:
+        pass
+
+    return result
+
+
+def fetch_google_news_events(
+    query: str = "",
+    location: str = "",
+    year: str = "2026, 2027",
+    limit: int = 30
+) -> List[Dict[str, Any]]:
+    """Mencari artikel & berita event aktual di Google News RSS seputar pameran, expo, dan turnamen olahraga."""
+    import urllib.request
+    import urllib.parse
+    import xml.etree.ElementTree as ET
+    from bs4 import BeautifulSoup
+
+    loc_clean = (location or "").strip() if location and location.lower() not in ["semua", "indonesia"] else ""
+    cat_clean = (query or "").strip() or "pameran expo bisnis industri"
+    year_str = (year or "").strip() or "2026 OR 2027"
+
+    # Ekstrak token tahun
+    year_tokens = [y.strip() for y in re.findall(r'\b(202\d)\b', year_str)]
+    if not year_tokens:
+        year_tokens = ["2026", "2027"]
+
+    sub_queries = []
+    for yr in year_tokens:
+        sub_queries.extend([
+            f"{cat_clean} {loc_clean} {yr}".strip(),
+            f"pameran expo {cat_clean} {loc_clean} {yr}".strip(),
+            f"agenda jadwal festival {cat_clean} {loc_clean} {yr}".strip(),
+            f"turnamen kejuaraan {cat_clean} {loc_clean} {yr}".strip()
+        ])
+    if not loc_clean or "jakarta" in loc_clean.lower():
+        for yr in year_tokens:
+            sub_queries.extend([
+                f"pameran jiexpo {yr}",
+                f"pameran jcc {yr}",
+                f"event ice bsd {yr}"
+            ])
+
+    seen_links = set()
+    snippets = []
+
+    for q in sub_queries:
+        encoded_q = urllib.parse.quote(q)
+        url = f"https://news.google.com/rss/search?q={encoded_q}&hl=id&gl=ID&ceid=ID:id"
+        req = urllib.request.Request(
+            url,
+            headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=8) as resp:
+                xml_data = resp.read()
+                root = ET.fromstring(xml_data)
+                for it in root.findall(".//item"):
+                    title = it.find("title").text if it.find("title") is not None else ""
+                    source = it.find("source").text if it.find("source") is not None else ""
+                    source_url = it.find("source").attrib.get("url", "") if it.find("source") is not None else ""
+                    link = it.find("link").text if it.find("link") is not None else ""
+                    pub_date = it.find("pubDate").text if it.find("pubDate") is not None else ""
+                    desc_html = it.find("description").text if it.find("description") is not None else ""
+
+                    if not title or not link or link in seen_links:
+                        continue
+                    seen_links.add(link)
+
+                    soup = BeautifulSoup(desc_html, "html.parser")
+                    clean_desc = soup.get_text(strip=True)
+
+                    snippets.append({
+                        "title": title,
+                        "url": link,
+                        "source_publisher": source,
+                        "source_domain": source_url,
+                        "pub_date": pub_date,
+                        "content": f"Judul: {title}\nMedia: {source} ({source_url})\nTanggal Terbit: {pub_date}\nRingkasan: {clean_desc}"
+                    })
+                    if len(snippets) >= limit:
+                        break
+        except Exception as e:
+            logger.warning(f"Google News RSS query failed for '{q}': {e}")
+        if len(snippets) >= limit:
+            break
+
+    return snippets
+
+
+def fetch_google_custom_search_events(
+    query: str = "",
+    location: str = "",
+    year: str = "2026, 2027",
+    limit: int = 15
+) -> List[Dict[str, Any]]:
+    """Mencari event via Google Custom Search JSON API jika API key & Engine ID terkonfigurasi."""
+    import os
+    import urllib.request
+    import urllib.parse
+    import json
+
+    api_key = os.environ.get("GOOGLE_SEARCH_API_KEY")
+    cx = os.environ.get("GOOGLE_SEARCH_ENGINE_ID")
+    if not api_key or not cx:
+        return []
+
+    loc_clean = (location or "").strip() if location and location.lower() not in ["semua", "indonesia"] else ""
+    cat_clean = (query or "").strip() or "pameran expo turnamen"
+    q_str = f"{cat_clean} {loc_clean} {year or ''}".strip()
+
+    url = f"https://www.googleapis.com/customsearch/v1?key={api_key}&cx={cx}&q={urllib.parse.quote(q_str)}&num={min(limit, 10)}"
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+        with urllib.request.urlopen(req, timeout=8) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            items = data.get("items", [])
+            results = []
+            for it in items:
+                link = it.get("link", "")
+                if link and link.startswith("http"):
+                    results.append({
+                        "title": it.get("title", ""),
+                        "url": link,
+                        "source_publisher": it.get("displayLink", ""),
+                        "source_domain": f"https://{it.get('displayLink', '')}",
+                        "pub_date": "",
+                        "content": f"Judul: {it.get('title')}\nSumber: {it.get('displayLink')}\nCuplikan: {it.get('snippet', '')}"
+                    })
+            return results
+    except Exception as e:
+        logger.info(f"Google Custom Search API skipped/unavailable: {e}")
+        return []
+
 
 
 class EventIntelligenceService:
@@ -97,31 +384,51 @@ class EventIntelligenceService:
     @classmethod
     def deduplicate_event(cls, event_data: Dict[str, Any]) -> Tuple[Optional[Event], str, float]:
         """Mengecek apakah event sudah ada di database menggunakan multi-signal matching:
-        - Canonical URL exact match (Tier 1)
-        - Normalized name + Start Date + City (Tier 2)
-        - Normalized name + Organizer (Tier 3)
+        - Tier 1a: Exact Source URL match (mencegah partial domain match pada portal berita)
+        - Tier 1b: Dedicated Official Event Website domain match (non-media, non-aggregator)
+        - Tier 2: Normalized name + Year match (membedakan event tahunan misal 2026 vs 2027)
+        - Tier 3: Normalized name + Date / Venue / City
         Mengembalikan (event, match_tier, confidence) atau (None, "none", 0.0)
         """
-        url = event_data.get("website") or event_data.get("source_url")
-        name = event_data.get("name", "").strip()
+        source_url = (event_data.get("source_url") or "").strip()
+        website = (event_data.get("website") or "").strip()
+        name = (event_data.get("name") or "").strip()
         start_date = event_data.get("start_date")
-        city = event_data.get("city", "").strip()
-        venue = event_data.get("venue", "").strip()
-        organizer = event_data.get("organizer", "").strip()
+        city = (event_data.get("city") or "").strip()
+        venue = (event_data.get("venue") or "").strip()
+        organizer = (event_data.get("organizer") or "").strip()
 
-        # Tier 1: Canonical URL
-        if url:
-            dom = extract_domain(url)
-            if dom and dom not in DIRECTORY_AND_AGGREGATOR_DOMAINS:
-                existing = Event.query.filter(
-                    db.or_(Event.website.like(f"%{dom}%"), Event.source_url.like(f"%{dom}%"))
-                ).first()
-                if existing:
-                    return existing, "tier1_canonical_url", 0.98
+        # 1. Tier 1a: Exact Canonical Source URL (bukan partial domain!)
+        if source_url:
+            clean_src = source_url.split("?")[0].rstrip("/")
+            existing = Event.query.filter(
+                db.or_(
+                    Event.source_url == source_url,
+                    Event.source_url.like(f"{clean_src}%")
+                )
+            ).first()
+            if existing:
+                return existing, "tier1_exact_source_url", 0.99
 
+        # 2. Tier 1b: Dedicated Official Event Website (hanya domain mandiri event, BUKAN portal berita/media/search engine)
+        if website and website.startswith("http"):
+            dom = extract_domain(website)
+            if dom and dom not in DIRECTORY_AND_AGGREGATOR_DOMAINS and dom not in NEWS_AND_MEDIA_DOMAINS:
+                if not any(dom == d or dom.endswith("." + d) for d in NEWS_AND_MEDIA_DOMAINS):
+                    existing = Event.query.filter(Event.website.like(f"%{dom}%")).first()
+                    if existing:
+                        y_exist = re.search(r'\b(202\d)\b', existing.name)
+                        y_new = re.search(r'\b(202\d)\b', name)
+                        if not y_exist or not y_new or y_exist.group(1) == y_new.group(1):
+                            return existing, "tier1_official_website", 0.95
+
+        # 3. Tier 2: Normalized Name Matching
         norm_name = normalize_event_name(name)
         if not norm_name:
             return None, "none", 0.0
+
+        new_year_match = re.search(r'\b(202\d)\b', name)
+        new_year = int(new_year_match.group(1)) if new_year_match else (start_date.year if isinstance(start_date, (datetime, date)) else None)
 
         all_events = Event.query.all()
         for ev in all_events:
@@ -129,9 +436,14 @@ class EventIntelligenceService:
             if not ev_norm:
                 continue
 
-            # Exact normalized name match
             if norm_name == ev_norm:
-                # Cek tanggal dan lokasi
+                ev_year_match = re.search(r'\b(202\d)\b', ev.name)
+                ev_year = int(ev_year_match.group(1)) if ev_year_match else (ev.start_date.year if ev.start_date else None)
+
+                # Jika tahun jelas berbeda (misal 2026 vs 2027), ini adalah event tahun yang berbeda!
+                if new_year and ev_year and new_year != ev_year:
+                    continue
+
                 if start_date and ev.start_date and start_date == ev.start_date:
                     return ev, "tier2_name_date", 0.95
                 if venue and ev.venue and venue.lower() == ev.venue.lower():
@@ -140,6 +452,8 @@ class EventIntelligenceService:
                     return ev, "tier2_name_city", 0.90
                 if organizer and ev.organizer and organizer.lower() == ev.organizer.lower():
                     return ev, "tier3_name_organizer", 0.85
+                if new_year and ev_year and new_year == ev_year:
+                    return ev, "tier2_name_year", 0.90
 
         return None, "none", 0.0
 
@@ -171,6 +485,17 @@ class EventIntelligenceService:
                     existing.website = event_data["website"]
                 if not existing.social_json and event_data.get("social_json"):
                     existing.social_json = event_data["social_json"]
+                # Upgrade tanggal jika data baru lebih pasti (misal exact date menggantikan tentative)
+                new_s, new_prec = parse_extracted_date(event_data.get("start_date"))
+                new_e, _ = parse_extracted_date(event_data.get("end_date"))
+                if new_prec == "exact" and (existing.date_precision != "exact" or not existing.start_date):
+                    existing.start_date = new_s
+                    existing.end_date = new_e
+                    existing.date_precision = "exact"
+                elif new_prec == "month" and (existing.date_precision == "tentative" or not existing.start_date):
+                    existing.start_date = new_s
+                    existing.date_precision = "month"
+
                 if rel_score > (existing.relevance_score or 0):
                     existing.relevance_score = rel_score
                     existing.relevance_notes = rel_notes
@@ -178,15 +503,27 @@ class EventIntelligenceService:
                 db.session.commit()
             return existing, False, f"Updated ({match_tier})"
 
+        # Validasi Keaslian Sumber URL
+        source_url = (event_data.get("source_url") or "").strip()
+        if not source_url.startswith("http://") and not source_url.startswith("https://"):
+            logger.warning(f"Event ditolak karena tidak memiliki URL sumber web/berita asli: {event_data.get('name')}")
+            return None, False, "Rejected (Invalid source_url)"
+
+        # Parsing tanggal jika masih string
+        start_date, start_prec = parse_extracted_date(event_data.get("start_date"))
+        end_date, end_prec = parse_extracted_date(event_data.get("end_date"))
+        date_precision = event_data.get("date_precision") or start_prec
+
         # Buat Event Baru
         event = Event(
-            name=event_data["name"].strip(),
+            name=(event_data.get("name") or "").strip(),
             event_type=event_data.get("event_type", "Exhibition / Trade Fair"),
             organizer=event_data.get("organizer"),
             organizer_id=event_data.get("organizer_id"),
             status=event_data.get("status", "upcoming"),
-            start_date=event_data.get("start_date"),
-            end_date=event_data.get("end_date"),
+            start_date=start_date,
+            end_date=end_date,
+            date_precision=date_precision,
             venue=event_data.get("venue"),
             city=event_data.get("city"),
             province=event_data.get("province"),
@@ -214,12 +551,14 @@ class EventIntelligenceService:
         query: str = "",
         city: str = "",
         province: str = "",
+        year: str = "2026, 2027",
         limit: int = 20,
         user_id: Optional[int] = None
     ) -> Dict[str, Any]:
         """
         Menemukan event pameran, expo, festival B2B, dan turnamen olahraga nyata
-        secara dinamis di seluruh Indonesia menggunakan Tavily AI Search + Groq Extraction.
+        secara dinamis di seluruh Indonesia menggunakan Google News RSS Search + Google CSE.
+        Bebas halusinasi: HANYA menyimpan event dengan bukti URL berita/website nyata.
         """
         from app.ai_agent import _chat_json
 
@@ -228,65 +567,82 @@ class EventIntelligenceService:
             target_loc.append(city)
         if province:
             target_loc.append(province)
-        location_str = ", ".join(target_loc) if target_loc else "Indonesia (Jakarta, Surabaya, Bandung, Semarang, Medan, Bali, Malang)"
+        location_str = ", ".join(target_loc) if target_loc else "Indonesia"
 
-        # 1. Bangun variasi query pencarian targeted (Tavily Multi-Query)
-        cat_str = query or "pameran industri expo bisnis turnamen olahraga"
-        search_queries = [
-            f"jadwal event pameran {cat_str} {location_str} 2026",
-            f"expo trade fair festival industri b2b {location_str} 2026",
-            f"turnamen event kompetisi lari futsal basket marathon {location_str} 2026",
-            f"site:jadwalevent.web.id {cat_str} {location_str}",
-            f"kalender pameran dan konferensi asosiasi industri {location_str} 2026",
-        ]
-        if limit >= 50:
-            search_queries.extend([
-                f"job fair career expo kampus universitas {location_str} 2026",
-                f"festival otomotif properti kuliner b2b {location_str} 2026",
-                f"pameran manufaktur tekstil umkm packaging {location_str} 2026",
-            ])
+        # 1. Tarik snippets faktual dari Google News RSS (Tier 1) & Google Custom Search (Tier 2)
+        snippets = fetch_google_news_events(
+            query=query,
+            location=location_str,
+            year=year,
+            limit=limit * 2
+        )
 
-        # 2. Ambil live web snippets via Tavily (Tier 1) atau Fallback Search (Tier 2)
-        snippets = parallel_tavily_search_snippets(search_queries, max_per_query=20)
+        # Coba Google Custom Search jika ada
+        if len(snippets) < limit:
+            cse_snips = fetch_google_custom_search_events(
+                query=query,
+                location=location_str,
+                year=year,
+                limit=limit
+            )
+            snippets.extend(cse_snips)
+
+        # Coba Tavily jika tersedia
+        if len(snippets) < limit:
+            try:
+                tavily_q = [f"{query or ''} {location_str} {year or ''}".strip()]
+                tav_snips = parallel_tavily_search_snippets(tavily_q, max_per_query=limit)
+                snippets.extend(tav_snips)
+            except Exception:
+                pass
+
         if not snippets:
-            fallback_urls = []
-            for q in search_queries[:3]:
-                try:
-                    fallback_urls.extend(_search(q))
-                except Exception:
-                    pass
-            snippets = [{"title": u, "url": u, "content": u} for u in fallback_urls[:limit]]
+            return {
+                "total_processed": 0,
+                "created": 0,
+                "updated": 0,
+                "items": [],
+                "message": f"Tidak ditemukan berita atau artikel event resmi dari Google untuk kata kunci '{query}' di wilayah '{location_str}' (Tahun {year})."
+            }
 
-        created_count = 0
-        updated_count = 0
-        items = []
-
-        # 3. AI Extraction dalam chunks (12-15 snippets per prompt agar tidak kena token limit)
-        chunk_size = 12
+        # 2. AI Extraction dalam chunks dari data Google nyata
+        chunk_size = 10
         all_event_candidates = []
         for i in range(0, len(snippets), chunk_size):
             chunk = snippets[i:i + chunk_size]
             prompt = f"""Kamu adalah AI Event Intelligence spesialis penemuan event B2B, expo, dan turnamen olahraga di Indonesia.
-Berdasarkan data pencarian web berikut, ekstrak daftar event/pameran/expo/turnamen nyata di Indonesia:
+Berdasarkan data berita & pencarian web Google berikut, ekstrak HANYA daftar event/pameran/expo/turnamen nyata di Indonesia:
 
-DATA WEB:
+DATA BERITA GOOGLE:
 {json.dumps([{'title': s.get('title'), 'url': s.get('url'), 'content': (s.get('content') or '')[:450]} for s in chunk], ensure_ascii=False)}
 
 Kriteria:
 - Target lokasi: {location_str}
-- Kategori: {query or 'Semua event B2B / olahraga'}
+- Kategori / Topik: {query or 'Pameran B2B / Olahraga'}
+- Target Tahun: {year or '2026 atau 2027'}
+
+ATURAN KETAT & TANGGAL PRESISI:
+1. DILARANG MENGARANG EVENT! Jika suatu berita hanya tentang penutupan event lama atau bukan tentang event mendatang 2026/2027, jangan masukkan.
+2. DILARANG MENGARANG TANGGAL 1 JANUARI!
+   - Jika teks berita menyebutkan tanggal dan bulan pasti (contoh: '15-18 Agustus 2027'), tulis '2027-08-15' di start_date dan '2027-08-18' di end_date.
+   - Jika hanya ada bulan dan tahun (contoh: 'Oktober 2027'), tulis 'Oktober 2027' di start_date dan null di end_date.
+   - Jika HANYA ada tahun '2027' (jadwal tanggal & bulan belum diumumkan panitia), WAJIB isi start_date: null, end_date: null.
+3. Ekstrak venue gedung yang spesifik (misal: 'JIExpo Kemayoran', 'ICE BSD Hall 5', 'JCC Senayan'). Jika belum diumumkan, isi null.
+4. Setiap event yang diekstrak WAJIB memiliki "source_url" yang sama persis dengan URL berita asalnya.
 
 Kembalikan format HANYA JSON array:
 [
   {{
-    "name": "Nama Resmi Event (contoh: Jatim Fair 2026, IIMS Surabaya 2026, UI Career Expo)",
+    "name": "Nama Resmi Event (contoh: IndoBuildTech 2027, Jatim Fair 2026)",
     "event_type": "Exhibition / Trade Fair / Conference / Sports Tournament / Career Fair",
-    "venue": "Nama Gedung / Tempat",
+    "venue": "Nama Gedung / Tempat jika ada",
     "city": "Kota",
     "province": "Provinsi",
     "organizer": "Nama Penyelenggara / EO / Institusi",
+    "start_date": "Estimasi tanggal (YYYY-MM-DD atau Bulan Tahun jika ada)",
+    "end_date": "Estimasi tanggal selesai jika ada",
     "website": "URL website resmi jika ada",
-    "source_url": "URL sumber dari data web",
+    "source_url": "URL berita asal dari Google",
     "description": "Deskripsi singkat profil event dan potensi kebutuhan seragam/apparel/merchandise",
     "status": "upcoming"
   }}
@@ -294,9 +650,9 @@ Kembalikan format HANYA JSON array:
 """
             try:
                 raw_data = _chat_json(
-                    system_prompt="Kamu adalah AI Event Intelligence yang mengekstrak event B2B dan olahraga nyata di Indonesia dari hasil web search.",
+                    system_prompt="Kamu adalah AI Event Intelligence yang HANYA mengekstrak event faktual dari data berita Google tanpa halusinasi.",
                     user_prompt=prompt,
-                    temperature=0.2
+                    temperature=0.1
                 )
                 cands = raw_data if isinstance(raw_data, list) else raw_data.get("events") or raw_data.get("items") or []
                 if isinstance(cands, list):
@@ -304,59 +660,53 @@ Kembalikan format HANYA JSON array:
             except Exception as e:
                 logger.error(f"Error in event AI chunk extraction: {e}")
 
-        # Jika snippets Tavily kosong atau AI gagal mengekstrak, fallback ke AI generation langsung
-        if not all_event_candidates:
-            fallback_prompt = f"""Kamu adalah AI Event Intelligence Indonesia.
-Berikan daftar {min(limit, 20)} event bisnis, pameran (expo/trade fair), konferensi B2B, festival industri, atau turnamen olahraga nyata di:
-- Lokasi: {location_str}
-- Kategori: {query or 'Pameran Bisnis, Industri, Manufaktur, Tekstil, Otomotif, UMKM, Turnamen Futsal/Lari'}
+        # CATATAN: TIDAK ADA LAGI FALLBACK MENGARANG!
+        # Jika hasil ekstraksi kosong, sistem jujur bahwa tidak ada event baru.
 
-Format respon HANYA list JSON valid:
-[
-  {{
-    "name": "Nama Resmi Event",
-    "event_type": "Exhibition / Trade Fair / Sports Tournament",
-    "venue": "Nama Gedung / Tempat",
-    "city": "Kota",
-    "province": "Provinsi",
-    "organizer": "Nama Penyelenggara",
-    "description": "Deskripsi profil event dan kebutuhan seragam/apparel",
-    "status": "upcoming"
-  }}
-]"""
-            try:
-                raw_fb = _chat_json(
-                    system_prompt="Kamu adalah AI Event Intelligence spesialis event B2B di Indonesia.",
-                    user_prompt=fallback_prompt,
-                    temperature=0.3
-                )
-                all_event_candidates = raw_fb if isinstance(raw_fb, list) else raw_fb.get("events") or []
-            except Exception:
-                pass
+        # 3. Simpan ke database dengan validasi & deduplikasi ketat
+        created_count = 0
+        updated_count = 0
+        items = []
 
-        # 4. Simpan ke database dengan deduplikasi teruji
         for c in all_event_candidates[:limit]:
             if not isinstance(c, dict) or not c.get("name"):
                 continue
 
+            src_url = (c.get("source_url") or "").strip()
+            # Validasi mutlak: wajib URL web asli
+            if not src_url.startswith("http://") and not src_url.startswith("https://"):
+                continue
+
+            # Parsing tanggal faktual dengan presisi (tanpa pemalsuan 1 Januari)
+            parsed_start, start_prec = parse_extracted_date(c.get("start_date"))
+            parsed_end, end_prec = parse_extracted_date(c.get("end_date"))
+            date_precision = c.get("date_precision") or start_prec
+
             event_dict = {
-                "name": c.get("name", "").strip(),
+                "name": (c.get("name") or "").strip(),
                 "event_type": c.get("event_type", "Exhibition / Trade Fair"),
-                "venue": c.get("venue"),
+                "venue": c.get("venue") if c.get("venue") != "-" else None,
                 "city": c.get("city") or city or None,
                 "province": c.get("province") or province or None,
-                "organizer": c.get("organizer"),
-                "website": c.get("website"),
+                "organizer": c.get("organizer") if c.get("organizer") != "-" else None,
+                "start_date": parsed_start,
+                "end_date": parsed_end,
+                "date_precision": date_precision,
+                "website": c.get("website") if (c.get("website") or "").startswith("http") else None,
                 "description": c.get("description"),
                 "status": c.get("status", "upcoming"),
-                "source_url": c.get("source_url") or "tavily_event_discovery"
+                "source_url": src_url
             }
 
             event, is_new, msg = cls.create_or_update_event(event_dict)
+            if not event:
+                continue
+
             if is_new:
                 created_count += 1
             else:
                 updated_count += 1
+
             items.append({
                 "id": event.id,
                 "name": event.name,
@@ -460,6 +810,7 @@ Format respon HANYA list JSON valid:
         start_date_to: Optional[datetime] = None,
         source: str = "",
         verification_status: str = "",
+        year: str = "",
         page: int = 1,
         per_page: int = 20
     ) -> Tuple[List[Event], int, int]:
@@ -505,6 +856,19 @@ Format respon HANYA list JSON valid:
 
         if status:
             query = query.filter(Event.status == status)
+
+        if year:
+            year_clean = year.strip()
+            if year_clean.isdigit():
+                y_int = int(year_clean)
+                query = query.filter(
+                    db.or_(
+                        Event.name.like(f"%{year_clean}%"),
+                        db.extract("year", Event.start_date) == y_int
+                    )
+                )
+            else:
+                query = query.filter(Event.name.like(f"%{year_clean}%"))
 
         if organizer:
             query = query.filter(Event.organizer.like(f"%{organizer}%"))

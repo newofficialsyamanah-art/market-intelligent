@@ -1,12 +1,14 @@
 import urllib.request, urllib.parse, json
 
-user_token = 'EAAq1aS1vkgEBSq2yW73Gexy3bFD2SThY2LUzPK3bc7wfb8VZAcvtHUohgTWWNfJJUYpfZALUriPnFSyazvfhggUVRitxOrqqxM6yQ08VlXuWy7bNmkgJnLW6EkfqQwdbeDj4DvL7zuggV6ZCIwcCKtGsSiVHxRiqXfxSff7G1qM90jIYHPJ8gZCXAZCageebwRa7ZBAbSPASBOEa795NoRB3KeADJsh60BaViY8SuqS5LBqKyonAQAgR6jrXsNURebcJiwpZAJsZBZBHAK2EZB6rTx'
+user_token = 'EAAq1aS1vkgEBS79lu1rtqduNZBDQVEhupApSiL1fLzjeZA4zRFo2lxJAsmKVQ5PVYp2VowXrXEWkEUYWRtHOrZBLRQ7QTz6bAsMkuyjycCTHdjqdpymgwIvYf7VqfpBWLG93UXFC9rzDWtZBoTtUgttBbZCpd8CLL26PDWk3qUWRdTXyarl8TO3U81Y17HQBWpwtwRaUZCq4BK6bgmR75rNoy0QIlWI7C4kDijej0y7jZAZBGUYvgnMIDKaD24yXYlfddZAtphfPWS16j'
 
 tests = [
     {"ad_reached_countries": "['ID']", "ad_type": "ALL", "search_terms": "kain"},
     {"ad_reached_countries": "['ID']", "ad_active_status": "ACTIVE", "search_terms": "kain"},
     {"ad_reached_countries": "['ID']", "search_terms": "kain"},
-    {"ad_reached_countries": "['US']", "ad_type": "POLITICAL_AND_ISSUE_ADS", "search_terms": "vote"}
+    {"ad_reached_countries": "['US']", "ad_type": "POLITICAL_AND_ISSUE_ADS", "search_terms": "vote"},
+    {"ad_reached_countries": "['ID']", "ad_type": "POLITICAL_AND_ISSUE_ADS", "search_terms": "pemilu"},
+    {"ad_reached_countries": "['ID']", "ad_type": "EMPLOYMENT_ADS", "search_terms": "lowongan"},
 ]
 
 for i, p in enumerate(tests, 1):
@@ -21,4 +23,4 @@ for i, p in enumerate(tests, 1):
         err = json.loads(e.read().decode("utf-8"))
         subcode = err.get("error", {}).get("error_subcode")
         msg = err.get("error", {}).get("error_user_msg", err.get("error", {}).get("message"))
-        print(f"Test {i} Failed: Subcode {subcode} | {msg}")
+        print(f"Test {i} Failed: Code {err.get('error', {}).get('code')} Subcode {subcode} | {msg}")
