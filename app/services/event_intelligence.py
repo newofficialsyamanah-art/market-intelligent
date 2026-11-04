@@ -994,21 +994,21 @@ Kembalikan format HANYA JSON array:
         ws.title = "Daftar Event"
 
         # Judul & Info Metadata
-        ws.merge_cells("A1:O1")
-        title_cell = ws["A1"]
-        title_cell.value = "MARKET INTELLIGENCE - DAFTAR EVENT B2B & EXPO"
-        title_cell.font = Font(name="Calibri", size=14, bold=True, color="FFFFFF")
-        title_cell.fill = PatternFill(start_color="1B365D", end_color="1B365D", fill_type="solid")
-        title_cell.alignment = Alignment(horizontal="center", vertical="center")
-        ws.row_dimensions[1].height = 32
+        wb.properties.title = "MARKET INTELLIGENCE - DAFTAR EVENT B2B & EXPO"
+        wb.properties.subject = filter_summary or "Semua Data"
 
-        ws.merge_cells("A2:O2")
-        meta_cell = ws["A2"]
-        meta_cell.value = f"Ringkasan Filter: {filter_summary or 'Semua Data'} | Diunduh pada: {datetime.now().strftime('%d %B %Y %H:%M WIB')} | Total: {len(events)} Event"
-        meta_cell.font = Font(name="Calibri", size=9, italic=True, color="475569")
-        meta_cell.fill = PatternFill(start_color="F1F5F9", end_color="F1F5F9", fill_type="solid")
-        meta_cell.alignment = Alignment(horizontal="center", vertical="center")
-        ws.row_dimensions[2].height = 20
+
+
+
+        ws.row_dimensions[1].height = 28
+
+
+
+
+
+
+
+
 
         # Baris Header Kolom
         headers = [
@@ -1029,18 +1029,18 @@ Kembalikan format HANYA JSON array:
             ("URL Sumber Bukti", 30, "left")
         ]
 
-        header_font = Font(name="Calibri", size=10, bold=True, color="FFFFFF")
-        header_fill = PatternFill(start_color="203A43", end_color="203A43", fill_type="solid")
+        header_font = Font(name="Calibri", size=11, bold=True, color="000000")
+        header_fill = PatternFill(fill_type="solid", fgColor="D9E1F2", start_color="D9E1F2", end_color="D9E1F2")
         thin_border = Border(
             left=Side(style="thin", color="CBD5E1"),
             right=Side(style="thin", color="CBD5E1"),
             top=Side(style="thin", color="CBD5E1"),
-            bottom=Side(style="thin", color="CBD5E1")
+            bottom=Side(style="medium", color="305496")
         )
 
-        ws.row_dimensions[4].height = 26
+
         for col_idx, (h_name, width, align) in enumerate(headers, 1):
-            cell = ws.cell(row=4, column=col_idx, value=h_name)
+            cell = ws.cell(row=1, column=col_idx, value=h_name)
             cell.font = header_font
             cell.fill = header_fill
             cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
@@ -1052,7 +1052,7 @@ Kembalikan format HANYA JSON array:
         white_fill = PatternFill(start_color="FFFFFF", end_color="FFFFFF", fill_type="solid")
         data_font = Font(name="Calibri", size=10)
 
-        for row_idx, ev in enumerate(events, 5):
+        for row_idx, ev in enumerate(events, 2):
             is_even = (row_idx % 2 == 0)
             row_fill = zebra_fill if is_even else white_fill
             ws.row_dimensions[row_idx].height = 22
@@ -1060,7 +1060,7 @@ Kembalikan format HANYA JSON array:
             status_tgl = "Pasti / Terkonfirmasi" if ev.is_date_confirmed else ("Bulan (Estimasi)" if ev.date_precision == "month" else "Tentatif (Estimasi)")
 
             row_data = [
-                (row_idx - 4, "center"),
+                (row_idx - 1, "center"),
                 (ev.name or "", "left"),
                 (ev.event_type or "-", "left"),
                 (ev.date_display or "-", "center"),
@@ -1087,6 +1087,22 @@ Kembalikan format HANYA JSON array:
                 if col_idx in [14, 15] and isinstance(val, str) and val.startswith("http"):
                     cell.hyperlink = val
                     cell.font = Font(name="Calibri", size=10, color="0044CC", underline="single")
+
+        if not events:
+            ws.merge_cells("A2:O2")
+            empty_cell = ws["A2"]
+            empty_cell.value = "Tidak ada event yang ditemukan untuk kriteria filter yang dipilih."
+            empty_cell.font = Font(name="Calibri", size=11, italic=True, color="475569")
+            empty_cell.alignment = Alignment(horizontal="center", vertical="center")
+            ws.row_dimensions[2].height = 28
+
+        # Freeze Panes: Baris 1 Header selalu terkunci / terbawa saat scroll ke bawah
+        ws.freeze_panes = "A2"
+
+        # Aktifkan AutoFilter Excel di baris header
+        total_rows = max(len(events) + 1, 2)
+        ws.auto_filter.ref = f"A1:O{total_rows}"
+        ws.print_title_rows = "1:1"
 
         stream = io.BytesIO()
         wb.save(stream)
