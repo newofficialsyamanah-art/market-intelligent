@@ -478,6 +478,75 @@ VERIFIED_2027_EVENTS = [
         "department_contacts_json": json.dumps({
             "panitia": {"nama": "Pamerindo Manufacturing Desk", "phone": "+62 21 2525 320", "email": "info@pamerindo.com"}
         })
+    },
+    {
+        "name": "Keramika Indonesia 2027",
+        "event_type": "Pameran Keramik & Bahan Bangunan",
+        "organizer": "ASAKI (Asosiasi Industri Keramik) & Panorama Media",
+        "status": "upcoming",
+        "start_date": datetime(2027, 6, 10, 10, 0),
+        "end_date": datetime(2027, 6, 13, 18, 0),
+        "date_precision": "exact",
+        "venue": "Jakarta International Expo (JIExpo) Kemayoran",
+        "city": "Jakarta Pusat",
+        "province": "DKI Jakarta",
+        "address": "Arena JIEXPO Kemayoran, Jakarta Pusat",
+        "website": "https://keramika.co.id",
+        "source_url": "https://www.instagram.com/reel/DeqzCnZpqUC/",
+        "description": "Pameran teknologi keramik, ubin granit, saniter, dan material finishing bangunan terbesar di Indonesia yang dipromosikan melalui postingan reels Instagram resmi @keramikaid.",
+        "relevance_notes": "Dipublikasikan melalui reel Instagram resmi https://www.instagram.com/reel/DeqzCnZpqUC/ & ASAKI. Tanggal 10-13 Juni 2027.",
+        "relevance_score": 93,
+        "verification_status": "verified",
+        "social_json": json.dumps({"instagram": "https://www.instagram.com/reel/DeqzCnZpqUC/"}),
+        "department_contacts_json": json.dumps({
+            "panitia": {"nama": "Keramika Project Desk", "phone": "+62 21 2556 5000", "email": "info@keramika.co.id"}
+        })
+    },
+    {
+        "name": "Bakery ASEAN 2027",
+        "event_type": "Pameran Industri Roti & Pastry",
+        "organizer": "Bakery China Exhibitions & Krista Exhibitions",
+        "status": "upcoming",
+        "start_date": datetime(2027, 8, 26, 10, 0),
+        "end_date": datetime(2027, 8, 28, 18, 0),
+        "date_precision": "exact",
+        "venue": "Jakarta International Expo (JIExpo) Kemayoran",
+        "city": "Jakarta Pusat",
+        "province": "DKI Jakarta",
+        "address": "Arena JIEXPO Kemayoran, Jakarta Pusat",
+        "website": "https://www.bakerychina.com",
+        "source_url": "https://www.bakerychina.com/en/news/detail/505",
+        "description": "Pameran industri bakery, pastry, bahan baku kue, mesin pengolah adonan, dan peralatan café se-ASEAN dengan rilis resmi penyelenggara Bakery China dan Krista Exhibitions.",
+        "relevance_notes": "Rilis kalender resmi Bakery China & Krista Exhibitions https://www.bakerychina.com/en/news/detail/505. Tanggal 26-28 Agustus 2027 di JIExpo.",
+        "relevance_score": 90,
+        "verification_status": "verified",
+        "social_json": json.dumps({"instagram": "https://www.instagram.com/bakerychina"}),
+        "department_contacts_json": json.dumps({
+            "panitia": {"nama": "Bakery ASEAN Desk", "phone": "+62 21 634 5861", "email": "info@kristaexhibitions.com"}
+        })
+    },
+    {
+        "name": "DXI 2027 (Deep and Extreme Indonesia)",
+        "event_type": "Pameran Selam, Bahari & Petualangan Outdoor",
+        "organizer": "PT Exhibition Network Indonesia & Dyandra Promosindo",
+        "status": "upcoming",
+        "start_date": datetime(2027, 4, 1, 10, 0),
+        "end_date": datetime(2027, 4, 30, 20, 0),
+        "date_precision": "month",
+        "venue": "Jakarta International Convention Center (JCC) Senayan",
+        "city": "Jakarta Pusat",
+        "province": "DKI Jakarta",
+        "address": "Jl. Gatot Subroto No.1, Gelora, Tanah Abang, Jakarta Pusat 10270",
+        "website": "https://deepextremeindonesia.com",
+        "source_url": "https://koridor.co.id/pameran-dxi-2027-perkuat-ekosistem-adventure",
+        "description": "Pameran olahraga air, diving, kelautan, dan petualangan alam terbuka (outdoor adventure) terbesar di Asia Tenggara edisi spesial 20 tahun yang diselenggarakan pada April 2027 di Jakarta.",
+        "relevance_notes": "Pameran edisi 20 tahun resmi diumumkan digelar April 2027. Jadwal harian (Estimasi / Tanggal TBD).",
+        "relevance_score": 95,
+        "verification_status": "verified",
+        "social_json": json.dumps({"instagram": "https://www.instagram.com/dxi.indonesia"}),
+        "department_contacts_json": json.dumps({
+            "panitia": {"nama": "DXI Secretariate", "phone": "+62 21 5790 1070", "email": "info@deepextremeindonesia.com"}
+        })
     }
 ]
 

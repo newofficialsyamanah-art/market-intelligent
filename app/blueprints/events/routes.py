@@ -247,6 +247,7 @@ def discover_events_action():
     province = (request.form.get("province") or "").strip()
     year = (request.form.get("year") or "2026, 2027").strip() or "2026, 2027"
     limit = int(request.form.get("limit", 15))
+    include_social = request.form.get("include_social", "1") in ["1", "true", "True", "on"]
 
     if sport:
         if query:
@@ -261,7 +262,8 @@ def discover_events_action():
             province=province,
             year=year,
             limit=limit,
-            user_id=current_user.id
+            user_id=current_user.id,
+            include_social_media=include_social
         )
         wilayah_label = city or province or "Seluruh Indonesia"
         if sport:
@@ -275,7 +277,7 @@ def discover_events_action():
             flash(res["message"], "info")
         else:
             flash(
-                f"Discovery Event Google ({wilayah_label} - Tahun {year}) selesai: "
+                f"Discovery Event & Medsos via Free MCP ({wilayah_label} - Tahun {year}) selesai: "
                 f"{total} event faktual ditemukan ({created} event baru disimpan, {updated} diperbarui).",
                 "success"
             )

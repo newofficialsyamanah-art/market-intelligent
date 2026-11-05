@@ -181,7 +181,7 @@ def _tavily_search(query, max_results=20):
     return []
 
 
-def parallel_tavily_search_snippets(queries, max_per_query=20):
+def parallel_tavily_search_snippets(queries, max_per_query=20, include_domains=None, search_depth="basic"):
     """Menjalankan beberapa query variasi secara simultan via Tavily AI Search.
     Mengembalikan list of dict: [{'title': ..., 'url': ..., 'content': ...}]
     """
@@ -203,10 +203,10 @@ def parallel_tavily_search_snippets(queries, max_per_query=20):
                 json={
                     "api_key": api_key,
                     "query": q,
-                    "search_depth": "basic",
+                    "search_depth": search_depth,
                     "max_results": min(max_per_query, 20),
                     "include_raw_content": False,
-                    "include_images": False,
+                    "include_images": False, **({"include_domains": include_domains} if include_domains else {}),
                 },
                 timeout=8.0,
             )

@@ -21,6 +21,12 @@ from app.services.dedup_engine import (
     PUBLIC_EMAIL_DOMAINS,
 )
 
+from app.services.mcp_service import (
+    mcp_search_duckduckgo,
+    mcp_search_social_events,
+    mcp_scrape_url,
+)
+
 logger = logging.getLogger(__name__)
 
 # Kamus Relevansi untuk B2B Apparel / Uniform / Merchandise Opportunity
@@ -553,7 +559,8 @@ class EventIntelligenceService:
         province: str = "",
         year: str = "2026, 2027",
         limit: int = 20,
-        user_id: Optional[int] = None
+        user_id: Optional[int] = None,
+        include_social_media: bool = True
     ) -> Dict[str, Any]:
         """
         Menemukan event pameran, expo, festival B2B, dan turnamen olahraga nyata
@@ -577,7 +584,24 @@ class EventIntelligenceService:
             limit=limit * 2
         )
 
-        # Coba Google Custom Search jika ada
+        # 1b. Coba DuckDuckGo Free Search via MCP jika hasil Google News masih kurang
+        if len(snippets) < limit:
+            try:
+                ddg_query = f"{query or 'pameran expo'} {location_str} {year or '2027'}".strip()
+                ddg_items = mcp_search_duckduckgo(query=ddg_query, max_results=limit)
+                for di in ddg_items:
+                    snippets.append({
+                        "title": di.get("title", ""),
+                        "url": di.get("url", ""),
+                        "source_publisher": "DuckDuckGo (Free MCP Search)",
+                        "source_domain": di.get("url", ""),
+                        "pub_date": "",
+                        "content": f"Judul: {di.get('title')}\nSumber: {di.get('url')}\nRingkasan: {di.get('snippet', '')}"
+                    })
+            except Exception as e:
+                logger.warning(f"MCP DuckDuckGo search fallback error: {e}")
+
+        # Coba Google Custom Search jika terkonfigurasi
         if len(snippets) < limit:
             cse_snips = fetch_google_custom_search_events(
                 query=query,
@@ -587,7 +611,7 @@ class EventIntelligenceService:
             )
             snippets.extend(cse_snips)
 
-        # Coba Tavily jika tersedia
+        # Coba Tavily jika API key tersedia & tidak melebihi kuota
         if len(snippets) < limit:
             try:
                 tavily_q = [f"{query or ''} {location_str} {year or ''}".strip()]
@@ -595,6 +619,36 @@ class EventIntelligenceService:
                 snippets.extend(tav_snips)
             except Exception:
                 pass
+
+        # 1c. Tarik postingan Media Sosial (Instagram Reels & Posts, Facebook, TikTok) via Free MCP Engine (DuckDuckGo + Playwright)
+        if include_social_media:
+            try:
+                logger.info("Starting Free MCP Social Media Discovery (DuckDuckGo + Playwright)...")
+                # 1. Cari tautan medsos relevan melalui targeted dorks DuckDuckGo
+                social_links = mcp_search_social_events(
+                    query=query or "pameran expo festival event",
+                    year=year or "2027",
+                    platforms=["instagram", "facebook", "tiktok"],
+                    max_results=min(limit, 8)
+                )
+                # 2. Render dan scrape setiap URL postingan/reels dengan Playwright Headless Browser
+                for s_item in social_links:
+                    target_url = s_item.get("url")
+                    if not target_url:
+                        continue
+                    scraped = mcp_scrape_url(target_url)
+                    body_content = scraped.get("content") or s_item.get("snippet") or ""
+                    if len(body_content) > 30:
+                        snippets.append({
+                            "title": scraped.get("title") or s_item.get("title") or f"Event {s_item.get('platform')}",
+                            "url": target_url,
+                            "source_publisher": f"Social Media ({s_item.get('platform', 'Social').upper()})",
+                            "source_domain": target_url,
+                            "pub_date": "",
+                            "content": f"Platform: {s_item.get('platform', '').upper()}\nURL Asli: {target_url}\nJudul/Caption: {scraped.get('title')}\nTeks Konten: {body_content[:1500]}"
+                        })
+            except Exception as e:
+                logger.warning(f"Free MCP Playwright social discovery error: {e}")
 
         if not snippets:
             return {
@@ -628,7 +682,7 @@ ATURAN KETAT & TANGGAL PRESISI:
    - Jika hanya ada bulan dan tahun (contoh: 'Oktober 2027'), tulis 'Oktober 2027' di start_date dan null di end_date.
    - Jika HANYA ada tahun '2027' (jadwal tanggal & bulan belum diumumkan panitia), WAJIB isi start_date: null, end_date: null.
 3. Ekstrak venue gedung yang spesifik (misal: 'JIExpo Kemayoran', 'ICE BSD Hall 5', 'JCC Senayan'). Jika belum diumumkan, isi null.
-4. Setiap event yang diekstrak WAJIB memiliki "source_url" yang sama persis dengan URL berita asalnya.
+4. Setiap event yang diekstrak WAJIB memiliki "source_url" yang sama persis dengan URL berita asalnya. Jika sumber berasal dari media sosial (Instagram/Facebook/TikTok), "source_url" WAJIB berupa tautan link postingan atau reels spesifik (contoh: https://www.instagram.com/reel/XYZ... atau https://www.instagram.com/p/ABC...), DILARANG menggunakan tautan root profile profil akun saja!
 
 Kembalikan format HANYA JSON array:
 [
@@ -642,7 +696,7 @@ Kembalikan format HANYA JSON array:
     "start_date": "Estimasi tanggal (YYYY-MM-DD atau Bulan Tahun jika ada)",
     "end_date": "Estimasi tanggal selesai jika ada",
     "website": "URL website resmi jika ada",
-    "source_url": "URL berita asal dari Google",
+    "source_url": "URL berita atau tautan link postingan/reels media sosial asli",
     "description": "Deskripsi singkat profil event dan potensi kebutuhan seragam/apparel/merchandise",
     "status": "upcoming"
   }}
@@ -695,7 +749,8 @@ Kembalikan format HANYA JSON array:
                 "website": c.get("website") if (c.get("website") or "").startswith("http") else None,
                 "description": c.get("description"),
                 "status": c.get("status", "upcoming"),
-                "source_url": src_url
+                "source_url": src_url,
+                "social_json": json.dumps({"instagram": src_url}) if "instagram.com" in src_url.lower() else (json.dumps({"facebook": src_url}) if "facebook.com" in src_url.lower() else (json.dumps({"tiktok": src_url}) if "tiktok.com" in src_url.lower() else None))
             }
 
             event, is_new, msg = cls.create_or_update_event(event_dict)

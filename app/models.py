@@ -707,13 +707,13 @@ class Event(db.Model):
 
     @property
     def event_year(self):
-        """Mengekstrak tahun event dari start_date atau nama event."""
-        if self.start_date:
-            return self.start_date.year
+        """Mengekstrak tahun event dari nama event atau start_date."""
         import re
         m = re.search(r'\b(202\d)\b', self.name or "")
         if m:
             return int(m.group(1))
+        if self.start_date:
+            return self.start_date.year
         return None
 
     @property
