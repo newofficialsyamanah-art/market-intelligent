@@ -352,8 +352,14 @@
             {% set wa_num = clean_phone %}
           {% endif %}
           {% set wa_msg = "Halo " ~ supplier.company_name ~ ", kami dari Tim Pengadaan Syamanah ingin mendiskusikan pasokan." %}
-          <a href="https://wa.me/{{ wa_num }}?text={{ wa_msg|urlencode }}" target="_blank" rel="noopener" class="btn btn-success w-100 mb-3 fw-semibold">
+          <a href="https://wa.me/{{ wa_num }}?text={{ wa_msg|urlencode }}" target="_blank" rel="noopener" class="btn btn-success w-100 mb-2 fw-semibold">
             <i class="bi bi-whatsapp me-2"></i>Hubungi via WhatsApp
+          </a>
+        {% endif %}
+
+        {% if supplier.source_url and ('maps' in supplier.source_url or 'places' in supplier.source_url or supplier.verification_status == 'verified_maps_listing') %}
+          <a href="{{ supplier.source_url }}" target="_blank" rel="noopener" class="btn btn-outline-danger btn-sm w-100 mb-3 fw-semibold">
+            <i class="bi bi-geo-alt-fill me-1"></i> Buka Titik Lokasi di Google Maps <i class="bi bi-box-arrow-up-right ms-1"></i>
           </a>
         {% endif %}
 

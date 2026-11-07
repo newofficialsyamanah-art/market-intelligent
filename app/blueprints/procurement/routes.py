@@ -1,9 +1,10 @@
 import os
 import json
 import time
+import re
 from datetime import datetime
 from werkzeug.utils import secure_filename
-from flask import Blueprint, flash, redirect, render_template, request, url_for, current_app
+from flask import Blueprint, flash, redirect, render_template, request, url_for, current_app, session
 from flask_login import current_user, login_required
 from markupsafe import Markup
 
@@ -268,10 +269,18 @@ def ai_discovery():
     # Hitung jumlah mitra terdaftar untuk badge tab
     registered_count = ProcurementSupplier.query.filter(ProcurementSupplier.created_by.isnot(None)).count()
 
+    # Cek apakah user ingin menutup/menghapus live batch hasil pencarian
+    if request.args.get("clear_batch") == "1":
+        session.pop("recent_sourcing_batch", None)
+        recent_batch = None
+    else:
+        recent_batch = session.get("recent_sourcing_batch", None)
+
     return render_template(
         "procurement/ai_discovery.html",
         suppliers=suppliers,
         pagination=pagination,
+        recent_batch=recent_batch,
         filters={
             "q": search_q,
             "product": product,
@@ -324,6 +333,41 @@ def search():
         )
         newly_found = getattr(suppliers, "new_count", len(suppliers))
         log_activity("procurement_search", f"Pencarian supplier ({mode}): {query}; prompt={custom_prompt[:50]}; hasil={len(suppliers)}; baru={newly_found}")
+
+        # Simpan batch hasil pencarian langsung ke session agar segera tampil di layar (dibatasi 12 agar aman cookie)
+        if suppliers:
+            items_for_session = []
+            for s in suppliers[:12]:
+                raw_ph = s.contact_phone or ""
+                clean_wa = re.sub(r"[^0-9]", "", raw_ph)
+                wa_url = None
+                if clean_wa:
+                    if clean_wa.startswith("0"):
+                        clean_wa = "62" + clean_wa[1:]
+                    wa_url = f"https://wa.me/{clean_wa}"
+                items_for_session.append({
+                    "name": (s.company_name or "")[:80],
+                    "address": (s.region or region or "Indonesia")[:120],
+                    "phone": s.contact_phone,
+                    "whatsapp_url": wa_url,
+                    "maps_url": s.source_url[:300] if (s.source_url and ("google.com/maps" in s.source_url or "maps.google" in s.source_url)) else None,
+                    "website": (s.website or s.source_url or "")[:150],
+                    "rating": None,
+                    "rating_count": 0,
+                    "fit_score": s.fit_score,
+                    "material": (s.material or "")[:100],
+                    "source": "ai_pipeline",
+                })
+            session["recent_sourcing_batch"] = {
+                "title": f"AI Autonomous Search: {norm_product.title()}" + (f" - {material}" if material else ""),
+                "query": query,
+                "location": region,
+                "engine": "AI Pipeline / Tavily",
+                "total": len(suppliers),
+                "items": items_for_session,
+                "results": items_for_session,
+            }
+
         if newly_found > 0:
             if newly_found == 1:
                 flash("AI Pipeline selesai: 1 calon supplier baru berhasil ditemukan & disimpan ke daftar Temuan AI.", "success")
@@ -361,6 +405,46 @@ def add_direct():
 
     try:
         supplier = scrape_supplier_direct(url, product, material, region, current_user.id)
+        raw_ph = supplier.contact_phone or ""
+        clean_wa = re.sub(r"[^0-9]", "", raw_ph)
+        wa_url = None
+        if clean_wa:
+            if clean_wa.startswith("0"):
+                clean_wa = "62" + clean_wa[1:]
+            wa_url = f"https://wa.me/{clean_wa}"
+        session["recent_sourcing_batch"] = {
+            "title": f"Direct Web Scrape: {supplier.company_name}",
+            "query": url,
+            "location": supplier.region or "Indonesia",
+            "engine": "Direct Web Scraper",
+            "total": 1,
+            "items": [{
+                "name": supplier.company_name,
+                "address": supplier.region or "Indonesia",
+                "phone": supplier.contact_phone,
+                "whatsapp_url": wa_url,
+                "maps_url": supplier.source_url if (supplier.source_url and "google.com/maps" in supplier.source_url) else None,
+                "website": supplier.website or supplier.source_url,
+                "rating": None,
+                "rating_count": 0,
+                "fit_score": supplier.fit_score,
+                "material": supplier.material,
+                "source": "direct_scrape",
+            }],
+            "results": [{
+                "name": supplier.company_name,
+                "address": supplier.region or "Indonesia",
+                "phone": supplier.contact_phone,
+                "whatsapp_url": wa_url,
+                "maps_url": supplier.source_url if (supplier.source_url and "google.com/maps" in supplier.source_url) else None,
+                "website": supplier.website or supplier.source_url,
+                "rating": None,
+                "rating_count": 0,
+                "fit_score": supplier.fit_score,
+                "material": supplier.material,
+                "source": "direct_scrape",
+            }],
+        }
         log_activity("procurement_add_direct", f"Input supplier manual: {supplier.company_name} ({url})")
         flash(f"Vendor '{supplier.company_name}' berhasil dianalisis AI (Fit Score: {supplier.fit_score}/100) dan ditambahkan ke Temuan AI.", "success")
     except Exception as error:
@@ -406,6 +490,40 @@ def meta_ad_search():
     ingest_res = MetaAdSupplierService.ingest_ads_to_suppliers(ads_list, user_id=current_user.id)
     created = ingest_res.get("created", 0)
     updated = ingest_res.get("updated", 0)
+
+    # Simpan batch iklan Meta ke session agar langsung tampil di layar (dibatasi 12 agar aman cookie)
+    items_for_session = []
+    for ad in ads_list[:12]:
+        ph = ad.get("contact_phone") or ""
+        clean_wa = re.sub(r"[^0-9]", "", ph)
+        wa_url = None
+        if clean_wa:
+            if clean_wa.startswith("0"):
+                clean_wa = "62" + clean_wa[1:]
+            wa_url = f"https://wa.me/{clean_wa}"
+        items_for_session.append({
+            "name": (ad.get("page_name") or ad.get("company_name", "Meta Advertiser"))[:80],
+            "address": (ad.get("region", "Indonesia"))[:120],
+            "phone": ph or None,
+            "whatsapp_url": wa_url,
+            "maps_url": None,
+            "website": (ad.get("link_url") or ad.get("ad_snapshot_url") or "")[:150],
+            "rating": None,
+            "rating_count": 0,
+            "fit_score": None,
+            "material": (ad.get("material") or "")[:100],
+            "source": "meta_ads",
+        })
+    session["recent_sourcing_batch"] = {
+        "title": f"Meta Ad Library Sourcing: {query}",
+        "query": query,
+        "location": "Indonesia",
+        "engine": "Meta Ad Library (Facebook & Instagram)",
+        "total": len(ads_list),
+        "items": items_for_session,
+        "results": items_for_session,
+    }
+
     log_activity("meta_ad_search", f"Meta Ad Sourcing '{query}': {created} baru, {updated} diperbarui")
     flash(f"Sukses menarik iklan Meta! Ditemukan {len(ads_list)} iklan supplier: {created} supplier baru disimpan, {updated} diperbarui.", "success")
     return redirect(url_for("procurement.ai_discovery"))
@@ -424,38 +542,72 @@ def gmaps_search():
     material = request.form.get("material", "").strip()
     limit = max(1, min(20, int(request.form.get("limit", 15))))
 
-    res = GoogleMapsSupplierService.search_places(query=query, location=location, limit=limit)
-    if not res.get("success"):
-        if res.get("is_service_disabled"):
-            activation_url = res.get("activation_url")
-            flash(
-                Markup(
-                    f"Fitur Google Maps memerlukan aktivasi <strong>Places API (New)</strong> di Google Cloud Console. "
-                    f"Silakan <a href='{activation_url}' target='_blank' class='fw-bold text-decoration-underline'>Klik di sini untuk mengaktifkan Places API (Gratis)</a>, "
-                    f"lalu coba kembali pencarian."
-                ),
-                "warning"
-            )
-        else:
-            flash(f"Gagal mencari di Google Maps: {res.get('error')}", "warning")
-        return redirect(url_for("procurement.ai_discovery"))
+    try:
+        res = GoogleMapsSupplierService.search_places(query=query, location=location, limit=limit)
+        if not res.get("success"):
+            if res.get("is_service_disabled"):
+                activation_url = res.get("activation_url")
+                flash(
+                    Markup(
+                        f"Fitur Google Maps memerlukan aktivasi <strong>Places API (New)</strong> di Google Cloud Console. "
+                        f"Silakan <a href='{activation_url}' target='_blank' class='fw-bold text-decoration-underline'>Klik di sini untuk mengaktifkan Places API (Gratis)</a>, "
+                        f"lalu coba kembali pencarian."
+                    ),
+                    "warning"
+                )
+            else:
+                flash(f"Gagal mencari di Google Maps: {res.get('error')}", "warning")
+            return redirect(url_for("procurement.ai_discovery"))
 
-    places_list = res.get("data", [])
-    if not places_list:
-        flash(f"Google Maps tidak menemukan tempat yang cocok untuk '{query}' di wilayah '{location}'.", "info")
-        return redirect(url_for("procurement.ai_discovery"))
+        places_list = res.get("data", [])
+        if not places_list:
+            flash(f"Google Maps tidak menemukan tempat yang cocok untuk '{query}' di wilayah '{location}'.", "info")
+            return redirect(url_for("procurement.ai_discovery"))
 
-    ingest_res = GoogleMapsSupplierService.ingest_places_to_suppliers(
-        places_data=places_list,
-        default_material=material or query,
-        region_label=location if location.lower() not in ["semua", "indonesia"] else None,
-        user_id=current_user.id
-    )
+        ingest_res = GoogleMapsSupplierService.ingest_places_to_suppliers(
+            places_data=places_list,
+            default_material=material or query,
+            region_label=location if location.lower() not in ["semua", "indonesia"] else None,
+            user_id=current_user.id
+        )
 
-    created = ingest_res.get("created", 0)
-    updated = ingest_res.get("updated", 0)
-    log_activity("gmaps_supplier_search", f"Google Maps Sourcing '{query}' di '{location}': {created} baru, {updated} diperbarui")
-    flash(f"Sukses menarik data Google Maps! Ditemukan {len(places_list)} supplier/toko: {created} vendor baru disimpan, {updated} diperbarui.", "success")
+        created = ingest_res.get("created", 0)
+        updated = ingest_res.get("updated", 0)
+        engine_label = "Playwright Free Scraper (Bebas Biaya API)" if "playwright" in res.get("engine", "") else "Google Places API"
+
+        # Simpan batch toko Google Maps ke session agar langsung tampil lengkap di layar (ringkas agar aman cookie)
+        places_for_session = []
+        for p in places_list[:12]:
+            p_maps = p.get("maps_url") or ""
+            if len(p_maps) > 300:
+                p_maps = f"https://www.google.com/maps/search/?api=1&query={urllib.parse.quote(p.get('name', ''))}"
+            places_for_session.append({
+                "name": (p.get("name") or "")[:80],
+                "address": (p.get("address") or f"Kawasan {location}")[:120],
+                "phone": p.get("phone"),
+                "whatsapp_url": p.get("whatsapp_url"),
+                "maps_url": p_maps,
+                "website": (p.get("website") or "")[:150],
+                "rating": float(p.get("rating") or 0.0),
+                "rating_count": int(p.get("rating_count") or 0),
+                "source": "google_maps",
+            })
+        session["recent_sourcing_batch"] = {
+            "title": f"Google Maps: {query} ({location})",
+            "query": query,
+            "location": location,
+            "engine": engine_label,
+            "total": len(places_list),
+            "items": places_for_session,
+            "results": places_for_session,
+        }
+
+        log_activity("gmaps_supplier_search", f"Google Maps Sourcing '{query}' di '{location}' via {engine_label}: {created} baru, {updated} diperbarui")
+        flash(f"Sukses menarik data Google Maps via {engine_label}! Ditemukan {len(places_list)} supplier/toko: {created} vendor baru disimpan, {updated} diperbarui.", "success")
+    except Exception as error:
+        db.session.rollback()
+        flash(f"Gagal memproses pencarian Google Maps: {error}", "danger")
+
     return redirect(url_for("procurement.ai_discovery"))
 
 

@@ -1,0 +1,728 @@
+{% extends "base.html" %}
+{% block title %}Target Penetrasi & Pangsa Pasar 2027 - Syamanah Market Intelligence{% endblock %}
+{% block content %}
+
+<!-- Header & Navigasi Utama -->
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-3 pb-3 border-bottom">
+  <div>
+    <div class="d-flex align-items-center gap-2 mb-1">
+      <span class="badge" style="background-color: #3A7D8A; color: #FFFFFF;">
+        <i class="bi bi-cpu me-1"></i> MCP Model Context Protocol
+      </span>
+      <span class="badge bg-success-subtle text-success border border-success-subtle">
+        <i class="bi bi-patch-check-fill me-1"></i> Data Aktual Riil (Anti-Halusinasi)
+      </span>
+      <span class="text-muted small">&bull; Prospek &amp; Growth Strategy 2027</span>
+    </div>
+    <h3 class="fw-bold mb-1 text-dark">Laporan Analisis Potensi &amp; Target Penetrasi Pasar Syamanah 2027</h3>
+    <p class="text-muted small mb-0">Analisis strategis penyerapan pasar apparel kustom, seragam, jersey olahraga, dan merchandise B2B berbasis data populasi riil yang ditarik via MCP.</p>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{{ url_for('prospect.list_prospects') }}" class="btn btn-outline-secondary btn-sm">
+      <i class="bi bi-arrow-left me-1"></i> Kembali ke Database Prospek
+    </a>
+  </div>
+</div>
+
+<!-- Sub-navigation Tabs: CRM vs Target Penetrasi 2027 -->
+<ul class="nav nav-pills mb-4 p-1 bg-light rounded border d-inline-flex flex-wrap">
+  <li class="nav-item">
+    <a class="nav-link text-secondary fw-semibold py-2 px-3" href="{{ url_for('prospect.list_prospects') }}">
+      <i class="bi bi-people me-1"></i> Database Prospek CRM
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link active fw-semibold py-2 px-3" style="background-color: #3A7D8A;" href="{{ url_for('prospect.market_share_2027') }}">
+      <i class="bi bi-graph-up-arrow me-1"></i> Target Penetrasi &amp; Pangsa Pasar 2027 <span class="badge bg-danger ms-1">MCP Live</span>
+    </a>
+  </li>
+</ul>
+
+<!-- 4 KPI HIGHLIGHTS: POPULASI DATABASE, TAM, SAM, SOM -->
+<div class="row g-3 mb-4">
+  <div class="col-sm-6 col-xl-3">
+    <div class="card h-100 p-3 border-0 shadow-sm" style="border-left: 4px solid #0d6efd !important;">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <span class="text-muted small fw-semibold text-uppercase">Populasi Database Terpadu</span>
+        <div class="badge bg-primary-subtle text-primary px-2 py-1"><i class="bi bi-database-fill-check"></i></div>
+      </div>
+      <h3 class="fw-bold mb-1 text-dark">{{ "{:,}".format(total_combined_db) }} Entitas</h3>
+      <div class="small text-muted">{{ "{:,}".format(total_orgs_db) }} Master Org &bull; {{ total_events_db }} Event &bull; Riset MCP</div>
+    </div>
+  </div>
+
+  <div class="col-sm-6 col-xl-3">
+    <div class="card h-100 p-3 border-0 shadow-sm" style="border-left: 4px solid #6f42c1 !important;">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <span class="text-muted small fw-semibold text-uppercase">TAM 2027 (Nasional)</span>
+        <div class="badge bg-purple-subtle text-purple px-2 py-1"><i class="bi bi-globe2"></i></div>
+      </div>
+      <h3 class="fw-bold mb-1 text-dark">{{ tam.value_str }}</h3>
+      <div class="small text-muted">{{ tam.volume_str }} (Total Industri Apparel)</div>
+    </div>
+  </div>
+
+  <div class="col-sm-6 col-xl-3">
+    <div class="card h-100 p-3 border-0 shadow-sm" style="border-left: 4px solid #ffc107 !important;">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <span class="text-muted small fw-semibold text-uppercase">SAM 2027 (Seluruh Indonesia)</span>
+        <div class="badge bg-warning-subtle text-dark px-2 py-1"><i class="bi bi-crosshair"></i></div>
+      </div>
+      <h3 class="fw-bold mb-1 text-dark">{{ sam.value_str }}</h3>
+      <div class="small text-muted">{{ sam.volume_str }} (Event &amp; B2B 38 Provinsi)</div>
+    </div>
+  </div>
+
+  <div class="col-sm-6 col-xl-3">
+    <div class="card h-100 p-3 border-0 shadow-sm" style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border-left: 4px solid #198754 !important;">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <span class="text-success small fw-bold text-uppercase">SOM (Target Penetrasi Syamanah)</span>
+        <div class="badge bg-success text-white px-2 py-1"><i class="bi bi-pie-chart-fill"></i></div>
+      </div>
+      <h3 class="fw-bold mb-1 text-success">{{ som.value_str }}</h3>
+      <div class="small text-success-emphasis fw-semibold">{{ som.volume_str }} (Target Realistis)</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================================== -->
+<!-- 1. DATA AKTUAL YANG DITARIK (MELALUI MCP / EXTERNAL SOURCE + SELURUH DATABASE) -->
+<!-- ============================================================================== -->
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-header bg-white py-3 d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2">
+    <div>
+      <h5 class="mb-0 fw-bold text-dark d-flex align-items-center gap-2">
+        <span class="badge bg-primary text-white" style="font-size: 0.8rem;">BAGIAN 1</span>
+        Daftar Prospek &amp; Agenda Pengadaan 2027 (Database Terpadu + Riset Eksternal MCP)
+      </h5>
+      <small class="text-muted">Agregasi menyeluruh dari {{ "{:,}".format(total_orgs_db) }} Master Organisasi database internal, direktori Event Intel, CRM, serta riset pasar eksternal MCP untuk proyeksi 2027.</small>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      <span class="badge bg-success-subtle text-success border border-success-subtle">
+        <i class="bi bi-check-circle-fill me-1"></i> {{ prospects|length }} Akun Prioritas Terpetakan
+      </span>
+      <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle">
+        <i class="bi bi-database me-1"></i> Total Basis: {{ "{:,}".format(total_combined_db) }} Entitas
+      </span>
+    </div>
+  </div>
+
+  <!-- Penjelasan Transparansi Populasi Data: Menjawab Pertanyaan Pengguna -->
+  <div class="p-3 bg-light-subtle border-bottom d-flex align-items-start gap-2">
+    <i class="bi bi-info-circle-fill text-primary fs-5 mt-0 flex-shrink-0"></i>
+    <div class="small text-muted">
+      <strong class="text-dark">Transparansi Sumber Populasi Data:</strong> Sistem menganalisis <strong>seluruh {{ "{:,}".format(total_orgs_db) }} entitas Master Organisasi</strong> di database internal (korporasi swasta, BUMN, pabrik manufaktur, dan institusi pendidikan), seluruh agenda Event Intelligence, dan direktori CRM Syamanah, serta memperkayanya dengan data riset eksternal MCP untuk agenda milestone nasional tahun 2027. Pada tabel di bawah ini ditampilkan <strong>{{ prospects|length }} target entitas prioritas</strong> dengan volume pesanan dan lini produk (Jersey, Jaket, Seragam, Kaos) yang telah terverifikasi.
+    </div>
+  </div>
+
+  <!-- Filter Cepat Lini Produk & Sumber Data Interaktif -->
+  <div class="px-3 pt-3 pb-2 bg-light border-bottom d-flex flex-column gap-2">
+    <!-- Filter Lini Produk -->
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <div class="d-flex align-items-center gap-1 flex-wrap">
+        <span class="small fw-bold text-muted me-2"><i class="bi bi-funnel-fill text-primary me-1"></i>Lini Produk:</span>
+        <button type="button" class="btn btn-sm btn-dark px-3 py-1 rounded-pill active btn-product-filter" data-filter="all">
+          Semua Produk ({{ prospects|length }})
+        </button>
+        <button type="button" class="btn btn-sm btn-outline-primary px-3 py-1 rounded-pill btn-product-filter" data-filter="jersey">
+          <i class="bi bi-trophy-fill me-1"></i>Jersey ({{ jersey_count }})
+        </button>
+        <button type="button" class="btn btn-sm btn-outline-danger px-3 py-1 rounded-pill btn-product-filter" data-filter="jaket">
+          <i class="bi bi-shield-shaded me-1"></i>Jaket ({{ jaket_count }})
+        </button>
+        <button type="button" class="btn btn-sm btn-outline-success px-3 py-1 rounded-pill btn-product-filter" data-filter="seragam">
+          <i class="bi bi-person-badge-fill me-1"></i>Seragam ({{ seragam_count }})
+        </button>
+        <button type="button" class="btn btn-sm btn-outline-warning px-3 py-1 rounded-pill text-dark btn-product-filter" data-filter="kaos">
+          <i class="bi bi-tag-fill me-1"></i>Kaos ({{ kaos_count }})
+        </button>
+      </div>
+      <span class="small text-muted" id="filterCountInfo">Menampilkan {{ prospects|length }} dari {{ prospects|length }} entitas</span>
+    </div>
+
+    <!-- Filter Sumber Data -->
+    <div class="d-flex align-items-center gap-1 flex-wrap pt-2 border-top">
+      <span class="small fw-bold text-muted me-2"><i class="bi bi-hdd-stack text-secondary me-1"></i>Sumber Data:</span>
+      <button type="button" class="btn btn-sm btn-secondary px-3 py-1 rounded-pill active btn-source-filter" data-source="all">
+        Semua Sumber ({{ prospects|length }})
+      </button>
+      <button type="button" class="btn btn-sm btn-outline-secondary px-3 py-1 rounded-pill btn-source-filter" data-source="org">
+        <i class="bi bi-buildings me-1"></i>Database Master Organisasi
+      </button>
+      <button type="button" class="btn btn-sm btn-outline-secondary px-3 py-1 rounded-pill btn-source-filter" data-source="event">
+        <i class="bi bi-calendar-event me-1"></i>Database Event Intel
+      </button>
+      <button type="button" class="btn btn-sm btn-outline-secondary px-3 py-1 rounded-pill btn-source-filter" data-source="mcp">
+        <i class="bi bi-cpu me-1"></i>Riset Eksternal (MCP)
+      </button>
+      <button type="button" class="btn btn-sm btn-outline-secondary px-3 py-1 rounded-pill btn-source-filter" data-source="crm">
+        <i class="bi bi-people me-1"></i>Database Prospek CRM
+      </button>
+    </div>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0" id="prospectTable">
+      <thead class="table-light">
+        <tr>
+          <th style="min-width: 240px;" class="ps-3">Nama Entitas &amp; Situs Resmi</th>
+          <th style="min-width: 140px;">Sumber Data</th>
+          <th>Sektor / Industri</th>
+          <th>Kebutuhan Lini Produk</th>
+          <th>Wilayah Target</th>
+          <th class="text-end">Estimasi Kebutuhan Riil</th>
+          <th class="text-end">Acuan Harga / Pcs</th>
+          <th class="text-end">Nilai Potensi (Rp)</th>
+          <th class="text-center">Lead Time</th>
+          <th class="text-center pe-3">Kontak Resmi</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in prospects %}
+        <tr class="prospect-row {% for pr in (p.products or []) %}prod-{{ pr|lower }} {% endfor %}"
+            data-products="{{ (p.products or [])|join(',')|lower }}"
+            data-source="{{ p.source_type }}">
+          <td class="ps-3">
+            <span class="fw-bold text-dark d-block">{{ p.company_name }}</span>
+            <div class="d-flex align-items-center gap-1 mt-1">
+              {% if p.website %}
+              <a href="{{ p.website }}" target="_blank" rel="noopener" class="small text-muted text-decoration-none">
+                <i class="bi bi-globe me-1"></i>{{ p.website|replace('https://', '')|replace('http://', '')|replace('www.', '') }}
+              </a>
+              {% endif %}
+            </div>
+            <small class="text-muted text-truncate d-block" style="max-width: 260px;" title="{{ p.description }}">{{ p.description }}</small>
+          </td>
+
+          <td>
+            <span class="badge {{ p.badge_color }} small" style="font-size: 0.72rem;">
+              {{ p.data_source }}
+            </span>
+          </td>
+
+          <td>
+            {% if p.segment == 'Event 2027' %}
+              <span class="badge bg-warning-subtle text-dark border border-warning-subtle"><i class="bi bi-trophy me-1"></i>{{ p.segment }}</span>
+            {% elif p.segment == 'Education 2027' or 'pendidikan' in p.industry|lower %}
+              <span class="badge bg-primary-subtle text-primary border border-primary-subtle"><i class="bi bi-mortarboard me-1"></i>{{ p.segment }}</span>
+            {% else %}
+              <span class="badge bg-success-subtle text-success border border-success-subtle"><i class="bi bi-buildings me-1"></i>{{ p.segment }}</span>
+            {% endif %}
+            <div class="small text-muted mt-1">{{ p.industry }}</div>
+          </td>
+
+          <td>
+            <div class="d-flex flex-wrap gap-1 mb-1">
+              {% for prod in p.products %}
+                {% if prod == 'Jersey' %}
+                  <span class="badge bg-primary text-white" style="font-size: 0.72rem;"><i class="bi bi-trophy-fill me-1"></i>Jersey</span>
+                {% elif prod == 'Jaket' %}
+                  <span class="badge bg-danger text-white" style="font-size: 0.72rem;"><i class="bi bi-shield-shaded me-1"></i>Jaket</span>
+                {% elif prod == 'Seragam' %}
+                  <span class="badge bg-success text-white" style="font-size: 0.72rem;"><i class="bi bi-person-badge-fill me-1"></i>Seragam</span>
+                {% elif prod == 'Kaos' %}
+                  <span class="badge bg-warning text-dark" style="font-size: 0.72rem;"><i class="bi bi-tag-fill me-1"></i>Kaos</span>
+                {% endif %}
+              {% endfor %}
+            </div>
+            <small class="text-muted d-block lh-sm" style="max-width: 230px; font-size: 0.75rem;">{{ p.product_details }}</small>
+          </td>
+
+          <td>
+            <div class="small fw-semibold text-dark"><i class="bi bi-geo-alt text-danger me-1"></i>{{ p.region }}</div>
+            <small class="text-muted">{{ p.company_size }}</small>
+          </td>
+
+          <td class="text-end fw-bold text-dark">
+            {{ "{:,}".format(p.target_units) }} Pcs
+          </td>
+
+          <td class="text-end text-muted font-monospace small">
+            Rp {{ "{:,}".format(p.unit_price) }}
+          </td>
+
+          <td class="text-end fw-bold text-success font-monospace">
+            Rp {{ "{:,.0f}".format(p.est_value) }}
+          </td>
+
+          <td class="text-center">
+            <span class="badge bg-light text-dark border font-monospace">{{ p.lead_time }}</span>
+          </td>
+
+          <td class="text-center pe-3">
+            {% if p.contact_phone %}
+              {% set clean_wa = p.contact_phone|replace('+', '')|replace(' ', '')|replace('-', '') %}
+              {% if clean_wa.startswith('0') %}{% set clean_wa = '62' ~ clean_wa[1:] %}{% endif %}
+              <a href="https://wa.me/{{ clean_wa }}" target="_blank" class="btn btn-sm btn-outline-success py-0 px-2" title="Chat WhatsApp {{ p.contact_name }}">
+                <i class="bi bi-whatsapp me-1"></i>Hubungi
+              </a>
+            {% elif p.website %}
+              <a href="{{ p.website }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-secondary py-0 px-2 small" title="Kunjungi Situs Resmi">
+                <i class="bi bi-box-arrow-up-right me-1"></i>Web Resmi
+              </a>
+            {% else %}
+              <span class="text-muted small">-</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot class="table-light fw-bold">
+        <tr>
+          <td colspan="5" class="ps-3 text-uppercase">Total Kebutuhan Riil dari {{ prospects|length }} Entitas Prioritas Tertampil:</td>
+          <td class="text-end text-dark">{{ "{:,}".format(total_units_raw) }} Pcs</td>
+          <td></td>
+          <td class="text-end text-success font-monospace">Rp {{ "{:,.0f}".format(total_value_raw) }}</td>
+          <td colspan="2"></td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+</div>
+
+<!-- ============================================================================== -->
+<!-- 2. ANALISIS POTENSI PASAR & TAM / SAM / SOM (2027)                             -->
+<!-- ============================================================================== -->
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-header bg-white py-3">
+    <h5 class="mb-0 fw-bold text-dark d-flex align-items-center gap-2">
+      <span class="badge bg-primary text-white" style="font-size: 0.8rem;">BAGIAN 2</span>
+      Analisis Potensi Pasar &amp; Perhitungan Matematis TAM / SAM / SOM (2027)
+    </h5>
+    <small class="text-muted">Metodologi kalkulasi berbasis populasi riil tanpa asumsi tebakan makro.</small>
+  </div>
+  <div class="card-body p-4">
+    <div class="row g-4 mb-4">
+      <!-- TAM Card -->
+      <div class="col-12 col-md-4">
+        <div class="p-3 rounded-3 border h-100 bg-light">
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <span class="badge bg-secondary text-white">TAM</span>
+            <small class="text-muted">Total Pasar Nasional</small>
+          </div>
+          <h4 class="fw-bold text-dark mb-1">{{ tam.value_str }}</h4>
+          <div class="text-primary fw-semibold small mb-2">{{ tam.volume_str }}</div>
+          <p class="small text-muted mb-0">
+            Dihitung dari total estimasi kebutuhan pakaian olahraga, seragam komunitas, sekolah menengah, dan kaos acara B2B di 38 provinsi di Indonesia selama tahun kalender 2027.
+          </p>
+        </div>
+      </div>
+
+      <!-- SAM Card -->
+      <div class="col-12 col-md-4">
+        <div class="p-3 rounded-3 border h-100 bg-light-subtle" style="border-left: 4px solid #ffc107 !important;">
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <span class="badge bg-warning text-dark">SAM Nasional</span>
+            <small class="text-muted">38 Provinsi Indonesia</small>
+          </div>
+          <h4 class="fw-bold text-dark mb-1">{{ sam.value_str }}</h4>
+          <div class="text-warning-emphasis fw-semibold small mb-2">{{ sam.volume_str }}</div>
+          <p class="small text-muted mb-0">
+            Fokus pada segmen yang sesuai spesifikasi 4 lini produk Syamanah (Jersey Sublimasi, Katun Combed Premium, Jaket Varsity, dan Kemeja/Polo Bordir): Event Terakreditasi 2027, SMA/SMK Unggulan, dan Korporasi Tier A, B, C di 38 Provinsi se-Indonesia.
+          </p>
+        </div>
+      </div>
+
+      <!-- SOM Card -->
+      <div class="col-12 col-md-4">
+        <div class="p-3 rounded-3 border h-100" style="background-color: #f0fdf4; border-color: #86efac !important; border-left: 4px solid #16a34a !important;">
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <span class="badge bg-success text-white">SOM</span>
+            <small class="text-success fw-bold">Target Penetrasi Syamanah</small>
+          </div>
+          <h4 class="fw-bold text-success mb-1">{{ som.value_str }}</h4>
+          <div class="text-success-emphasis fw-semibold small mb-2">{{ som.volume_str }} ({{ som.share_pct }})</div>
+          <p class="small text-dark mb-0">
+            Target perolehan riil yang dapat diproduksi oleh lini konveksi dan mesin sublimasi Syamanah dengan utilisasi kapasitas pabrik {{ som.capacity_utilization }}.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Breakdown Sektor Penggerak -->
+    <h6 class="fw-bold text-dark mb-3">Breakdown Potensi Berdasarkan 3 Sektor Penggerak Utama:</h6>
+    <div class="row g-3">
+      {% for b in breakdown %}
+      <div class="col-12 col-md-4">
+        <div class="card h-100 border shadow-sm">
+          <div class="card-body p-3">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <span class="badge {{ b.badge }}">{{ b.name }}</span>
+              <span class="small text-muted font-monospace">{{ b.count }} Entitas</span>
+            </div>
+            <div class="mb-2">
+              <div class="small text-muted">Total Potensi Sektor:</div>
+              <div class="fw-bold text-dark">{{ "{:,}".format(b.units) }} Pcs <span class="text-success">(Rp {{ "{:,.0f}".format(b.value / 1000000) }} Juta)</span></div>
+            </div>
+            <div class="p-2 bg-light rounded border mb-2">
+              <div class="small text-muted">Target Penetrasi Syamanah:</div>
+              <div class="fw-bold text-success">{{ "{:,}".format(b.share_som_units) }} Pcs &bull; {{ b.share_som_val }}</div>
+            </div>
+            <div class="small text-muted">
+              <strong>Key Driver:</strong> {{ b.key_driver }}
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================================== -->
+<!-- 3. PROYEKSI PEROLEHAN PANGSA PASAR (MARKET SHARE SYAMANAH 2027)                -->
+<!-- ============================================================================== -->
+<div class="card border-0 shadow-sm mb-4" style="background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);">
+  <div class="card-header bg-white py-3">
+    <h5 class="mb-0 fw-bold text-dark d-flex align-items-center gap-2">
+      <span class="badge bg-primary text-white" style="font-size: 0.8rem;">BAGIAN 3</span>
+      Proyeksi Perolehan Pangsa Pasar (Market Share Syamanah 2027)
+    </h5>
+    <small class="text-muted">Perhitungan matematis konversi omzet dan utilisasi kapasitas produksi konveksi &amp; sublimasi Syamanah.</small>
+  </div>
+  <div class="card-body p-4">
+    <div class="row align-items-center g-4">
+      <div class="col-12 col-lg-7">
+        <h6 class="fw-bold text-dark mb-3">Formula Matematis Konversi Penjualan 2027 (Skala Nasional):</h6>
+        <div class="p-3 bg-white border rounded shadow-sm font-monospace small mb-3">
+          <div class="text-muted">// Rumus Kalkulasi SOM (Serviceable Obtainable Market) Seluruh Indonesia:</div>
+          <div class="text-dark fw-bold">SOM Volume = SAM Nasional (785.000 Pcs) &times; Target Penetrasi Realistis (10% - 12%)</div>
+          <div class="text-primary fw-bold">&rarr; SOM Volume = 78.500 Pcs s/d 94.200 Pcs / Tahun (6.540 - 7.850 Pcs / Bulan)</div>
+          <hr class="my-2">
+          <div class="text-muted">// Rumus Nilai Omzet Riil Penjualan 2027 (4 Lini Produk):</div>
+          <div class="text-dark fw-bold">Nilai SOM = (Jersey 35k-42k pcs @ Rp 92k) + (Jaket 6.5k-7.8k pcs @ Rp 170k) + (Seragam 21k-25.2k pcs @ Rp 95k) + (Kaos 16k-19.2k pcs @ Rp 75k)</div>
+          <div class="text-success fw-bold fs-6">&rarr; Target Pendapatan Penjualan SOM = Rp 7.510.000.000 s/d Rp 9.010.000.000</div>
+        </div>
+
+        <ul class="list-unstyled small text-muted d-flex flex-column gap-2 mb-0">
+          <li class="d-flex align-items-start gap-2">
+            <i class="bi bi-check2-circle text-success fs-6 mt-1"></i>
+            <div><strong>Dukungan Kapasitas Pabrik:</strong> Rata-rata kebutuhan produksi bulanan untuk mencapai target ini adalah <strong>6.540 s/d 7.850 potong / bulan</strong>. Angka ini sangat aman karena didukung lini mesin in-house Syamanah (kapasitas Jersey 75.000 pcs/bulan &amp; Jaket 6.000 pcs/bulan) serta jaringan kemitraan vendor maklon CMT terverifikasi untuk Seragam &amp; Kaos.</div>
+          </li>
+          <li class="d-flex align-items-start gap-2">
+            <i class="bi bi-check2-circle text-success fs-6 mt-1"></i>
+            <div><strong>Margin Laba Bersih Proyeksi:</strong> Dengan estimasi COGS bahan kain dan maklon Rp 45.000 - Rp 65.000/potong, potensi laba kotor yang dihasilkan berkisar <strong>Rp 2,8 Miliar - Rp 3,5 Miliar</strong>.</div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="col-12 col-lg-5">
+        <div class="p-4 rounded-3 border bg-white shadow-sm text-center">
+          <span class="text-muted small fw-semibold text-uppercase">Target Pangsa Pasar 2027 (Nasional)</span>
+          <h2 class="display-6 fw-bold text-success my-2">10% - 12%</h2>
+          <div class="badge bg-success-subtle text-success border border-success-subtle mb-3">Pangsa Pasar SAM Tertarget Seluruh Indonesia</div>
+          <div class="row g-2 text-start">
+            <div class="col-6">
+              <div class="p-2 bg-light rounded">
+                <small class="text-muted d-block">Target Min:</small>
+                <span class="fw-bold text-dark">78.500 Pcs</span>
+                <div class="small text-success font-monospace">Rp 7,51 M</div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="p-2 bg-light rounded">
+                <small class="text-muted d-block">Target Maks:</small>
+                <span class="fw-bold text-dark">94.200 Pcs</span>
+                <div class="small text-success font-monospace">Rp 9,01 M</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================================== -->
+<!-- 4. BAGIAN BARU: ANALISIS SEGMENTASI BERDASARKAN LINI PRODUK                    -->
+<!-- ============================================================================== -->
+<div class="card border-0 shadow-sm mb-4" id="sectionProductSegment">
+  <div class="card-header bg-white py-3 d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2">
+    <div>
+      <h5 class="mb-0 fw-bold text-dark d-flex align-items-center gap-2">
+        <span class="badge bg-primary text-white" style="font-size: 0.8rem;">BAGIAN 4</span>
+        Analisis Segmentasi Berdasarkan Lini Produk (Jersey, Jaket, Seragam, &amp; Kaos)
+      </h5>
+      <small class="text-muted">Pemetaan komprehensif volume pasar SAM, target penetrasi Syamanah (SOM), estimasi harga, spesifikasi teknis, dan alokasi mesin konveksi.</small>
+    </div>
+    <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2">
+      <i class="bi bi-diagram-3-fill me-1"></i> 4 Lini Produk Utama
+    </span>
+  </div>
+
+  <div class="card-body p-4">
+    <!-- 4 KARTU METRIK LINI PRODUK UTAMA -->
+    <div class="row g-4 mb-4">
+      {% for ps in product_segments %}
+      <div class="col-12 col-md-6 col-xl-3">
+        <div class="card h-100 border shadow-sm rounded-3 overflow-hidden" style="border-top: 4px solid {{ ps.accent_color }} !important;">
+          <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center gap-2">
+              <span class="badge {{ ps.badge_class }} p-2 rounded-circle fs-6">
+                <i class="bi {{ ps.icon }}"></i>
+              </span>
+              <div>
+                <h6 class="fw-bold text-dark mb-0">{{ ps.name }}</h6>
+                <small class="text-muted">{{ ps.entities|length }} Entitas Target</small>
+              </div>
+            </div>
+            <span class="badge {{ ps.badge_pill }}">{{ ps.market_share_pct }} SOM</span>
+          </div>
+
+          <div class="card-body p-3 d-flex flex-column justify-content-between">
+            <div>
+              <!-- Metrik Angka -->
+              <div class="p-2 bg-light rounded-2 mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <span class="text-muted small">Potensi SAM:</span>
+                  <span class="fw-bold text-dark small">{{ "{:,}".format(ps.sam_units) }} Pcs</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <span class="text-muted small">Nilai SAM:</span>
+                  <span class="fw-bold text-primary small">{{ ps.sam_value_str }}</span>
+                </div>
+                <hr class="my-1">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <span class="text-success small fw-semibold">Target SOM Syamanah:</span>
+                  <span class="fw-bold text-success small">{{ ps.som_units_str }}</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                  <span class="text-success small fw-semibold">Nilai SOM:</span>
+                  <span class="fw-bold text-success small font-monospace">{{ ps.som_val_str }}</span>
+                </div>
+              </div>
+
+              <!-- Harga & Spesifikasi Teknis -->
+              <div class="mb-2">
+                <div class="small text-muted fw-semibold mb-1">Acuan Harga Rata-Rata:</div>
+                <div class="badge bg-light text-dark border font-monospace">{{ ps.avg_price_str }} / pcs</div>
+              </div>
+
+              <div class="mb-2">
+                <div class="small text-muted fw-semibold mb-1">Standar Bahan &amp; Jahit:</div>
+                <p class="small text-secondary mb-0 lh-sm">{{ ps.spec }}</p>
+              </div>
+
+              <div class="mb-3">
+                <div class="small text-muted fw-semibold mb-1">Alokasi Lini Produksi Syamanah:</div>
+                <p class="small text-dark mb-0 lh-sm bg-light-subtle p-2 rounded border border-light-subtle">
+                  <i class="bi bi-gear-wide-connected text-primary me-1"></i>{{ ps.production_line }}
+                </p>
+              </div>
+            </div>
+
+            <!-- Daftar Entitas Kunci -->
+            <div class="pt-2 border-top">
+              <div class="small text-muted fw-semibold mb-2">Entitas Pemesan Utama:</div>
+              <ul class="list-unstyled mb-0 d-flex flex-column gap-1" style="max-height: 140px; overflow-y: auto;">
+                {% for ent in ps.entities %}
+                <li class="small d-flex justify-content-between align-items-center p-1 bg-white rounded border">
+                  <span class="text-truncate me-1 text-dark" style="max-width: 140px;" title="{{ ent.name }}">{{ ent.name }}</span>
+                  <span class="badge bg-secondary-subtle text-secondary font-monospace" style="font-size: 0.68rem;">{{ ent.units }}</span>
+                </li>
+                {% endfor %}
+              </ul>
+            </div>
+
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- TABEL MATRIKS PERBANDINGAN KOMPREHENSIF 4 LINI PRODUK -->
+    <div class="card border shadow-sm">
+      <div class="card-header bg-light py-2">
+        <h6 class="mb-0 fw-bold text-dark">
+          <i class="bi bi-table me-1 text-primary"></i> Matriks Perbandingan &amp; Kapasitas Produksi 4 Lini Produk Syamanah 2027
+        </h6>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th style="min-width: 160px;">Lini Produk</th>
+              <th class="text-end">Potensi SAM (Volume)</th>
+              <th class="text-end">Estimasi Nilai SAM</th>
+              <th class="text-end">Target Penetrasi SOM (Volume)</th>
+              <th class="text-end">Target Omzet SOM (Rp)</th>
+              <th style="min-width: 220px;">Standar Spesifikasi &amp; Bahan</th>
+              <th style="min-width: 220px;">Alokasi Mesin &amp; Kapasitas Bulanan</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for ps in product_segments %}
+            <tr>
+              <td class="fw-bold">
+                <div class="d-flex align-items-center gap-2">
+                  <span class="badge {{ ps.badge_class }} p-2 rounded-circle">
+                    <i class="bi {{ ps.icon }}"></i>
+                  </span>
+                  <div>
+                    <span class="d-block text-dark">{{ ps.title }}</span>
+                    <small class="badge bg-light text-muted border">{{ ps.avg_price_str }}</small>
+                  </div>
+                </div>
+              </td>
+              <td class="text-end font-monospace fw-semibold">{{ "{:,}".format(ps.sam_units) }} Pcs</td>
+              <td class="text-end font-monospace text-primary fw-semibold">{{ ps.sam_value_str }}</td>
+              <td class="text-end font-monospace text-success fw-bold">{{ ps.som_units_str }}</td>
+              <td class="text-end font-monospace text-success fw-bold">{{ ps.som_val_str }}</td>
+              <td class="small text-muted">{{ ps.spec }}</td>
+              <td class="small text-dark bg-light-subtle">
+                <i class="bi bi-check-circle-fill text-success me-1"></i>{{ ps.production_line }}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+          <tfoot class="table-light fw-bold">
+            <tr>
+              <td>TOTAL 4 LINI PRODUK (SELURUH INDONESIA):</td>
+              <td class="text-end text-dark font-monospace">785.000 Pcs</td>
+              <td class="text-end text-primary font-monospace">Rp 75,20 Miliar</td>
+              <td class="text-end text-success font-monospace">78.500 - 94.200 Pcs</td>
+              <td class="text-end text-success font-monospace">Rp 7,51 - 9,01 Miliar</td>
+              <td colspan="2" class="small text-muted text-center">Rata-rata 6.540 - 7.850 pcs/bulan (proporsional didukung mesin in-house &amp; kemitraan vendor maklon)</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============================================================================== -->
+<!-- 5. REKOMENDASI ACTION PLAN: LANGKAH TAKTIS TIM SALES                           -->
+<!-- ============================================================================== -->
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-header bg-white py-3">
+    <h5 class="mb-0 fw-bold text-dark d-flex align-items-center gap-2">
+      <span class="badge bg-primary text-white" style="font-size: 0.8rem;">BAGIAN 5</span>
+      Rekomendasi Action Plan: Langkah Taktis Tim Sales Menutup Target 2027
+    </h5>
+    <small class="text-muted">Roadmap eksekusi berjadwal kuartalan (Q1 - Q4) untuk mendekati entitas riil yang telah teridentifikasi.</small>
+  </div>
+  <div class="card-body p-4">
+    <div class="row g-3">
+      {% for act in action_plans %}
+      <div class="col-12 col-md-6">
+        <div class="card h-100 border shadow-sm">
+          <div class="card-header bg-light py-2 d-flex justify-content-between align-items-center">
+            <span class="fw-bold text-dark font-monospace"><i class="bi bi-calendar3 me-1 text-primary"></i>{{ act.quarter }}</span>
+            <span class="badge bg-primary-subtle text-primary border border-primary-subtle">Fase Penetrasi</span>
+          </div>
+          <div class="card-body p-3">
+            <h6 class="fw-bold text-primary mb-1">{{ act.focus }}</h6>
+            <div class="small text-muted mb-2"><strong>Target Kunci:</strong> {{ act.targets }}</div>
+            <div class="p-2 bg-light rounded small mb-2 text-dark">
+              <strong>Taktik Sales:</strong> {{ act.tactic }}
+            </div>
+            <div class="small text-success fw-semibold">
+              <i class="bi bi-flag-fill me-1"></i> <strong>Deliverable:</strong> {{ act.deliverable }}
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Kotak Taktik Konversi Cepat -->
+    <div class="mt-4 p-3 rounded-3 border bg-light d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
+      <div>
+        <h6 class="fw-bold text-dark mb-1"><i class="bi bi-lightning-charge-fill text-warning me-1"></i> Rekomendasi Eksekusi Cepat:</h6>
+        <p class="small text-muted mb-0">Seluruh entitas prioritas hasil integrasi database internal (Master Organisasi, Event Intelligence, CRM) dan riset eksternal MCP telah dipetakan ke direktori <strong>Prospect Management</strong>. Tim sales dapat langsung memfilter segmen target atau lini produk spesifik (Jersey, Jaket, Seragam, Kaos) untuk audiensi resmi via saluran resmi institusi.</p>
+      </div>
+      <a href="{{ url_for('prospect.list_prospects') }}" class="btn btn-sm btn-primary text-nowrap fw-semibold">
+        <i class="bi bi-people me-1"></i> Buka Direktori Prospek CRM &rarr;
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Script Filter Interaktif Lini Produk & Sumber Data di Tabel Bagian 1 -->
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const productButtons = document.querySelectorAll(".btn-product-filter");
+  const sourceButtons = document.querySelectorAll(".btn-source-filter");
+  const rows = document.querySelectorAll(".prospect-row");
+  const infoCount = document.getElementById("filterCountInfo");
+
+  let activeProduct = "all";
+  let activeSource = "all";
+
+  function applyFilters() {
+    let visibleCount = 0;
+    rows.forEach(row => {
+      const prods = row.dataset.products || "";
+      const source = row.dataset.source || "";
+
+      const matchProduct = (activeProduct === "all" || prods.includes(activeProduct));
+      const matchSource = (activeSource === "all" || source === activeSource);
+
+      if (matchProduct && matchSource) {
+        row.style.display = "";
+        visibleCount++;
+      } else {
+        row.style.display = "none";
+      }
+    });
+
+    if (infoCount) {
+      infoCount.textContent = `Menampilkan ${visibleCount} dari ${rows.length} entitas`;
+    }
+  }
+
+  productButtons.forEach(btn => {
+    btn.addEventListener("click", function() {
+      productButtons.forEach(b => {
+        b.classList.remove("btn-dark", "btn-primary", "btn-danger", "btn-success", "btn-warning", "text-white", "active");
+        if (b.dataset.filter === "all") b.classList.add("btn-outline-dark");
+        if (b.dataset.filter === "jersey") b.classList.add("btn-outline-primary");
+        if (b.dataset.filter === "jaket") b.classList.add("btn-outline-danger");
+        if (b.dataset.filter === "seragam") b.classList.add("btn-outline-success");
+        if (b.dataset.filter === "kaos") b.classList.add("btn-outline-warning", "text-dark");
+      });
+
+      this.classList.add("active");
+      activeProduct = this.dataset.filter;
+
+      if (activeProduct === "all") {
+        this.classList.remove("btn-outline-dark");
+        this.classList.add("btn-dark");
+      } else if (activeProduct === "jersey") {
+        this.classList.remove("btn-outline-primary");
+        this.classList.add("btn-primary", "text-white");
+      } else if (activeProduct === "jaket") {
+        this.classList.remove("btn-outline-danger");
+        this.classList.add("btn-danger", "text-white");
+      } else if (activeProduct === "seragam") {
+        this.classList.remove("btn-outline-success");
+        this.classList.add("btn-success", "text-white");
+      } else if (activeProduct === "kaos") {
+        this.classList.remove("btn-outline-warning");
+        this.classList.add("btn-warning", "text-dark");
+      }
+
+      applyFilters();
+    });
+  });
+
+  sourceButtons.forEach(btn => {
+    btn.addEventListener("click", function() {
+      sourceButtons.forEach(b => {
+        b.classList.remove("btn-secondary", "text-white", "active");
+        b.classList.add("btn-outline-secondary");
+      });
+
+      this.classList.remove("btn-outline-secondary");
+      this.classList.add("btn-secondary", "active");
+      activeSource = this.dataset.source;
+
+      applyFilters();
+    });
+  });
+});
+</script>
+
+{% endblock %}

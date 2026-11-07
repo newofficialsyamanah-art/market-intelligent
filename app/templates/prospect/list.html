@@ -2,9 +2,12 @@
 {% block title %}Prospek{% endblock %}
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
-  <h3>Prospect Management</h3>
-  {% if current_user.role in ['admin', 'business_analyst'] %}
   <div>
+    <h3 class="fw-bold mb-1">Prospect Management</h3>
+    <p class="text-muted small mb-0">Kelola direktori prospek B2B, institusi, dan target pasar potensial Syamanah.</p>
+  </div>
+  {% if current_user.role in ['admin', 'business_analyst'] %}
+  <div class="d-flex gap-2">
     <a href="{{ url_for('prospect.create') }}" class="btn btn-primary btn-sm">+ Tambah Prospek</a>
     <form method="post" action="{{ url_for('prospect.segment_all') }}" class="d-inline">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -13,6 +16,20 @@
   </div>
   {% endif %}
 </div>
+
+<!-- Sub-navigation Tabs: CRM vs Proyeksi 2027 -->
+<ul class="nav nav-pills mb-4 p-1 bg-light rounded border d-inline-flex flex-wrap">
+  <li class="nav-item">
+    <a class="nav-link active fw-semibold py-2 px-3" style="background-color: #3A7D8A;" href="{{ url_for('prospect.list_prospects') }}">
+      <i class="bi bi-people me-1"></i> Database Prospek CRM ({{ prospects|length }})
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link text-secondary fw-semibold py-2 px-3" href="{{ url_for('prospect.market_share_2027') }}">
+      <i class="bi bi-graph-up-arrow text-primary me-1"></i> Target Penetrasi &amp; Pangsa Pasar 2027 <span class="badge bg-primary ms-1">MCP Live</span>
+    </a>
+  </li>
+</ul>
 
 <form method="get" class="row g-2 mb-3">
   <div class="col-md-3"><input name="q" value="{{ filters.q }}" class="form-control form-control-sm" placeholder="Cari nama, wilayah, provinsi (se-Indonesia)..."></div>

@@ -398,6 +398,19 @@ MCP_TOOLS_SPEC = [
             },
             "required": ["query"]
         }
+    },
+    {
+        "name": "search_google_maps_suppliers",
+        "description": "Mencari toko bahan kain, sentra konveksi, garmen, dan supplier tekstil lokal langsung di Google Maps Web menggunakan Playwright secara 100% bebas biaya (tanpa API key).",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "query": {"type": "string", "description": "Kata kunci supplier (misal: 'toko kain katun', 'konveksi jersey')"},
+                "location": {"type": "string", "description": "Kota atau wilayah target (misal: 'Bandung', 'Surabaya')"},
+                "limit": {"type": "integer", "description": "Jumlah maksimal supplier", "default": 10}
+            },
+            "required": ["query"]
+        }
     }
 ]
 
@@ -457,6 +470,14 @@ class MarketIntelligenceMCPServer:
                         "method": scraped.get("method")
                     })
             return {"content": [{"type": "text", "text": json.dumps(scraped_snippets, ensure_ascii=False)}]}
+
+        elif name == "search_google_maps_suppliers":
+            from app.services.google_maps_supplier_service import GoogleMapsSupplierService
+            q = arguments.get("query", "")
+            loc = arguments.get("location", "")
+            lim = int(arguments.get("limit", 10))
+            res = GoogleMapsSupplierService.search_places(query=q, location=loc, limit=lim)
+            return {"content": [{"type": "text", "text": json.dumps(res, ensure_ascii=False)}]}
 
         else:
             raise ValueError(f"Unknown MCP tool: '{name}'")
