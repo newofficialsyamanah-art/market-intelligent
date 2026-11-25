@@ -1,6 +1,7 @@
 import json
 from collections import Counter
-from flask import Blueprint, render_template, flash, redirect, url_for, request, abort, jsonify
+from datetime import datetime
+from flask import Blueprint, render_template, flash, redirect, url_for, request, abort, jsonify, send_file
 from flask_login import login_required, current_user
 from sqlalchemy import func
 
@@ -17,8 +18,10 @@ from app.services.intelligence_analytics import (
     get_data_quality_and_freshness,
     get_white_space_clusters,
     search_master_organizations,
+    get_all_matching_master_organizations,
     get_organization_detail,
 )
+from app.services.company_intelligence_excel import create_company_intelligence_workbook
 from app.services.market_size_service import (
     get_market_size_and_share,
     simulate_expansion,
@@ -34,6 +37,45 @@ def _distribution(field):
     rows = db.session.query(getattr(Prospect, field), func.count(Prospect.id)) \
         .filter(getattr(Prospect, field).isnot(None)).group_by(getattr(Prospect, field)).all()
     return {k: v for k, v in rows if k}
+
+
+def _company_explorer_filter_state():
+    min_score_raw = request.args.get("min_score", "").strip()
+    search_filters = {
+        "q": request.args.get("q", "").strip(),
+        "industry": request.args.get("industry", "").strip(),
+        "province": request.args.get("province", "").strip(),
+        "sport": request.args.get("sport", "").strip(),
+        "priority_tier": request.args.get("priority_tier", "").strip(),
+        "min_score": int(min_score_raw) if min_score_raw.isdigit() else None,
+        "has_contact": request.args.get("has_contact") == "1",
+        "missing_website": request.args.get("missing_website") == "1",
+        "missing_social": request.args.get("missing_social") == "1",
+        "missing_phone": request.args.get("missing_phone") == "1",
+        "missing_email": request.args.get("missing_email") == "1",
+        "missing_address": request.args.get("missing_address") == "1",
+        "missing_employee_size": request.args.get("missing_employee_size") == "1",
+        "review_status": request.args.get("review_status", "").strip(),
+        "size_status": request.args.get("size_status", "").strip(),
+    }
+    display_filters = {
+        "q": search_filters["q"],
+        "industry": search_filters["industry"],
+        "province": search_filters["province"],
+        "sport": search_filters["sport"],
+        "priority_tier": search_filters["priority_tier"],
+        "min_score": min_score_raw,
+        "has_contact": "1" if search_filters["has_contact"] else "",
+        "missing_website": "1" if search_filters["missing_website"] else "",
+        "missing_social": "1" if search_filters["missing_social"] else "",
+        "missing_phone": "1" if search_filters["missing_phone"] else "",
+        "missing_email": "1" if search_filters["missing_email"] else "",
+        "missing_address": "1" if search_filters["missing_address"] else "",
+        "missing_employee_size": "1" if search_filters["missing_employee_size"] else "",
+        "review_status": search_filters["review_status"],
+        "size_status": search_filters["size_status"],
+    }
+    return search_filters, display_filters
 
 
 @market_analysis_bp.route("/")
@@ -173,44 +215,15 @@ def export_market_size_excel():
 @roles_required("business_analyst", "marketing", "management")
 def explorer():
     """Pencarian dan penyaringan data Master Organization Intelligence."""
-    q = request.args.get("q", "").strip()
-    industry = request.args.get("industry", "").strip()
-    province = request.args.get("province", "").strip()
-    sport = request.args.get("sport", "").strip()
-    priority_tier = request.args.get("priority_tier", "").strip()
-    min_score_raw = request.args.get("min_score", "").strip()
-    has_contact = request.args.get("has_contact") == "1"
-    missing_website = request.args.get("missing_website") == "1"
-    missing_social = request.args.get("missing_social") == "1"
-    missing_phone = request.args.get("missing_phone") == "1"
-    missing_email = request.args.get("missing_email") == "1"
-    missing_address = request.args.get("missing_address") == "1"
-    missing_employee_size = request.args.get("missing_employee_size") == "1"
-    review_status = request.args.get("review_status", "").strip()
-    size_status = request.args.get("size_status", "").strip()
+    search_filters, display_filters = _company_explorer_filter_state()
     page = request.args.get("page", 1, type=int)
 
-    min_score = int(min_score_raw) if min_score_raw.isdigit() else None
-
     items, total_count, total_pages = search_master_organizations(
-        q=q,
-        industry=industry,
-        province=province,
-        sport=sport,
-        priority_tier=priority_tier,
-        min_score=min_score,
-        has_contact=has_contact,
-        missing_website=missing_website,
-        missing_social=missing_social,
-        missing_phone=missing_phone,
-        missing_email=missing_email,
-        missing_address=missing_address,
-        missing_employee_size=missing_employee_size,
-        review_status=review_status,
-        size_status=size_status,
+        **search_filters,
         page=page,
         per_page=25,
     )
+    page = min(max(page, 1), total_pages)
 
     # Dapatkan daftar opsi industri dan provinsi untuk dropdown filter
     all_industries = [
@@ -249,26 +262,30 @@ def explorer():
         total_pages=total_pages,
         current_page=page,
         category_summary=category_summary,
-        filters={
-            "q": q,
-            "industry": industry,
-            "province": province,
-            "sport": sport,
-            "priority_tier": priority_tier,
-            "min_score": min_score_raw,
-            "has_contact": "1" if has_contact else "",
-            "missing_website": "1" if missing_website else "",
-            "missing_social": "1" if missing_social else "",
-            "missing_phone": "1" if missing_phone else "",
-            "missing_email": "1" if missing_email else "",
-            "missing_address": "1" if missing_address else "",
-            "missing_employee_size": "1" if missing_employee_size else "",
-            "review_status": review_status,
-            "size_status": size_status,
-        },
+        filters=display_filters,
         all_industries=all_industries,
         all_sports=all_sports,
         all_provinces=all_provinces,
+    )
+
+
+@market_analysis_bp.route("/explorer/export.xlsx")
+@login_required
+@roles_required("business_analyst", "marketing", "management")
+def export_company_intelligence_excel():
+    """Ekspor semua organisasi yang cocok dengan filter Company Intelligence Explorer."""
+    search_filters, display_filters = _company_explorer_filter_state()
+    organizations = get_all_matching_master_organizations(**search_filters)
+    workbook = create_company_intelligence_workbook(organizations, filters=display_filters)
+    log_activity(
+        "export_company_intelligence_excel",
+        f"Exported {len(organizations)} organizations from Company Intelligence Explorer",
+    )
+    return send_file(
+        workbook,
+        as_attachment=True,
+        download_name=f"Company_Intelligence_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx",
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     )
 
 
@@ -397,3 +414,88 @@ def history():
         except Exception:
             parsed.append((a, {}))
     return render_template("market_analysis/history.html", analyses=parsed)
+
+
+# ---------- Google Trends Intelligence (Fitur Tren Pasar Penelusuran) ----------
+
+@market_analysis_bp.route("/google-trends")
+@market_analysis_bp.route("/trends")
+@login_required
+@roles_required("business_analyst", "management", "marketing", "admin")
+def google_trends():
+    """Halaman Utama Google Trends Intelligence untuk Analisis Tren Permintaan Pasar & Penelusuran Konsumen/B2B."""
+    from app.services.google_trends_service import (
+        get_daily_trending_searches,
+        get_keyword_trend_analysis,
+        get_comparative_apparel_trends,
+        APP_KEYWORDS_PRESETS,
+    )
+
+    q = request.args.get("q", "jersey printing").strip()
+    geo = request.args.get("geo", "ID").strip()
+    active_tab = request.args.get("tab", "keyword").strip()
+
+    # 1. Analisis Tren Kata Kunci Terpilih
+    keyword_trend = get_keyword_trend_analysis(query_keyword=q, geo=geo)
+
+    # 2. Komparasi 4 Kategori Lini Produk Syamanah 12 Bulan Terakhir
+    comparative_trends = get_comparative_apparel_trends()
+
+    # 3. Live Daily Trending Searches di Indonesia dari Google Trends RSS
+    daily_trends = get_daily_trending_searches(geo=geo)
+
+    return render_template(
+        "market_analysis/google_trends.html",
+        q=q,
+        geo=geo,
+        active_tab=active_tab,
+        keyword_trend=keyword_trend,
+        comparative_trends=comparative_trends,
+        daily_trends=daily_trends,
+        presets=APP_KEYWORDS_PRESETS,
+    )
+
+
+@market_analysis_bp.route("/api/trends")
+@login_required
+@roles_required("business_analyst", "management", "marketing", "admin")
+def api_google_trends():
+    """API Asynchronous untuk pencarian data Google Trends dinamis tanpa reload halaman."""
+    from app.services.google_trends_service import get_keyword_trend_analysis
+
+    q = request.args.get("q", "jersey printing").strip()
+    geo = request.args.get("geo", "ID").strip()
+
+    data = get_keyword_trend_analysis(query_keyword=q, geo=geo)
+    return jsonify({
+        "success": True,
+        "data": data
+    })
+
+
+@market_analysis_bp.route("/trends/save", methods=["POST"])
+@login_required
+@roles_required("business_analyst", "management", "marketing", "admin")
+def save_google_trends():
+    """Menyimpan snapshot hasil analisis Google Trends ke tabel database `market_analyses`."""
+    from app.services.google_trends_service import get_keyword_trend_analysis, save_trend_analysis_snapshot
+
+    q = request.form.get("q", "jersey printing").strip()
+    geo = request.form.get("geo", "ID").strip()
+    title = request.form.get("title", f"Tren Google: {q} ({geo})").strip()
+
+    trend_data = get_keyword_trend_analysis(query_keyword=q, geo=geo)
+    try:
+        save_trend_analysis_snapshot(
+            title=title,
+            query=q,
+            data=trend_data,
+            user_id=current_user.id
+        )
+        log_activity("save_trend_snapshot", f"Menyimpan snapshot Google Trends untuk kata kunci: {q}")
+        flash(f"Snapshot analisis tren '{q}' berhasil disimpan ke histori Market Analysis!", "success")
+    except Exception as e:
+        flash(f"Gagal menyimpan snapshot tren: {e}", "danger")
+
+    return redirect(url_for("market_analysis.google_trends", q=q, geo=geo))
+

@@ -29,11 +29,27 @@ def roles_required(*roles):
         def wrapper(*args, **kwargs):
             if not current_user.is_authenticated:
                 abort(401)
-            if current_user.role != "admin" and current_user.role not in roles:
+            if not has_role_access(current_user.role, roles):
                 abort(403)
             return fn(*args, **kwargs)
         return wrapper
     return decorator
+
+
+def has_role_access(user_role, allowed_roles):
+    """Mengizinkan role bawaan serta role kustom berdasarkan permissions-nya."""
+    if user_role == "admin":
+        return True
+    if user_role in allowed_roles:
+        return True
+    try:
+        from app.models import CustomRole
+        role = CustomRole.query.filter_by(key=user_role, is_active=True).first()
+        if role:
+            return any(permission in role.permissions for permission in allowed_roles)
+    except Exception:
+        return False
+    return False
 
 
 def allowed_file(filename, allowed_extensions):

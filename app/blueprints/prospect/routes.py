@@ -1,4 +1,6 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from datetime import datetime
+import re
+from flask import Blueprint, render_template, request, redirect, url_for, flash, abort, send_file
 from flask_login import login_required, current_user
 from sqlalchemy import distinct, or_, func
 
@@ -7,8 +9,122 @@ from app.models import Prospect, Event, Organization
 from app import ai_agent
 from app.utils import log_activity, roles_required
 from app.services.market_size_service import get_market_size_and_share
+from app.services.product_sales_trend import (
+    create_product_sales_workbook,
+    filter_product_sales_trend_2026,
+    get_product_sales_trend_2026,
+)
 
 prospect_bp = Blueprint("prospect", __name__)
+
+_PRODUCT_TREND_2027 = (
+    ("Jersey", "#0d6efd"),
+    ("Jaket", "#dc3545"),
+    ("Seragam", "#198754"),
+    ("Kaos", "#ffc107"),
+)
+_PRODUCT_TREND_QUARTERS_2027 = ("Q1", "Q2", "Q3", "Q4", "Belum terjadwal")
+_MONTH_QUARTERS_2027 = {
+    "JAN": "Q1", "JANUARY": "Q1", "JANUARI": "Q1",
+    "FEB": "Q1", "FEBRUARY": "Q1", "FEBRUARI": "Q1",
+    "MAR": "Q1", "MARCH": "Q1", "MARET": "Q1",
+    "APR": "Q2", "APRIL": "Q2",
+    "MAY": "Q2", "MEI": "Q2",
+    "JUN": "Q2", "JUNE": "Q2", "JUNI": "Q2",
+    "JUL": "Q3", "JULY": "Q3", "JULI": "Q3",
+    "AUG": "Q3", "AGU": "Q3", "AUGUST": "Q3", "AGUSTUS": "Q3",
+    "SEP": "Q3", "SEPT": "Q3", "SEPTEMBER": "Q3",
+    "OCT": "Q4", "OKT": "Q4", "OCTOBER": "Q4", "OKTOBER": "Q4",
+    "NOV": "Q4", "NOVEMBER": "Q4",
+    "DEC": "Q4", "DES": "Q4", "DECEMBER": "Q4", "DESEMBER": "Q4",
+}
+
+
+def _quarter_for_2027_lead_time(lead_time):
+    value = str(lead_time or "").strip().upper()
+    if not re.search(r"(?<!\d)2027(?!\d)", value):
+        return None
+
+    explicit_quarters = re.findall(r"\bQ([1-4])\b", value)
+    if len(explicit_quarters) == 1:
+        return f"Q{explicit_quarters[0]}"
+    if explicit_quarters:
+        return "Belum terjadwal"
+
+    iso_months = re.findall(r"\b2027[-/](\d{1,2})(?:[-/]\d{1,2})?\b", value)
+    month_quarters = {
+        f"Q{(int(month) - 1) // 3 + 1}"
+        for month in iso_months
+        if 1 <= int(month) <= 12
+    }
+    if not iso_months:
+        tokens = set(re.findall(r"[A-Z]+", value))
+        month_quarters = {
+            quarter for month, quarter in _MONTH_QUARTERS_2027.items() if month in tokens
+        }
+
+    if len(month_quarters) == 1:
+        return next(iter(month_quarters))
+    return "Belum terjadwal"
+
+
+def _build_2027_product_trend(prospects):
+    counts = {
+        name: {quarter: 0 for quarter in _PRODUCT_TREND_QUARTERS_2027}
+        for name, _ in _PRODUCT_TREND_2027
+    }
+    included_prospects = 0
+    unscheduled_prospects = 0
+
+    for prospect in prospects:
+        quarter = _quarter_for_2027_lead_time(prospect.get("lead_time"))
+        if quarter is None:
+            continue
+
+        products = prospect.get("products") or []
+        if isinstance(products, str):
+            products = [products]
+        product_keys = {str(product).strip().casefold() for product in products if product}
+        matched_products = [
+            name for name, _ in _PRODUCT_TREND_2027
+            if name.casefold() in product_keys
+        ]
+        if not matched_products:
+            continue
+
+        included_prospects += 1
+        if quarter == "Belum terjadwal":
+            unscheduled_prospects += 1
+        for name in matched_products:
+            counts[name][quarter] += 1
+
+    rows = [
+        {
+            "name": name,
+            "color": color,
+            "quarter_counts": counts[name],
+            "total": sum(counts[name].values()),
+        }
+        for name, color in _PRODUCT_TREND_2027
+    ]
+    datasets = [
+        {
+            "label": row["name"],
+            "data": [row["quarter_counts"][quarter] for quarter in _PRODUCT_TREND_QUARTERS_2027],
+            "backgroundColor": row["color"],
+            "borderColor": row["color"],
+            "borderWidth": 1,
+        }
+        for row in rows
+    ]
+    return {
+        "quarters": list(_PRODUCT_TREND_QUARTERS_2027),
+        "rows": rows,
+        "datasets": datasets,
+        "prospect_count": included_prospects,
+        "unscheduled_count": unscheduled_prospects,
+    }
+
 
 VERIFIED_2027_PROSPECTS_DATA = [
     # --- EVENT & MICE 2027 ---
@@ -565,6 +681,10 @@ def _build_unified_2027_market_dataset():
                 seg = "Korporasi B2B"
 
             reg = f"{org.city}, {org.province}" if (org.city and org.province) else (org.city or org.province or "Jawa Barat")
+            raw_org_phone = org.purchasing_contact.get("phone") or org.phone or None
+            from app.utils import is_valid_indonesian_phone
+            if raw_org_phone and not is_valid_indonesian_phone(raw_org_phone):
+                raw_org_phone = None
 
             unified.append({
                 "company_name": org.name,
@@ -572,8 +692,8 @@ def _build_unified_2027_market_dataset():
                 "region": reg,
                 "company_size": org.employee_size or f"{members} Anggota/Karyawan",
                 "website": org.clean_website_url or org.website,
-                "contact_phone": org.purchasing_contact.get("phone") or org.phone or None,
-                "contact_name": org.purchasing_contact.get("nama") or None,
+                "contact_phone": raw_org_phone,
+                "contact_name": org.purchasing_contact.get("nama") if raw_org_phone else None,
                 "description": org.description or f"{org_type} terdata di Master Organization. Tier: {org.priority_tier or 'Potensial'}.",
                 "segment": seg,
                 "score": org.opportunity_score or 85,
@@ -602,14 +722,18 @@ def _build_unified_2027_market_dataset():
             seen_names.add(norm)
 
             reg = cp.region or "Indonesia"
+            raw_cp_phone = cp.contact_phone or None
+            if raw_cp_phone and not is_valid_indonesian_phone(raw_cp_phone):
+                raw_cp_phone = None
+
             unified.append({
                 "company_name": cp.company_name,
                 "industry": cp.industry or "Bisnis B2B",
                 "region": reg,
                 "company_size": cp.company_size or "Organisasi Bisnis",
                 "website": cp.website,
-                "contact_phone": cp.contact_phone,
-                "contact_name": cp.contact_name,
+                "contact_phone": raw_cp_phone,
+                "contact_name": cp.contact_name if raw_cp_phone else None,
                 "description": cp.description or f"Prospek CRM status {cp.status}.",
                 "segment": cp.segment or "Prospect CRM",
                 "score": cp.score or 80,
@@ -631,15 +755,27 @@ def _build_unified_2027_market_dataset():
     return unified
 
 
-@prospect_bp.route("/market-share-2027")
-@login_required
-@roles_required("admin", "business_analyst", "marketing", "management")
-def market_share_2027():
-    """Halaman Laporan Analisis Potensi & Target Penetrasi Pasar 2027 Berbasis Seluruh Database + Riset Eksternal MCP."""
+def _get_product_sales_2026_data(selected_category):
+    full_sales = get_product_sales_trend_2026()
+    categories = [category["name"] for category in full_sales["categories"]]
+    try:
+        filtered_sales = filter_product_sales_trend_2026(full_sales, selected_category)
+    except ValueError as exc:
+        abort(400, description=str(exc))
+    return filtered_sales, categories
+
+
+def _get_market_share_2027_context():
+    """Menyiapkan dataset dan parameter analitik lengkap untuk Target Penetrasi & Pangsa Pasar 2027."""
     newly_synced = _sync_verified_2027_prospects()
 
     # 1. Bangun Dataset Terintegrasi dari Seluruh Database + Data Eksternal MCP
     unified_prospects = _build_unified_2027_market_dataset()
+    product_trend_2027 = _build_2027_product_trend(unified_prospects)
+    selected_sales_category = request.args.get("sales_category", "").strip()
+    product_sales_2026, product_sales_categories = _get_product_sales_2026_data(
+        selected_sales_category
+    )
 
     # 2. Hitung Metrik Populasi Riil Seluruh Database Sistem
     try:
@@ -693,8 +829,8 @@ def market_share_2027():
     sam_metrics = {
         "title": "Serviceable Available Market (SAM) - Seluruh Indonesia",
         "volume_str": "785.000 Pcs",
-        "value_str": "Rp 75,20 Miliar",
-        "description": "Segmen pasar yang dapat dijangkau di seluruh 38 provinsi Indonesia: Organisasi Tier A, B, C & agenda Event Nasional 2027 dari 4 lini produk."
+        "value_str": "Mulai Rp 72,43 Miliar*",
+        "description": "Nilai minimum berdasarkan harga dasar Jersey, Jaket, Polo, dan asumsi harga Kaos sebelumnya. Nilai final lini seragam bergantung pada campuran kemeja/polo; harga kemeja mulai Rp 170.000 tanpa batas atas yang ditentukan."
     }
 
     som_metrics = {
@@ -702,7 +838,8 @@ def market_share_2027():
         "volume_min": 78500,
         "volume_max": 94200,
         "volume_str": "78.500 - 94.200 Pcs",
-        "value_str": "Rp 7,51 - 9,01 Miliar",
+        "value_str": "Mulai Rp 7,24 Miliar*",
+        "value_min_str": "Rp 7,24 Miliar",
         "share_pct": "10% - 12% dari SAM Nasional",
         "capacity_utilization": "Rata-rata 6.540 - 7.850 pcs/bulan (utilisasi sangat proporsional dengan kapasitas pabrik in-house & vendor maklon)",
         "description": "Target perolehan riil yang dapat dikonversi Syamanah tahun 2027 mencakup seluruh Indonesia dari segala lini produk."
@@ -718,7 +855,7 @@ def market_share_2027():
             "units": sum(p["target_units"] for p in events_data),
             "value": sum(p["est_value"] for p in events_data),
             "share_som_units": 45000,
-            "share_som_val": "Rp 3,85 Miliar",
+            "share_som_val": "Rp 4,05 Miliar",
             "key_driver": "Jakarta Fair 500th, WCCS 2027, Takraw World Cup, Maybank Marathon Bali, Borobudur Marathon, Pocari Run, GIIAS, FLEI, PON/Kejurda"
         },
         {
@@ -729,7 +866,7 @@ def market_share_2027():
             "units": sum(p["target_units"] for p in schools_data),
             "value": sum(p["est_value"] for p in schools_data),
             "share_som_units": 22000,
-            "share_som_val": "Rp 2,42 Miliar",
+            "share_som_val": "Rp 3,30 Miliar",
             "key_driver": "Seragam olahraga angkatan 2027 SMA/SMK Unggulan 38 Provinsi, Taruna Nusantara, Almamater & Ospek Kampus PTN/PTS Nasional"
         },
         {
@@ -764,14 +901,14 @@ def market_share_2027():
             "spec": "Sublimasi Full Print Dryfit (Milano, Benzema, Serena), Anti-Bakteri & Anti-UV, Jahitan Flatlock Presisi",
             "production_line": "Mesin Cetak & Heat Press Sublimasi In-House Syamanah (Kapasitas: 75.000 pcs/bln)",
             "sam_units": 350000,
-            "sam_value": 32200000000,
-            "sam_value_str": "Rp 32,20 Miliar",
+            "sam_value": 17500000000,
+            "sam_value_str": "Rp 17,50 - Rp 52,50 Miliar",
             "som_units_min": 35000,
             "som_units_max": 42000,
             "som_units_str": "35.000 - 42.000 Pcs",
-            "som_val_str": "Rp 3,22 - 3,86 Miliar",
+            "som_val_str": "Rp 1,75 - Rp 6,30 Miliar",
             "market_share_pct": "10% - 12%",
-            "avg_price_str": "Rp 90.000 - Rp 95.000",
+            "avg_price_str": "Rp 50.000 - Rp 150.000",
             "entities": [{"name": p["company_name"], "units": f"{p['target_units']:,} Pcs", "lead": p["lead_time"], "spec": p.get("product_details", "")[:40]} for p in jersey_entities[:8]],
             "total_entities_count": len(jersey_entities),
             "verified_units": sum(p["target_units"] for p in jersey_entities),
@@ -787,14 +924,14 @@ def market_share_2027():
             "spec": "Varsity Fleece CVC + Kulit Sintetis, Hoodie Baby Terry 320 gsm, Drill Almamater, Parasut/Taslan Kontingen",
             "production_line": "Lini Konveksi Jahit Khusus In-House Syamanah & Bordir Tajima (Kapasitas: 6.000 pcs/bln)",
             "sam_units": 65000,
-            "sam_value": 11050000000,
-            "sam_value_str": "Rp 11,05 Miliar",
+            "sam_value": 18525000000,
+            "sam_value_str": "Rp 18,53 - Rp 32,50 Miliar",
             "som_units_min": 6500,
             "som_units_max": 7800,
             "som_units_str": "6.500 - 7.800 Pcs",
-            "som_val_str": "Rp 1,10 - 1,32 Miliar",
+            "som_val_str": "Rp 1,85 - Rp 3,90 Miliar",
             "market_share_pct": "10% - 12%",
-            "avg_price_str": "Rp 150.000 - Rp 180.000",
+            "avg_price_str": "Rp 285.000 - Rp 500.000",
             "entities": [{"name": p["company_name"], "units": f"{p['target_units']:,} Pcs", "lead": p["lead_time"], "spec": p.get("product_details", "")[:40]} for p in jaket_entities[:8]],
             "total_entities_count": len(jaket_entities),
             "verified_units": sum(p["target_units"] for p in jaket_entities),
@@ -810,14 +947,14 @@ def market_share_2027():
             "spec": "Polo Pique Katun CVC 24s Bordir Tajima, Kemeja PDH Tropical Drill, Rompi & Workwear Kru Lapangan",
             "production_line": "Kemitraan Jaringan Vendor Maklon CMT Mitra Terverifikasi (Kapasitas: 25.000 pcs/bln)",
             "sam_units": 210000,
-            "sam_value": 19950000000,
-            "sam_value_str": "Rp 19,95 Miliar",
+            "sam_value": 25200000000,
+            "sam_value_str": "Mulai Rp 25,20 Miliar*",
             "som_units_min": 21000,
             "som_units_max": 25200,
             "som_units_str": "21.000 - 25.200 Pcs",
-            "som_val_str": "Rp 1,99 - 2,39 Miliar",
+            "som_val_str": "Mulai Rp 2,52 Miliar*",
             "market_share_pct": "10% - 12%",
-            "avg_price_str": "Rp 90.000 - Rp 100.000",
+            "avg_price_str": "Polo Rp 120.000; kemeja mulai Rp 170.000",
             "entities": [{"name": p["company_name"], "units": f"{p['target_units']:,} Pcs", "lead": p["lead_time"], "spec": p.get("product_details", "")[:40]} for p in seragam_entities[:8]],
             "total_entities_count": len(seragam_entities),
             "verified_units": sum(p["target_units"] for p in seragam_entities),
@@ -833,12 +970,12 @@ def market_share_2027():
             "spec": "Cotton Combed 24s/30s Reaktif 100%, Sablon Discharge / Plastisol High-Density / DTF Print Full Color",
             "production_line": "Kemitraan Vendor Maklon Sablon DTF & Otomatis Terverifikasi (Kapasitas: 30.000 pcs/bln)",
             "sam_units": 160000,
-            "sam_value": 12000000000,
-            "sam_value_str": "Rp 12,00 Miliar",
+            "sam_value": 11200000000,
+            "sam_value_str": "Rp 11,20 - Rp 13,60 Miliar**",
             "som_units_min": 16000,
             "som_units_max": 19200,
             "som_units_str": "16.000 - 19.200 Pcs",
-            "som_val_str": "Rp 1,20 - 1,44 Miliar",
+            "som_val_str": "Rp 1,12 - Rp 1,63 Miliar**",
             "market_share_pct": "10% - 12%",
             "avg_price_str": "Rp 70.000 - Rp 85.000",
             "entities": [{"name": p["company_name"], "units": f"{p['target_units']:,} Pcs", "lead": p["lead_time"], "spec": p.get("product_details", "")[:40]} for p in kaos_entities[:8]],
@@ -878,28 +1015,139 @@ def market_share_2027():
         }
     ]
 
+    return {
+        "prospects": unified_prospects,
+        "total_entities_displayed": total_entities_displayed,
+        "total_units_raw": total_units_raw,
+        "total_value_raw": total_value_raw,
+        "total_orgs_db": total_orgs_db,
+        "total_events_db": total_events_db,
+        "total_prospects_db": total_prospects_db,
+        "total_combined_db": total_combined_db,
+        "jersey_count": len(jersey_entities),
+        "jaket_count": len(jaket_entities),
+        "seragam_count": len(seragam_entities),
+        "kaos_count": len(kaos_entities),
+        "tam": tam_metrics,
+        "sam": sam_metrics,
+        "som": som_metrics,
+        "breakdown": breakdown_categories,
+        "product_segments": product_segments,
+        "product_trend_2027": product_trend_2027,
+        "product_sales_2026": product_sales_2026,
+        "product_sales_categories": product_sales_categories,
+        "selected_sales_category": selected_sales_category,
+        "action_plans": action_plans,
+        "newly_synced": newly_synced,
+    }
+
+
+@prospect_bp.route("/market-share-2027")
+@login_required
+@roles_required("admin", "business_analyst", "marketing", "management")
+def market_share_2027():
+    """Halaman Laporan Analisis Potensi & Target Penetrasi Pasar 2027 Berbasis Seluruh Database + Riset Eksternal MCP."""
+    context = _get_market_share_2027_context()
+    context["active_tab"] = "market_share_2027"
+    return render_template("prospect/market_share_2027.html", **context)
+
+
+@prospect_bp.route("/market-share-2027/export-pdf")
+@prospect_bp.route("/market-share-2027/pdf")
+@login_required
+@roles_required("admin", "business_analyst", "marketing", "management")
+def export_market_share_2027_pdf():
+    """Halaman Laporan Eksekutif Target Penetrasi & Pangsa Pasar 2027 Format Cetak / Simpan PDF."""
+    context = _get_market_share_2027_context()
+    context["generated_date"] = datetime.now().strftime("%d %B %Y, %H:%M WIB")
+    context["autoprint"] = request.args.get("autoprint", "0") == "1"
+    return render_template("prospect/market_share_2027_pdf.html", **context)
+
+
+@prospect_bp.route("/market-share-2027/export-sales.xlsx")
+@login_required
+@roles_required("admin", "business_analyst", "marketing", "management")
+def export_product_sales_2026_excel():
+    """Ekspor data omzet bulanan per kategori produk untuk 2026."""
+    selected_category = request.args.get("sales_category", "").strip()
+    sales, _ = _get_product_sales_2026_data(selected_category)
+    workbook = create_product_sales_workbook(sales)
+    log_activity(
+        "export_product_sales_2026_excel",
+        f"Exported 2026 product sales trend for {selected_category or 'all categories'}",
+    )
+    return send_file(
+        workbook,
+        as_attachment=True,
+        download_name="Tren_Omzet_Syamanah_2026.xlsx",
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )
+
+
+@prospect_bp.route("/export-pdf")
+@login_required
+@roles_required("admin", "business_analyst", "marketing", "management")
+def export_pdf():
+    """Ekspor daftar prospek CRM aktif ke format Laporan PDF Siap Cetak."""
+    q = request.args.get("q", "").strip()
+    industry = request.args.get("industry", "").strip()
+    region = request.args.get("region", "").strip()
+    segment = request.args.get("segment", "").strip()
+    status = request.args.get("status", "").strip()
+
+    query = Prospect.query
+    if q:
+        like = f"%{q}%"
+        query = query.filter(
+            db.or_(
+                Prospect.company_name.ilike(like),
+                Prospect.contact_email.ilike(like),
+                Prospect.region.ilike(like),
+                Prospect.industry.ilike(like)
+            )
+        )
+    if industry:
+        query = query.filter(Prospect.industry == industry)
+    if region:
+        query = query.filter(Prospect.region.ilike(f"%{region}%"))
+    if segment:
+        query = query.filter(Prospect.segment == segment)
+    if status:
+        query = query.filter(Prospect.status == status)
+
+    prospects = query.order_by(Prospect.score.desc(), Prospect.created_at.desc()).limit(500).all()
+
+    avg_score = round(sum(p.score or 0 for p in prospects) / len(prospects), 1) if prospects else 0
+    hot_count = sum(1 for p in prospects if (p.score or 0) >= 90)
+    converted_count = sum(1 for p in prospects if p.status == "converted")
+
+    generated_date = datetime.now().strftime("%d %B %Y, %H:%M WIB")
+
     return render_template(
-        "prospect/market_share_2027.html",
-        prospects=unified_prospects,
-        total_entities_displayed=total_entities_displayed,
-        total_units_raw=total_units_raw,
-        total_value_raw=total_value_raw,
-        total_orgs_db=total_orgs_db,
-        total_events_db=total_events_db,
-        total_prospects_db=total_prospects_db,
-        total_combined_db=total_combined_db,
-        jersey_count=len(jersey_entities),
-        jaket_count=len(jaket_entities),
-        seragam_count=len(seragam_entities),
-        kaos_count=len(kaos_entities),
-        tam=tam_metrics,
-        sam=sam_metrics,
-        som=som_metrics,
-        breakdown=breakdown_categories,
-        product_segments=product_segments,
-        action_plans=action_plans,
-        newly_synced=newly_synced,
-        active_tab="market_share_2027"
+        "prospect/prospects_list_pdf.html",
+        prospects=prospects,
+        total_count=len(prospects),
+        avg_score=avg_score,
+        hot_count=hot_count,
+        converted_count=converted_count,
+        filters={"q": q, "industry": industry, "region": region, "segment": segment, "status": status},
+        generated_date=generated_date,
+        autoprint=request.args.get("autoprint", "0") == "1"
+    )
+
+
+@prospect_bp.route("/<int:pid>/pdf")
+@login_required
+@roles_required("admin", "business_analyst", "marketing", "management")
+def export_prospect_detail_pdf(pid):
+    """Ekspor profil lembar prospek individual ke format PDF Siap Cetak (Sales Briefing Sheet)."""
+    p = Prospect.query.get_or_404(pid)
+    generated_date = datetime.now().strftime("%d %B %Y, %H:%M WIB")
+    return render_template(
+        "prospect/prospect_detail_pdf.html",
+        p=p,
+        generated_date=generated_date,
+        autoprint=request.args.get("autoprint", "0") == "1"
     )
 
 

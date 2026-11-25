@@ -4,7 +4,7 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
   <div>
     <h3 class="mb-0">Indonesia Discovery & Intelligence Hub</h3>
-    <small class="text-muted">Pencarian dan penyerapan institusi pendidikan, organisasi mahasiswa, komunitas olahraga, dan profil media sosial publik ke Master Organization.</small>
+    <small class="text-muted">Kartu pencarian cepat memakai DuckDuckGo MCP bila data seed belum cukup; kandidat hasil pencarian dicatat bersama URL buktinya. Sinkronisasi source kustom mengikuti konfigurasi masing-masing source.</small>
   </div>
 </div>
 
@@ -17,7 +17,7 @@
         <h6 class="mb-0"><i class="bi bi-mortarboard me-1"></i> 1. Institusi Pendidikan</h6>
       </div>
       <div class="card-body">
-        <p class="small text-muted mb-2">Cari sekolah (PAUD - SMK) dan perguruan tinggi (Universitas, Institut, Politeknik) se-Indonesia.</p>
+        <p class="small text-muted mb-2">Cari sekolah (PAUD - SMK) dan perguruan tinggi se-Indonesia. Direktori seed dilengkapi pencarian DuckDuckGo MCP jika hasil belum memenuhi batas.</p>
         <form method="post" action="{{ url_for('admin.trigger_education_discovery') }}">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <div class="mb-2">
@@ -54,12 +54,12 @@
         <h6 class="mb-0"><i class="bi bi-people me-1"></i> 2. Komunitas & Olahraga</h6>
       </div>
       <div class="card-body">
-        <p class="small text-muted mb-2">Discovery dinamis klub olahraga (futsal, running, basket, sepeda) dan BEM/UKM kampus se-Indonesia.</p>
+        <p class="small text-muted mb-2">Cari klub olahraga dan BEM/UKM dengan DuckDuckGo MCP. Kandidat MCP disimpan bersama URL bukti pencariannya.</p>
         <form method="post" action="{{ url_for('admin.trigger_community_discovery') }}">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <div class="mb-2">
             <label class="form-label small mb-1">Kategori Target</label>
-            <select name="category" class="form-select form-select-sm">
+            <select name="category" id="communityCategory" class="form-select form-select-sm">
               <option value="futsal">Klub / Komunitas Futsal</option>
               <option value="running">Komunitas Lari / Running Club</option>
               <option value="basketball">Klub / Komunitas Basket</option>
@@ -69,7 +69,12 @@
               <option value="badminton">Klub Badminton / Bulutangkis</option>
               <option value="student_org">Organisasi Mahasiswa (BEM / UKM)</option>
               <option value="all">Semua Komunitas Olahraga</option>
+              <option value="__custom__">Ketik kategori sendiri...</option>
             </select>
+          </div>
+          <div class="mb-2 d-none" id="customCategoryField">
+            <label for="customCategoryInput" class="form-label small mb-1">Kategori custom</label>
+            <input type="text" name="custom_category" id="customCategoryInput" class="form-control form-control-sm" maxlength="100" placeholder="Contoh: SSB, sport center, EO olahraga">
           </div>
           <div class="mb-2">
             <label class="form-label small mb-1">Kota / Wilayah Target</label>
@@ -103,7 +108,7 @@
         <h6 class="mb-0"><i class="bi bi-calendar-event me-1"></i> 3. Discovery Event & Expo</h6>
       </div>
       <div class="card-body">
-        <p class="small text-muted mb-2">Cari event pameran B2B, expo industri/tekstil, festival, dan turnamen olahraga nyata se-Indonesia.</p>
+        <p class="small text-muted mb-2">Cari event pameran B2B, expo industri/tekstil, festival, dan turnamen melalui berita serta fallback DuckDuckGo MCP.</p>
         <form method="post" action="{{ url_for('admin.trigger_event_discovery') }}">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <div class="mb-2">
@@ -142,17 +147,23 @@
         <h6 class="mb-0"><i class="bi bi-share me-1"></i> 4. Social Media Discovery</h6>
       </div>
       <div class="card-body">
-        <p class="small text-muted mb-2">Discovery profil Instagram, TikTok, Facebook publik se-Indonesia.</p>
+        <p class="small text-muted mb-2">Cari profil publik lewat DuckDuckGo MCP; pencarian web publik lain digunakan jika MCP tidak memberi hasil.</p>
         <form method="post" action="{{ url_for('admin.trigger_social_discovery') }}">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <div class="mb-2">
             <label class="form-label small mb-1">Platform</label>
-            <select name="platform" class="form-select form-select-sm">
+            <select name="platform" id="socialPlatform" class="form-select form-select-sm">
               <option value="instagram">Instagram</option>
               <option value="tiktok">TikTok</option>
               <option value="facebook">Facebook</option>
               <option value="linkedin">LinkedIn</option>
+              <option value="__custom__">Ketik nama platform...</option>
             </select>
+          </div>
+          <div class="mb-2 d-none" id="customPlatformField">
+            <label for="customPlatformInput" class="form-label small mb-1">Nama platform custom</label>
+            <input type="text" name="custom_platform" id="customPlatformInput" class="form-control form-control-sm" maxlength="60" placeholder="Contoh: Threads">
+            <small class="text-muted">Nama ini dipakai sebagai kata kunci pencarian umum, bukan filter domain.</small>
           </div>
           <div class="mb-2">
             <label class="form-label small mb-1">Keyword Pencarian</label>
@@ -234,4 +245,27 @@
   </tr>{% else %}<tr><td colspan="6" class="text-center text-muted py-3">Belum ada event.</td></tr>{% endfor %}
   </tbody></table></div>
 </div>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  [
+    ["communityCategory", "customCategoryField", "customCategoryInput"],
+    ["socialPlatform", "customPlatformField", "customPlatformInput"]
+  ].forEach(function(ids) {
+    const select = document.getElementById(ids[0]);
+    const field = document.getElementById(ids[1]);
+    const input = document.getElementById(ids[2]);
+    if (!select || !field || !input) return;
+
+    function updateCustomField() {
+      const isCustom = select.value === "__custom__";
+      field.classList.toggle("d-none", !isCustom);
+      input.required = isCustom;
+      if (!isCustom) input.value = "";
+    }
+
+    select.addEventListener("change", updateCustomField);
+    updateCustomField();
+  });
+});
+</script>
 {% endblock %}

@@ -357,13 +357,19 @@ def search_master_organizations(
             or_(
                 and_(Organization.phone.isnot(None), Organization.phone != "", Organization.phone != "-"),
                 and_(Organization.email.isnot(None), Organization.email != "", Organization.email != "-"),
-                and_(Organization.domain.isnot(None), Organization.domain != "")
+                and_(Organization.domain.isnot(None), Organization.domain != "", Organization.domain != "-"),
+                and_(Organization.website.isnot(None), Organization.website != "", Organization.website != "-")
             )
         )
 
     # Filter Missing Fields untuk BA Intelligence Workflow
     if missing_website:
-        query = query.filter(or_(Organization.website.is_(None), Organization.website == "", Organization.website == "-"))
+        query = query.filter(
+            and_(
+                or_(Organization.website.is_(None), Organization.website.in_(["", "-"])),
+                or_(Organization.domain.is_(None), Organization.domain.in_(["", "-"]))
+            )
+        )
     if missing_social:
         query = query.filter(or_(Organization.social_json.is_(None), Organization.social_json == "", Organization.social_json == "{}", Organization.social_json == "[]"))
     if missing_phone:
@@ -373,20 +379,30 @@ def search_master_organizations(
     if missing_address:
         query = query.filter(or_(Organization.address.is_(None), Organization.address == "", Organization.address == "-"))
     if missing_employee_size:
-        query = query.filter(or_(Organization.employee_size.is_(None), Organization.employee_size == ""))
+        query = query.filter(
+            and_(
+                or_(Organization.estimated_members.is_(None), Organization.estimated_members <= 0),
+                or_(Organization.employee_size.is_(None), Organization.employee_size.in_(["", "-"]))
+            )
+        )
 
     if review_status:
         if review_status == "pending":
-            query = query.join(DuplicateCandidate, DuplicateCandidate.organization_id == Organization.id).filter(DuplicateCandidate.status == "pending")
+            query = (
+                query.join(DuplicateCandidate, DuplicateCandidate.organization_id == Organization.id)
+                .filter(DuplicateCandidate.status == "pending")
+                .distinct()
+            )
 
     if size_status:
         if size_status == "actual":
             query = query.filter(Organization.size_status == "actual")
         elif size_status == "estimated":
-            query = query.filter(or_(Organization.size_status.is_(None), Organization.size_status == "estimated"))
+            query = query.filter(or_(Organization.size_status.is_(None), Organization.size_status != "actual"))
 
     total_count = query.count()
     total_pages = max(1, (total_count + per_page - 1) // per_page)
+    page = min(max(page, 1), total_pages)
     offset = (page - 1) * per_page
 
     items = (
@@ -397,6 +413,16 @@ def search_master_organizations(
     )
 
     return items, total_count, total_pages
+
+
+def get_all_matching_master_organizations(**filters: Any) -> List[Organization]:
+    """Return all organizations matching the Explorer filters, independent of UI pagination."""
+    _, total_count, _ = search_master_organizations(page=1, per_page=1, **filters)
+    if total_count == 0:
+        return []
+
+    items, _, _ = search_master_organizations(page=1, per_page=total_count, **filters)
+    return items
 
 
 def get_organization_detail(org_id: int) -> Optional[Dict[str, Any]]:

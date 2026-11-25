@@ -8,7 +8,7 @@ from app.extensions import db
 from app.models import (
     User, DataSource, RawData, CronJob, ActivityLog, AIAgentConfig,
     DiscoverySource, Organization, Event, EventParticipant, DuplicateCandidate,
-    Prospect, Campaign
+    Prospect, Campaign, CustomRole
 )
 from app.utils import roles_required, log_activity
 from app.scheduler import (
@@ -22,6 +22,26 @@ from app.services.event_intelligence import EventIntelligenceService
 
 def _now():
     return datetime.now(timezone.utc).replace(tzinfo=None)
+
+
+def _discovery_provider_status(result):
+    if result.get("mcp_error"):
+        return "warning", f" Pencarian MCP bermasalah: {result['mcp_error']}"
+
+    if result.get("mcp_attempted"):
+        provider = result.get("search_provider", "DuckDuckGo MCP")
+        status = (
+            f" Sumber pencarian: {provider} "
+            f"({result.get('mcp_search_results', 0)} hasil MCP; "
+            f"{result.get('mcp_ingested', result.get('mcp_candidates', 0))} kandidat dari MCP)."
+        )
+        fallback_count = result.get("ai_fallback_ingested", 0)
+        if fallback_count:
+            status += f" Tambahan dari fallback AI: {fallback_count}."
+        return "success", status
+
+    return "success", " Target terpenuhi dari direktori seed; pencarian MCP tidak diperlukan."
+
 
 admin_bp = Blueprint("admin", __name__)
 
@@ -104,12 +124,95 @@ def index():
 
 # ---------- Kelola Pengguna dan Hak Akses ----------
 
+BUILTIN_ROLES = [
+    ("admin", "Admin/IT"),
+    ("business_analyst", "Business Analyst"),
+    ("marketing", "Marketing"),
+    ("management", "Management"),
+    ("procurement", "Procurement"),
+    ("supplier", "Rekanan Supplier"),
+]
+
+ROLE_PERMISSION_OPTIONS = [
+    (
+        "business_analyst",
+        "Business Analyst — Data Discovery, Data Collection & Processing, Company Intelligence, Events, Marketing, Procurement",
+    ),
+    (
+        "marketing",
+        "Marketing — Company Intelligence, Events, Marketing Intelligence, Procurement",
+    ),
+    (
+        "management",
+        "Management — Company Intelligence, Events, Marketing, Reporting, Procurement",
+    ),
+    (
+        "procurement",
+        "Procurement — Supplier Sourcing, Mitra, Katalog, dan RFQ",
+    ),
+    (
+        "supplier",
+        "Rekanan Supplier — Portal Supplier, Katalog, Profil, dan RFQ milik sendiri",
+    ),
+]
+
+
+def _available_user_roles():
+    custom_roles = CustomRole.query.filter_by(is_active=True).order_by(CustomRole.name.asc()).all()
+    options = BUILTIN_ROLES + [(role.key, f"{role.name} (kustom)") for role in custom_roles]
+    return options, custom_roles
+
+
 @admin_bp.route("/users")
 @login_required
 @roles_required("admin")
 def users():
     all_users = User.query.order_by(User.created_at.desc()).all()
-    return render_template("admin/users.html", users=all_users)
+    role_options, custom_roles = _available_user_roles()
+    return render_template(
+        "admin/users.html",
+        users=all_users,
+        role_options=role_options,
+        custom_roles=custom_roles,
+        permission_options=ROLE_PERMISSION_OPTIONS,
+    )
+
+
+@admin_bp.route("/roles/new", methods=["POST"])
+@login_required
+@roles_required("admin")
+def create_role():
+    import re
+
+    name = request.form.get("name", "").strip()
+    key = request.form.get("key", "").strip().lower()
+    permissions = [
+        value for value in request.form.getlist("permissions")
+        if value in {option[0] for option in ROLE_PERMISSION_OPTIONS}
+    ]
+
+    if not name:
+        flash("Nama role wajib diisi.", "danger")
+    elif len(name) > 150:
+        flash("Nama role maksimal 150 karakter.", "danger")
+    elif not re.fullmatch(r"[a-z][a-z0-9_]{1,49}", key):
+        flash("Key role harus 2-50 karakter, diawali huruf, dan hanya boleh huruf kecil, angka, atau underscore.", "danger")
+    elif not permissions:
+        flash("Pilih minimal satu hak akses program.", "danger")
+    elif CustomRole.query.filter_by(key=key).first() or key in {role[0] for role in BUILTIN_ROLES}:
+        flash("Key role sudah digunakan.", "danger")
+    else:
+        role = CustomRole(
+            key=key,
+            name=name,
+            permissions_json=json.dumps(sorted(set(permissions))),
+            is_active=True,
+        )
+        db.session.add(role)
+        db.session.commit()
+        log_activity("admin_create_role", f"Buat role {key} ({name})")
+        flash("Role baru berhasil dibuat.", "success")
+    return redirect(url_for("admin.users"))
 
 
 @admin_bp.route("/users/new", methods=["POST"])
@@ -120,7 +223,12 @@ def create_user():
     email = request.form.get("email", "").strip().lower()
     password = request.form.get("password")
     role = request.form.get("role", "business_analyst")
-    if User.query.filter_by(email=email).first():
+    role_options, _ = _available_user_roles()
+    if role not in {item[0] for item in role_options}:
+        flash("Role tidak valid.", "danger")
+    elif not name or not email or not password:
+        flash("Nama, email, dan password wajib diisi.", "danger")
+    elif User.query.filter_by(email=email).first():
         flash("Email sudah terdaftar.", "danger")
     else:
         u = User(name=name, email=email, role=role)
@@ -149,7 +257,12 @@ def toggle_user(uid):
 @roles_required("admin")
 def change_role(uid):
     u = User.query.get_or_404(uid)
-    u.role = request.form.get("role", u.role)
+    role = request.form.get("role", u.role)
+    role_options, _ = _available_user_roles()
+    if role not in {item[0] for item in role_options}:
+        flash("Role tidak valid.", "danger")
+        return redirect(url_for("admin.users"))
+    u.role = role
     db.session.commit()
     log_activity("admin_change_role", f"User #{uid} -> role {u.role}")
     flash("Role pengguna diperbarui.", "success")
@@ -464,7 +577,8 @@ def trigger_education_discovery():
     limit = int(request.form.get("limit", 10))
     try:
         res = DiscoveryPipelineService.discover_education_institutions(province=province, city=city, limit_per_level=limit)
-        flash(f"Discovery Pendidikan ({city}, {province}) selesai: {res['total_ingested']} diproses ({res['new_organizations']} organisasi baru, {res['matched_organizations']} matched).", "success")
+        level, provider_status = _discovery_provider_status(res)
+        flash(f"Discovery Pendidikan ({city}, {province}) selesai: {res['total_ingested']} diproses ({res['new_organizations']} organisasi baru, {res['matched_organizations']} matched).{provider_status}", level)
     except Exception as e:
         flash(f"Discovery Pendidikan gagal: {e}", "danger")
     return redirect(url_for("admin.discovery"))
@@ -475,13 +589,22 @@ def trigger_education_discovery():
 @roles_required("admin", "business_analyst")
 def trigger_community_discovery():
     category = request.form.get("category", "futsal")
+    if category == "__custom__":
+        category = request.form.get("custom_category", "").strip()
+        if not category:
+            flash("Kategori custom wajib diisi.", "danger")
+            return redirect(url_for("admin.discovery"))
+        if len(category) > 100:
+            flash("Kategori custom maksimal 100 karakter.", "danger")
+            return redirect(url_for("admin.discovery"))
     city = request.form.get("city", "").strip()
     province = request.form.get("province", "").strip()
     limit = int(request.form.get("limit", 15))
     try:
         res = DiscoveryPipelineService.discover_communities(category=category, city=city, province=province, limit=limit)
         wilayah_label = city or province or "Seluruh Indonesia"
-        flash(f"Discovery Komunitas ({category} - {wilayah_label}) selesai: {res['total_ingested']} diproses ({res['new_organizations']} organisasi baru, {res['matched_organizations']} matched).", "success")
+        level, provider_status = _discovery_provider_status(res)
+        flash(f"Discovery Komunitas ({category} - {wilayah_label}) selesai: {res['total_ingested']} diproses ({res['new_organizations']} organisasi baru, {res['matched_organizations']} matched).{provider_status}", level)
     except Exception as e:
         flash(f"Discovery Komunitas gagal: {e}", "danger")
     return redirect(url_for("admin.discovery"))
@@ -509,11 +632,22 @@ def trigger_event_discovery():
 @roles_required("admin", "business_analyst")
 def trigger_social_discovery():
     platform = request.form.get("platform", "instagram")
+    if platform == "__custom__":
+        custom_platform = request.form.get("custom_platform", "").strip()
+        if not custom_platform:
+            flash("Nama platform custom wajib diisi.", "danger")
+            return redirect(url_for("admin.discovery"))
+        if len(custom_platform) > 60:
+            flash("Nama platform custom maksimal 60 karakter.", "danger")
+            return redirect(url_for("admin.discovery"))
+        platform = f"custom:{custom_platform}"
     keyword = request.form.get("keyword", "jersey futsal bandung")
     limit = int(request.form.get("limit", 10))
     try:
         res = DiscoveryPipelineService.discover_social_media(platform=platform, query=keyword, limit=limit)
-        flash(f"Discovery Media Sosial ({platform.upper()}) selesai: {res['total_ingested']} diproses ({res['new_organizations']} organisasi baru).", "success")
+        level, provider_status = _discovery_provider_status(res)
+        platform_label = platform.split(":", 1)[1] if platform.startswith("custom:") else platform
+        flash(f"Discovery Media Sosial ({platform_label.upper()}) selesai: {res['total_ingested']} diproses ({res['new_organizations']} organisasi baru).{provider_status}", level)
     except Exception as e:
         flash(f"Discovery Media Sosial gagal: {e}", "danger")
     return redirect(url_for("admin.discovery"))
@@ -554,3 +688,10 @@ def create_ai_config():
     log_activity("create_ai_config", f"AI config untuk task {cfg.agent_task}")
     flash("Konfigurasi AI Agent disimpan.", "success")
     return redirect(url_for("admin.ai_config"))
+
+
+@admin_bp.route("/data-validation")
+@login_required
+@roles_required("admin")
+def data_validation():
+    return redirect(url_for("data_processing.validation"))

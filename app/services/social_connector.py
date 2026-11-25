@@ -73,6 +73,11 @@ class SocialConnectorService:
     def __init__(self, rate_delay: float = 0.2, timeout: int = 10):
         self.rate_delay = rate_delay
         self.timeout = timeout
+        self.last_search_details = {
+            "mcp_attempted": False,
+            "mcp_search_results": 0,
+            "search_provider": "not_started",
+        }
         self.session = requests.Session()
         self.session.headers.update({"User-Agent": USER_AGENT})
 
@@ -184,23 +189,64 @@ class SocialConnectorService:
         Menemukan entitas baru berdasarkan platform media sosial (Instagram, TikTok, Facebook, LinkedIn).
         Contoh: "komunitas futsal Bandung" di Instagram -> profil kandidat.
         """
-        platform = platform.lower().strip()
-        site_filter = {
+        platform = platform.strip()
+        custom_platform = None
+        if platform.lower().startswith("custom:"):
+            custom_platform = platform.split(":", 1)[1].strip()
+            platform_key = "custom"
+            platform_label = custom_platform
+            site_filter = ""
+        else:
+            platform_key = platform.lower()
+            platform_label = platform_key
+            site_filter = {
             "instagram": "site:instagram.com",
             "tiktok": "site:tiktok.com",
             "facebook": "site:facebook.com",
             "linkedin": "site:linkedin.com/company OR site:linkedin.com/school"
-        }.get(platform, "site:instagram.com")
+            }.get(platform_key, "site:instagram.com")
 
-        search_query = f"{site_filter} {query} {region}".strip()
-        raw_items = self.search_public_web(search_query, limit=limit * 2)
+        search_query = " ".join(
+            part for part in (site_filter, custom_platform, query, region) if part
+        ).strip()
+        from app.services.mcp_service import mcp_search_duckduckgo
+
+        raw_items = mcp_search_duckduckgo(
+            query=search_query,
+            max_results=limit * 2,
+            region="id-id",
+        )
+        used_mcp = bool(raw_items)
+        mcp_result_count = len(raw_items)
+        if not raw_items:
+            raw_items = self.search_public_web(search_query, limit=limit * 2)
+        self.last_search_details = {
+            "mcp_attempted": True,
+            "mcp_search_results": mcp_result_count,
+            "search_provider": "DuckDuckGo MCP" if used_mcp else "fallback public search",
+        }
 
         candidates = []
         seen_usernames = set()
 
         for item in raw_items:
-            url = item["url"]
-            profile_info = self.parse_social_profile_url(platform, url)
+            url = str(item.get("url") or "").strip()
+            if custom_platform:
+                parsed_url = urlparse(url)
+                path_parts = [part for part in parsed_url.path.strip("/").split("/") if part]
+                if parsed_url.scheme not in ("http", "https") or not parsed_url.hostname or not path_parts:
+                    continue
+                combined_text = f"{item.get('title', '')} {item.get('snippet', '')} {parsed_url.hostname}"
+                if custom_platform.casefold() not in combined_text.casefold():
+                    continue
+                profile_info = {
+                    "platform": "custom",
+                    "username": f"{parsed_url.hostname}/{path_parts[-1]}",
+                    "clean_url": url,
+                    "profile_type": "web_result",
+                }
+            else:
+                profile_info = self.parse_social_profile_url(platform_key, url)
             if not profile_info or not profile_info.get("username"):
                 continue
 
@@ -216,14 +262,17 @@ class SocialConnectorService:
             profile_name = item.get("title", "").replace(" - Instagram", "").replace(" | Facebook", "").replace(" | LinkedIn", "").replace(" on TikTok", "").strip()
 
             candidates.append({
-                "platform": platform,
-                "source_platform": platform,
+                "platform": platform_label,
+                "source_platform": platform_label,
                 "profile_url": profile_info["clean_url"],
                 "username": profile_info["username"],
                 "profile_name": profile_name or profile_info["username"],
                 "profile_type": profile_info.get("profile_type", "community"),
                 "confidence": 0.85 if signals["sport_signals"] or signals["product_signals"] else 0.70,
-                "source": f"social_discovery_{platform}",
+                "source": (
+                    f"social_discovery_{platform_key}_mcp"
+                    if used_mcp else f"social_discovery_{platform_key}"
+                ),
                 "source_url": profile_info["clean_url"],
                 "discovered_at": utc_now().isoformat(),
                 "snippet": item.get("snippet", "")[:300],
@@ -234,7 +283,7 @@ class SocialConnectorService:
                 break
 
         # Fallback ke AI Social Discovery jika web search diblokir atau kosong (menjamin cakupan se-Indonesia)
-        if not candidates:
+        if not candidates and not custom_platform:
             from app.ai_agent import _chat_json
             prompt = f"""Kamu adalah AI Intelijen Media Sosial Indonesia.
 Tugas: Temukan {limit} akun profil publik nyata dan aktif di platform {platform.upper()} untuk komunitas olahraga, klub, atau organisasi di:
@@ -295,7 +344,7 @@ Format output HANYA list JSON valid:
                         "city": it.get("city"),
                         "province": it.get("province"),
                         "confidence": 0.85,
-                        "source": f"social_discovery_{platform}",
+                        "source": f"social_discovery_{platform}_ai_fallback",
                         "source_url": p_url,
                         "discovered_at": utc_now().isoformat(),
                         "snippet": it.get("snippet", f"Profil komunitas {p_name} di {platform}"),

@@ -1,5 +1,6 @@
 import os
-from flask import Flask, render_template
+from urllib.parse import urlparse
+from flask import Flask, render_template, request
 from flask_login import current_user, login_required
 
 from app.config import Config, TestConfig
@@ -63,7 +64,8 @@ def create_app(config_class=None):
 
     @app.context_processor
     def inject_helpers():
-        return dict(parse_wa=parse_whatsapp)
+        from app.utils import has_role_access
+        return dict(parse_wa=parse_whatsapp, has_role_access=has_role_access)
 
     @app.route("/")
     @login_required
@@ -75,6 +77,48 @@ def create_app(config_class=None):
         from app.scheduler import is_scheduler_running
 
         user_role = current_user.role if hasattr(current_user, 'role') else 'guest'
+        market_search_query = request.args.get("q", "").strip()
+        market_search_results = []
+        market_search_error = None
+        can_search_market = user_role in (
+            "admin", "business_analyst", "marketing", "management", "procurement"
+        )
+
+        if can_search_market and market_search_query:
+            if len(market_search_query) > 200:
+                market_search_error = "Kata kunci maksimal 200 karakter."
+            else:
+                try:
+                    from app.services.mcp_service import mcp_search_duckduckgo
+
+                    candidates = mcp_search_duckduckgo(
+                        market_search_query,
+                        max_results=10,
+                        region="id-id",
+                    )
+                    if not isinstance(candidates, list):
+                        raise TypeError("MCP search returned an invalid result list")
+
+                    for candidate in candidates:
+                        if not isinstance(candidate, dict):
+                            continue
+                        result_url = candidate.get("url")
+                        if not isinstance(result_url, str):
+                            continue
+                        try:
+                            parsed_url = urlparse(result_url)
+                        except ValueError:
+                            continue
+                        if parsed_url.scheme not in ("http", "https") or not parsed_url.hostname:
+                            continue
+                        market_search_results.append({
+                            "title": str(candidate.get("title") or result_url),
+                            "url": result_url,
+                            "snippet": str(candidate.get("snippet") or ""),
+                        })
+                except Exception:
+                    app.logger.exception("Dashboard MCP search failed")
+                    market_search_error = "Pencarian MCP sedang bermasalah. Silakan coba lagi."
 
         stats = {
             "total_prospects": Prospect.query.count(),
@@ -340,7 +384,11 @@ def create_app(config_class=None):
             stats=stats,
             role=user_role,
             role_data=role_data,
-            category_summaries=category_summaries
+            category_summaries=category_summaries,
+            can_search_market=can_search_market,
+            market_search_query=market_search_query,
+            market_search_results=market_search_results,
+            market_search_error=market_search_error,
         )
 
     try:

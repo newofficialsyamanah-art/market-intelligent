@@ -277,16 +277,16 @@
               {% set panitia = ev.panitia_contact %}
               {% if panitia and panitia.phone %}
               <div class="mt-1 d-flex flex-wrap align-items-center gap-1">
-                <button type="button" class="btn btn-sm btn-success py-0 px-2 rounded-pill btn-wa-trigger d-inline-flex align-items-center gap-1"
+                <button type="button" class="btn btn-sm {% if (panitia.phone|parse_wa).is_valid_wa %}btn-success{% else %}btn-outline-secondary{% endif %} py-0 px-2 rounded-pill btn-wa-trigger d-inline-flex align-items-center gap-1"
                         style="font-size: 0.72rem;"
                         data-bs-toggle="modal" data-bs-target="#modalWhatsAppQuickSend"
                         data-company="{{ ev.name }} (Panitia)"
                         data-phone="{{ panitia.phone }}"
-                        data-wanumber="{{ panitia.phone }}"
-                        data-isvalid="true"
-                        data-type="mobile"
-                        title="Kirim WhatsApp ke Panitia Event">
-                  <i class="bi bi-whatsapp"></i> <span>Panitia: {{ panitia.phone }}</span>
+                        data-wanumber="{{ (panitia.phone|parse_wa).wa_number }}"
+                        data-isvalid="{{ 'true' if (panitia.phone|parse_wa).is_valid_wa else 'false' }}"
+                        data-type="{{ (panitia.phone|parse_wa).type }}"
+                        title="{{ (panitia.phone|parse_wa).tooltip }}">
+                  <i class="bi {% if (panitia.phone|parse_wa).is_valid_wa %}bi-whatsapp{% else %}bi-telephone{% endif %}"></i> <span>Panitia: {{ (panitia.phone|parse_wa).formatted_display }}</span>
                 </button>
               </div>
               {% endif %}

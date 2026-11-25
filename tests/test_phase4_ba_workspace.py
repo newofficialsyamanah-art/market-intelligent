@@ -16,7 +16,9 @@ Memverifikasi:
 import os
 import json
 import unittest
+from io import BytesIO
 from datetime import datetime, timezone, timedelta
+from openpyxl import load_workbook
 from app import create_app
 from app.extensions import db
 from app.models import User, Organization, Prospect, DuplicateCandidate
@@ -262,8 +264,59 @@ class TestPhase4BAWorkspace(unittest.TestCase):
         items_contact, total_contact, _ = search_master_organizations(has_contact=True)
         self.assertGreater(total_contact, 0)
         for o in items_contact:
-            has_c = bool(o.phone or o.email or o.domain)
+            has_c = bool(o.phone or o.email or o.domain or o.website)
             self.assertTrue(has_c)
+
+        website_only = Organization(
+            name="Website Only Phase4",
+            organization_type="Perusahaan",
+            website="https://website-only.example",
+            opportunity_score=1,
+        )
+        estimated_only = Organization(
+            name="Estimated Members Phase4",
+            organization_type="Perusahaan",
+            estimated_members=50,
+            opportunity_score=1,
+        )
+        employee_size_only = Organization(
+            name="Employee Size Only Phase4",
+            organization_type="Perusahaan",
+            employee_size="11-50",
+            opportunity_score=1,
+        )
+        review_candidate = DuplicateCandidate(
+            organization_id=self.test_org1.id,
+            candidate_name="Second pending candidate",
+            match_tier="tier4_fuzzy_candidate",
+            confidence_score=0.8,
+            status="pending",
+        )
+        db.session.add_all([website_only, estimated_only, employee_size_only, review_candidate])
+        db.session.flush()
+        self.cleanup_org_ids.extend([website_only.id, estimated_only.id, employee_size_only.id])
+
+        website_contacts, _, _ = search_master_organizations(has_contact=True)
+        self.assertIn(website_only.id, {org.id for org in website_contacts})
+
+        missing_websites, _, _ = search_master_organizations(missing_website=True)
+        self.assertNotIn(website_only.id, {org.id for org in missing_websites})
+
+        missing_sizes, _, _ = search_master_organizations(missing_employee_size=True)
+        missing_size_ids = {org.id for org in missing_sizes}
+        self.assertNotIn(estimated_only.id, missing_size_ids)
+        self.assertNotIn(employee_size_only.id, missing_size_ids)
+
+        pending, pending_count, _ = search_master_organizations(review_status="pending")
+        pending_ids = [org.id for org in pending]
+        self.assertEqual(pending_count, len(set(pending_ids)))
+        self.assertEqual(pending_ids.count(self.test_org1.id), 1)
+
+        first_page, _, pages = search_master_organizations(page=1, per_page=2)
+        normalized_first_page, _, _ = search_master_organizations(page=0, per_page=2)
+        normalized_last_page, _, _ = search_master_organizations(page=pages + 100, per_page=2)
+        self.assertEqual([org.id for org in first_page], [org.id for org in normalized_first_page])
+        self.assertEqual(len(normalized_last_page), 2)
 
         print("  [PASS] Test 7: Company Intelligence Explorer Search & Filters verified.")
 
@@ -304,6 +357,38 @@ class TestPhase4BAWorkspace(unittest.TestCase):
         res_exp = client_ba.get("/market-analysis/explorer")
         self.assertEqual(res_exp.status_code, 200)
         self.assertIn(b"Company Intelligence Explorer", res_exp.data)
+        self.assertIn(b"Export Excel", res_exp.data)
+        res_exp_out_of_range = client_ba.get("/market-analysis/explorer?page=999")
+        self.assertEqual(res_exp_out_of_range.status_code, 200)
+        self.assertIn(b"Halaman 1 dari 1", res_exp_out_of_range.data)
+
+        export_orgs = [
+            Organization(
+                name=f"Company Export Batch Phase4 {index}",
+                organization_type="Perusahaan",
+                industry="EXPORT_BATCH",
+                opportunity_score=index,
+            )
+            for index in range(26)
+        ]
+        db.session.add_all(export_orgs)
+        db.session.flush()
+        self.cleanup_org_ids.extend(org.id for org in export_orgs)
+        db.session.commit()
+
+        res_export = client_ba.get(
+            "/market-analysis/explorer/export.xlsx?q=Company+Export+Batch+Phase4"
+            "&industry=EXPORT_BATCH&page=2"
+        )
+        self.assertEqual(res_export.status_code, 200)
+        self.assertIn(
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            res_export.content_type,
+        )
+        export_workbook = load_workbook(BytesIO(res_export.data), data_only=True)
+        exported_rows = list(export_workbook["Organisasi"].iter_rows(min_row=2, values_only=True))
+        self.assertEqual(len(exported_rows), 26)
+        self.assertTrue(all(row[5] == "EXPORT_BATCH" for row in exported_rows))
 
         # Organization Detail View (Termasuk tampilan link social media nyata)
         res_det = client_ba.get(f"/market-analysis/organization/{self.test_org1.id}")

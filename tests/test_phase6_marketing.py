@@ -10,12 +10,18 @@ Memverifikasi:
 """
 
 import json
+from io import BytesIO
 import unittest
 from datetime import datetime, timezone
+from openpyxl import load_workbook
 from app import create_app
 from app.extensions import db
 from app.models import User, Organization, Event, EventParticipant, utc_now
 from app.config import TestConfig
+from app.services.marketing_field_report import (
+    create_marketing_field_intelligence_workbook,
+    get_marketing_field_intelligence,
+)
 from app.services.marketing_intelligence import (
     MarketingIntelligenceService,
     SEGMENT_PRESETS,
@@ -194,6 +200,115 @@ class TestPhase6Marketing(unittest.TestCase):
         res_seg = self.client.get("/marketing/segments")
         self.assertEqual(res_seg.status_code, 200)
         self.assertIn("Segmentation Engine", res_seg.data.decode())
+
+    def test_07_field_intelligence_report_and_exports(self):
+        ssb = Organization(
+            name="[TEST] SSB Bandung",
+            organization_type="Komunitas Olahraga",
+            organization_subtype="Akademi Remaja",
+            sport="Soccer",
+            city="Bandung",
+            province="Jawa Barat",
+            phone="08123456789",
+        )
+        sport_center = Organization(
+            name="[TEST] Sport Center Jakarta Selatan",
+            organization_type="Fasilitas Olahraga",
+            organization_subtype="Sport Center",
+            city="Jakarta Selatan",
+            province="DKI Jakarta",
+        )
+        eo = Organization(
+            name="[TEST] Brand Activation Agency",
+            organization_type="Event Organizer",
+            industry="Brand Activation",
+            city="Jakarta Selatan",
+            province="DKI Jakarta",
+        )
+        eo_abbreviation = Organization(
+            name="[TEST] EO Bandung",
+            organization_type="Marketing Agency",
+            city="Bandung",
+            province="Jawa Barat",
+        )
+        event_organizer = Organization(
+            name="[TEST] Bandung Sports Event Organizer",
+            organization_type="Perusahaan",
+            city="Bandung",
+            province="Jawa Barat",
+        )
+        event = Event(
+            name="[TEST] Bandung Sport Event 2027",
+            event_type="Sport Event",
+            organizer="[TEST] Sport Activation Organizer",
+            start_date=datetime(2027, 9, 1),
+            end_date=datetime(2027, 9, 30),
+            date_precision="month",
+            city="Bandung",
+            province="Jawa Barat",
+            website="https://event.example",
+            source_url="https://source.example",
+        )
+        db.session.add_all([ssb, sport_center, eo, eo_abbreviation, event_organizer, event])
+        db.session.flush()
+        db.session.add(
+            EventParticipant(
+                event_id=event.id,
+                organization_id=event_organizer.id,
+                role="organizer",
+            )
+        )
+        db.session.commit()
+
+        report = get_marketing_field_intelligence(area="target_areas")
+        sport_names = {item["name"] for item in report["sport_targets"]}
+        eo_records = {item["name"]: item for item in report["eo_accounts"]}
+        self.assertIn(ssb.name, sport_names)
+        self.assertIn(sport_center.name, sport_names)
+        self.assertIn(eo.name, eo_records)
+        self.assertIn(eo_abbreviation.name, eo_records)
+        self.assertIn("[TEST] Sport Activation Organizer", eo_records)
+        self.assertEqual(eo_records[event_organizer.name]["related_events"], event.name)
+        self.assertIn(event.name, {item["name"] for item in report["events_2027"]})
+        self.assertIn("bukan data google trends aktual", report["trend_disclaimer"].casefold())
+
+        workbook = load_workbook(create_marketing_field_intelligence_workbook(report), data_only=True)
+        self.assertEqual(
+            workbook.sheetnames,
+            ["Petunjuk", "Sport Center & SSB", "EO & Activation", "Tren Produk", "Event 2027"],
+        )
+        self.assertIn(
+            ssb.name,
+            [row[1].value for row in workbook["Sport Center & SSB"].iter_rows(min_row=2)],
+        )
+        self.assertIn(
+            event.name,
+            [row[1].value for row in workbook["Event 2027"].iter_rows(min_row=2)],
+        )
+
+        login = self.client.post(
+            "/login",
+            data={"email": self.mkt_user.email, "password": "Secret123!"},
+        )
+        self.assertEqual(login.status_code, 302)
+        page = self.client.get("/marketing/field-intelligence?area=bandung")
+        self.assertEqual(page.status_code, 200)
+        self.assertIn(ssb.name.encode(), page.data)
+        self.assertNotIn(sport_center.name.encode(), page.data)
+        printable = self.client.get("/marketing/field-intelligence?area=bandung&print=1")
+        self.assertEqual(printable.status_code, 200)
+        self.assertIn(b"window.print()", printable.data)
+
+        exported = self.client.get("/marketing/field-intelligence/export.xlsx?area=bandung")
+        self.assertEqual(exported.status_code, 200)
+        self.assertIn(
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            exported.content_type,
+        )
+        self.assertIn(
+            ssb.name,
+            [row[1].value for row in load_workbook(BytesIO(exported.data), data_only=True)["Sport Center & SSB"].iter_rows(min_row=2)],
+        )
 
 
 if __name__ == "__main__":

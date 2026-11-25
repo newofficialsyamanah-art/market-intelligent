@@ -6,7 +6,10 @@
     <h3 class="mb-0"><i class="bi bi-compass text-primary me-2"></i>Company Intelligence Explorer</h3>
     <p class="text-muted small mb-0">Eksplorasi dan drill-down data profil Master Organization (Single Source of Truth).</p>
   </div>
-  <div>
+  <div class="d-flex gap-2">
+    <a href="{{ url_for('market_analysis.export_company_intelligence_excel', **filters) }}" class="btn btn-success btn-sm">
+      <i class="bi bi-file-earmark-excel me-1"></i> Export Excel{% if total_count %} ({{ total_count }}){% endif %}
+    </a>
     <a href="{{ url_for('market_analysis.index') }}" class="btn btn-outline-secondary btn-sm">
       <i class="bi bi-arrow-left me-1"></i> Kembali ke Analytics
     </a>
@@ -23,6 +26,11 @@
   <li class="nav-item">
     <a class="nav-link" href="{{ url_for('market_analysis.market_size') }}">
       <i class="bi bi-pie-chart-fill me-1"></i> Market Size & Share
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="{{ url_for('market_analysis.google_trends') }}">
+      <i class="bi bi-google me-1 text-danger"></i> Google Trends Intel <span class="badge bg-danger ms-1">Live</span>
     </a>
   </li>
   <li class="nav-item">

@@ -211,3 +211,17 @@ def process_to_prospects(raw_id):
         msg += f" {enrich_count} data diperkaya oleh AI."
     flash(msg, "success")
     return redirect(url_for("prospect.list_prospects"))
+
+
+# ---------- Data Validation Workflow (Profiling & Source Verification) ----------
+
+@data_processing_bp.route("/validation")
+@login_required
+@roles_required("business_analyst", "admin", "management")
+def validation():
+    """Halaman Laporan Data Validation Workflow (Data Profiling & Source Verification)."""
+    from app.services.data_validation_service import run_full_data_validation
+
+    report = run_full_data_validation()
+    return render_template("data_processing/validation.html", report=report)
+

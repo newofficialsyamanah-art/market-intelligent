@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+{% block title %}Marketing Field Intelligence{% endblock %}
+{% block content %}
+<style>
+  @media print {
+    .no-print, nav, footer { display: none !important; }
+    .card { break-inside: auto; box-shadow: none !important; }
+    body { font-size: 10pt; }
+    h2, h4 { break-after: avoid; }
+    table { font-size: 8pt; }
+    thead { display: table-header-group; }
+    tr { break-inside: avoid; }
+  }
+</style>
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+  <div>
+    <h2 class="fw-bold mb-1"><i class="bi bi-bullseye text-primary me-2"></i>Marketing Field Intelligence</h2>
+    <p class="text-muted mb-0">Target olahraga, EO/brand activation, tren produk, dan event 2027 dari data yang tersedia.</p>
+  </div>
+  {% if not print_mode %}
+  <div class="d-flex gap-2 no-print">
+    <a class="btn btn-success" href="{{ url_for('marketing.export_field_intelligence_excel', area=report.area) }}">
+      <i class="bi bi-file-earmark-excel me-1"></i> Export Excel
+    </a>
+    <a class="btn btn-outline-danger" target="_blank" rel="noopener" href="{{ url_for('marketing.field_intelligence', area=report.area, print=1) }}">
+      <i class="bi bi-file-earmark-pdf me-1"></i> Cetak / Simpan PDF
+    </a>
+  </div>
+  {% endif %}
+</div>
+
+{% if not print_mode %}
+<form method="get" action="{{ url_for('marketing.field_intelligence') }}" class="card card-body border-0 shadow-sm mb-4 no-print">
+  <div class="row align-items-end g-2">
+    <div class="col-md-4">
+      <label class="form-label small fw-semibold" for="area">Wilayah akun olahraga dan EO</label>
+      <select class="form-select" name="area" id="area">
+        <option value="target_areas" {% if report.area == 'target_areas' %}selected{% endif %}>Bandung + Jabodetabek</option>
+        <option value="bandung" {% if report.area == 'bandung' %}selected{% endif %}>Bandung</option>
+        <option value="jabodetabek" {% if report.area == 'jabodetabek' %}selected{% endif %}>Jabodetabek</option>
+        <option value="all" {% if report.area == 'all' %}selected{% endif %}>Seluruh Indonesia</option>
+      </select>
+    </div>
+    <div class="col-auto">
+      <button class="btn btn-primary" type="submit"><i class="bi bi-filter me-1"></i>Tampilkan</button>
+    </div>
+    <div class="col-md text-md-end small text-muted">
+      Dibuat {{ report.generated_at.strftime('%d-%m-%Y %H:%M') }}
+    </div>
+  </div>
+</form>
+{% else %}
+<div class="small text-muted mb-3">Wilayah akun: {{ report.area_label }} &bull; Dibuat {{ report.generated_at.strftime('%d-%m-%Y %H:%M') }}</div>
+{% endif %}
+
+<div class="alert alert-warning">
+  <i class="bi bi-info-circle-fill me-1"></i>
+  {{ report.trend_disclaimer }}
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-sm-6 col-xl-3"><div class="card h-100 border-0 shadow-sm p-3"><div class="small text-muted">Sport Center / SSB</div><div class="fs-3 fw-bold">{{ report.sport_targets|length }}</div><div class="small text-muted">{{ report.area_label }}</div></div></div>
+  <div class="col-sm-6 col-xl-3"><div class="card h-100 border-0 shadow-sm p-3"><div class="small text-muted">EO / Brand Activation</div><div class="fs-3 fw-bold">{{ report.eo_accounts|length }}</div><div class="small text-muted">{{ report.area_label }} dan event organizer terdata</div></div></div>
+  <div class="col-sm-6 col-xl-3"><div class="card h-100 border-0 shadow-sm p-3"><div class="small text-muted">Produk tren indikatif</div><div class="fs-3 fw-bold">{{ report.trend_summary|length }}</div><div class="small text-muted">Jersey, jaket, seragam</div></div></div>
+  <div class="col-sm-6 col-xl-3"><div class="card h-100 border-0 shadow-sm p-3"><div class="small text-muted">Event 2027</div><div class="fs-3 fw-bold">{{ report.events_2027|length }}</div><div class="small text-muted">Event Intelligence</div></div></div>
+</div>
+
+<section class="card border-0 shadow-sm mb-4">
+  <div class="card-header bg-white"><h4 class="h5 fw-bold mb-0">1. Sport Center &amp; SSB</h4><div class="small text-muted">Organisasi yang memiliki sinyal sport center, fasilitas olahraga, futsal, sepak bola, atau sekolah sepak bola.</div></div>
+  <div class="table-responsive">
+    <table class="table table-sm table-hover align-middle mb-0">
+      <thead class="table-light"><tr><th>Nama</th><th>Tipe / Sinyal</th><th>Olahraga</th><th>Lokasi</th><th>Kontak</th><th>Skor</th><th>Product Fit</th><th>Sumber</th></tr></thead>
+      <tbody>
+      {% for item in report.sport_targets %}
+        <tr>
+          <td><a href="{{ url_for('market_analysis.org_detail', org_id=item.organization_id) }}">{{ item.name }}</a><div class="small text-muted">{{ item.domain }}</div></td>
+          <td>{{ item.organization_type }}{% if item.organization_subtype %}<div class="small text-muted">{{ item.organization_subtype }}</div>{% endif %}</td>
+          <td>{{ item.sport or '-' }}</td>
+          <td>{{ item.city or '-' }}{% if item.province %}<div class="small text-muted">{{ item.province }}</div>{% endif %}</td>
+          <td>{% if item.phone %}{{ item.phone }}{% endif %}{% if item.email %}<div>{{ item.email }}</div>{% endif %}{% if item.community_pic_phone %}<div class="small">PIC: {{ item.community_pic_name or 'Komunitas' }} {{ item.community_pic_phone }}</div>{% endif %}{% if item.purchasing_phone %}<div class="small">Purchasing: {{ item.purchasing_phone }}</div>{% endif %}{% if not item.phone and not item.email and not item.community_pic_phone and not item.purchasing_phone %}-{% endif %}</td>
+          <td>{{ item.opportunity_score }}<div class="small text-muted">{{ item.priority_tier }}</div></td>
+          <td>{{ item.product_fit or '-' }}</td>
+          <td>{% if item.source_url %}<a href="{{ item.source_url }}" target="_blank" rel="noopener noreferrer">Sumber</a>{% else %}-{% endif %}</td>
+        </tr>
+      {% else %}
+        <tr><td colspan="8" class="text-center text-muted py-4">Belum ada organisasi yang cocok di Master Organization untuk wilayah ini.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="card border-0 shadow-sm mb-4">
+  <div class="card-header bg-white"><h4 class="h5 fw-bold mb-0">2. EO &amp; Brand Activation</h4><div class="small text-muted">Organisasi EO/activation dan organizer yang terhubung dengan event olahraga atau aktivasi.</div></div>
+  <div class="table-responsive">
+    <table class="table table-sm table-hover align-middle mb-0">
+      <thead class="table-light"><tr><th>Nama EO / Organizer</th><th>Sumber</th><th>Industri / Event</th><th>Lokasi</th><th>Kontak / Website</th><th>Event terkait</th><th>Referensi</th></tr></thead>
+      <tbody>
+      {% for item in report.eo_accounts %}
+        <tr>
+          <td>{% if item.organization_id %}<a href="{{ url_for('market_analysis.org_detail', org_id=item.organization_id) }}">{{ item.name }}</a>{% else %}{{ item.name }}{% endif %}</td>
+          <td>{{ item.match_type }}</td>
+          <td>{{ item.industry or item.organization_type }}</td>
+          <td>{{ item.city or '-' }}{% if item.province %}<div class="small text-muted">{{ item.province }}</div>{% endif %}</td>
+          <td>{% if item.phone %}{{ item.phone }}{% endif %}{% if item.email %}<div>{{ item.email }}</div>{% endif %}{% if item.community_pic_phone %}<div class="small">PIC: {{ item.community_pic_name or 'Komunitas' }} {{ item.community_pic_phone }}</div>{% endif %}{% if item.purchasing_phone %}<div class="small">Purchasing: {{ item.purchasing_phone }}</div>{% endif %}{% if item.website %}<a href="{{ item.website }}" target="_blank" rel="noopener noreferrer">Website</a>{% endif %}{% if not item.phone and not item.email and not item.community_pic_phone and not item.purchasing_phone and not item.website %}-{% endif %}</td>
+          <td>{{ item.related_events or '-' }}</td>
+          <td>{% if item.source_url %}<a href="{{ item.source_url }}" target="_blank" rel="noopener noreferrer">Sumber</a>{% else %}-{% endif %}</td>
+        </tr>
+      {% else %}
+        <tr><td colspan="7" class="text-center text-muted py-4">Belum ada EO / organizer relevan yang terdata untuk wilayah ini.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="card border-0 shadow-sm mb-4">
+  <div class="card-header bg-white"><h4 class="h5 fw-bold mb-0">3. Acuan Tren Produk untuk Perencanaan 2027</h4><div class="small text-muted">Ringkasan dari seri komparatif yang saat ini tersedia di modul tren.</div></div>
+  <div class="table-responsive">
+    <table class="table table-sm table-hover mb-0">
+      <thead class="table-light"><tr><th>Produk</th><th>Bulan puncak pada seri</th><th>Indeks puncak</th><th>Rata-rata indeks</th><th>Porsi relatif</th></tr></thead>
+      <tbody>{% for item in report.trend_summary %}<tr><td>{{ item.product }}</td><td>{{ item.peak_month }}</td><td>{{ item.peak_index }}/100</td><td>{{ item.average_index }}/100</td><td>{{ item.relative_share }}%</td></tr>{% endfor %}</tbody>
+    </table>
+  </div>
+  <details class="p-3">
+    <summary class="small fw-semibold">Lihat seri indeks bulanan indikatif</summary>
+    <div class="table-responsive mt-2">
+      <table class="table table-sm table-bordered mb-0">
+        <thead><tr><th>Produk</th><th>Bulan</th><th>Indeks</th></tr></thead>
+        <tbody>{% for item in report.trend_rows %}<tr><td>{{ item.product }}</td><td>{{ item.month }}</td><td>{{ item.interest_index }}</td></tr>{% endfor %}</tbody>
+      </table>
+    </div>
+  </details>
+</section>
+
+<section class="card border-0 shadow-sm mb-4">
+  <div class="card-header bg-white"><h4 class="h5 fw-bold mb-0">4. Event Tahun 2027</h4><div class="small text-muted">Daftar dari Event Intelligence; tanggal estimasi/TBD ditandai terpisah dari tanggal terkonfirmasi.</div></div>
+  <div class="table-responsive">
+    <table class="table table-sm table-hover align-middle mb-0">
+      <thead class="table-light"><tr><th>Event</th><th>Jenis</th><th>Tanggal</th><th>Status tanggal</th><th>Lokasi</th><th>Organizer</th><th>Relevansi</th><th>Sumber</th></tr></thead>
+      <tbody>
+      {% for item in report.events_2027 %}
+        <tr>
+          <td><a href="{{ url_for('events.detail', event_id=item.id) }}">{{ item.name }}</a></td>
+          <td>{{ item.event_type or '-' }}</td>
+          <td>{{ item.date }}</td>
+          <td>{{ item.date_status }}</td>
+          <td>{{ item.venue or item.city or '-' }}{% if item.province %}<div class="small text-muted">{{ item.province }}</div>{% endif %}</td>
+          <td>{{ item.organizer or '-' }}</td>
+          <td>{{ item.relevance_score }}/100</td>
+          <td>{% if item.source_url %}<a href="{{ item.source_url }}" target="_blank" rel="noopener noreferrer">Sumber</a>{% else %}-{% endif %}</td>
+        </tr>
+      {% else %}
+        <tr><td colspan="8" class="text-center text-muted py-4">Belum ada event 2027 di Event Intelligence.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+{% if print_mode %}
+<script>window.addEventListener("load", function () { window.print(); });</script>
+{% endif %}
+{% endblock %}

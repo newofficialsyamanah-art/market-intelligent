@@ -241,59 +241,83 @@
 
                 <!-- Department Specific Buttons -->
                 {% if o.purchasing_contact and o.purchasing_contact.phone %}
+                  {% set wa_purch = o.purchasing_contact.phone|parse_wa(o.name ~ ' Purchasing', 'procurement') %}
+                  {% if wa_purch.is_valid_wa %}
                   <button type="button" class="btn btn-sm btn-outline-primary py-0 px-1 d-inline-flex align-items-center gap-1 text-start btn-wa-trigger"
                           style="font-size: 0.72rem;"
                           data-bs-toggle="modal" data-bs-target="#modalWhatsAppQuickSend"
                           data-company="{{ o.name }} (Purchasing)"
                           data-phone="{{ o.purchasing_contact.phone }}"
-                          data-wanumber="{{ o.purchasing_contact.phone }}"
+                          data-wanumber="{{ wa_purch.wa_number }}"
                           data-isvalid="true"
-                          data-type="mobile"
+                          data-type="{{ wa_purch.type }}"
                           title="Hubungi Purchasing via WhatsApp">
-                    <i class="bi bi-cart-check"></i> <span class="fw-semibold">Purchasing:</span> {{ o.purchasing_contact.phone }}
+                    <i class="bi bi-cart-check"></i> <span class="fw-semibold">Purchasing:</span> {{ wa_purch.formatted_display }}
                   </button>
+                  {% elif wa_purch.type == 'landline' %}
+                  <a href="tel:{{ wa_purch.clean }}" class="btn btn-sm btn-outline-secondary py-0 px-1 text-start" style="font-size: 0.72rem;" title="Telepon Kantor Purchasing: {{ wa_purch.formatted_display }}">
+                    <i class="bi bi-telephone"></i> <span class="fw-semibold">Purchasing:</span> {{ wa_purch.formatted_display }}
+                  </a>
+                  {% endif %}
                 {% endif %}
 
                 {% if o.procurement_contact and o.procurement_contact.phone %}
+                  {% set wa_proc = o.procurement_contact.phone|parse_wa(o.name ~ ' Procurement', 'procurement') %}
+                  {% if wa_proc.is_valid_wa %}
                   <button type="button" class="btn btn-sm btn-outline-info py-0 px-1 d-inline-flex align-items-center gap-1 text-start btn-wa-trigger"
                           style="font-size: 0.72rem;"
                           data-bs-toggle="modal" data-bs-target="#modalWhatsAppQuickSend"
                           data-company="{{ o.name }} (Procurement)"
                           data-phone="{{ o.procurement_contact.phone }}"
-                          data-wanumber="{{ o.procurement_contact.phone }}"
+                          data-wanumber="{{ wa_proc.wa_number }}"
                           data-isvalid="true"
-                          data-type="mobile"
+                          data-type="{{ wa_proc.type }}"
                           title="Hubungi Procurement via WhatsApp">
-                    <i class="bi bi-box-seam"></i> <span class="fw-semibold">Procurement:</span> {{ o.procurement_contact.phone }}
+                    <i class="bi bi-box-seam"></i> <span class="fw-semibold">Procurement:</span> {{ wa_proc.formatted_display }}
                   </button>
+                  {% elif wa_proc.type == 'landline' %}
+                  <a href="tel:{{ wa_proc.clean }}" class="btn btn-sm btn-outline-secondary py-0 px-1 text-start" style="font-size: 0.72rem;" title="Telepon Kantor Procurement: {{ wa_proc.formatted_display }}">
+                    <i class="bi bi-telephone"></i> <span class="fw-semibold">Procurement:</span> {{ wa_proc.formatted_display }}
+                  </a>
+                  {% endif %}
                 {% endif %}
 
                 {% if o.hr_contact and o.hr_contact.phone %}
+                  {% set wa_hr = o.hr_contact.phone|parse_wa(o.name ~ ' HRD') %}
+                  {% if wa_hr.is_valid_wa %}
                   <button type="button" class="btn btn-sm btn-outline-success py-0 px-1 d-inline-flex align-items-center gap-1 text-start btn-wa-trigger"
                           style="font-size: 0.72rem;"
                           data-bs-toggle="modal" data-bs-target="#modalWhatsAppQuickSend"
                           data-company="{{ o.name }} (HRD)"
                           data-phone="{{ o.hr_contact.phone }}"
-                          data-wanumber="{{ o.hr_contact.phone }}"
+                          data-wanumber="{{ wa_hr.wa_number }}"
                           data-isvalid="true"
-                          data-type="mobile"
+                          data-type="{{ wa_hr.type }}"
                           title="Hubungi HRD via WhatsApp">
-                    <i class="bi bi-people"></i> <span class="fw-semibold">HRD:</span> {{ o.hr_contact.phone }}
+                    <i class="bi bi-people"></i> <span class="fw-semibold">HRD:</span> {{ wa_hr.formatted_display }}
                   </button>
+                  {% elif wa_hr.type == 'landline' %}
+                  <a href="tel:{{ wa_hr.clean }}" class="btn btn-sm btn-outline-secondary py-0 px-1 text-start" style="font-size: 0.72rem;" title="Telepon Kantor HRD: {{ wa_hr.formatted_display }}">
+                    <i class="bi bi-telephone"></i> <span class="fw-semibold">HRD:</span> {{ wa_hr.formatted_display }}
+                  </a>
+                  {% endif %}
                 {% endif %}
 
                 {% if o.community_pic_contact and o.community_pic_contact.phone %}
+                  {% set wa_comm = o.community_pic_contact.phone|parse_wa(o.name ~ ' Komunitas') %}
+                  {% if wa_comm.is_valid_wa %}
                   <button type="button" class="btn btn-sm btn-outline-warning py-0 px-1 d-inline-flex align-items-center gap-1 text-start btn-wa-trigger text-dark"
                           style="font-size: 0.72rem;"
                           data-bs-toggle="modal" data-bs-target="#modalWhatsAppQuickSend"
                           data-company="{{ o.name }} (Narahubung)"
                           data-phone="{{ o.community_pic_contact.phone }}"
-                          data-wanumber="{{ o.community_pic_contact.phone }}"
+                          data-wanumber="{{ wa_comm.wa_number }}"
                           data-isvalid="true"
-                          data-type="mobile"
+                          data-type="{{ wa_comm.type }}"
                           title="Hubungi Narahubung Komunitas">
-                    <i class="bi bi-chat-dots"></i> <span class="fw-semibold">CP:</span> {{ o.community_pic_contact.phone }}
+                    <i class="bi bi-chat-dots"></i> <span class="fw-semibold">CP:</span> {{ wa_comm.formatted_display }}
                   </button>
+                  {% endif %}
                 {% endif %}
               </div>
             </td>

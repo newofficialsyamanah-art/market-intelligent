@@ -39,7 +39,7 @@ VERIFIED_2027_EVENTS = [
         "verification_status": "verified",
         "social_json": json.dumps({"instagram": "https://www.instagram.com/worldcitiesculture"}),
         "department_contacts_json": json.dumps({
-            "panitia": {"nama": "Dinas Kebudayaan DKI Jakarta", "phone": "+62 21 382 2255", "email": "disbud@jakarta.go.id"}
+            "panitia": {"nama": "Dinas Kebudayaan DKI Jakarta", "phone": None, "email": "disbud@jakarta.go.id"}
         })
     },
     {
@@ -62,7 +62,7 @@ VERIFIED_2027_EVENTS = [
         "verification_status": "verified",
         "social_json": json.dumps({"instagram": "https://www.instagram.com/psti_indonesia"}),
         "department_contacts_json": json.dumps({
-            "panitia": {"nama": "Pengurus Besar PSTI", "phone": "+62 411 510 000", "email": "sekretariat@psti.or.id"}
+            "panitia": {"nama": "Pengurus Besar PSTI", "phone": None, "email": None}
         })
     },
     {
@@ -85,7 +85,7 @@ VERIFIED_2027_EVENTS = [
         "verification_status": "verified",
         "social_json": json.dumps({"instagram": "https://www.instagram.com/dpdri"}),
         "department_contacts_json": json.dumps({
-            "panitia": {"nama": "Sekretariat Jenderal DPD RI", "phone": "+62 21 5789 7320", "email": "humas@dpd.go.id"}
+            "panitia": {"nama": "Sekretariat Jenderal DPD RI", "phone": None, "email": "humas@dpd.go.id"}
         })
     },
     {
@@ -108,7 +108,7 @@ VERIFIED_2027_EVENTS = [
         "verification_status": "verified",
         "social_json": json.dumps({"instagram": "https://www.instagram.com/ufitheatreglobal"}),
         "department_contacts_json": json.dumps({
-            "panitia": {"nama": "UFI Asia-Pacific & ASPERAPI", "phone": "+62 21 5795 2000", "email": "asia@ufi.org"}
+            "panitia": {"nama": "UFI Asia-Pacific Chapter", "phone": None, "email": "asia@ufi.org"}
         })
     },
     {
@@ -269,7 +269,7 @@ VERIFIED_2027_EVENTS = [
         "verification_status": "verified",
         "social_json": json.dumps({"instagram": "https://www.instagram.com/jakartarunningfestival"}),
         "department_contacts_json": json.dumps({
-            "panitia": {"nama": "JRF Race Management", "phone": "+62 21 570 3888", "email": "info@jakartarunningfestival.id"}
+            "panitia": {"nama": "JRF Race Management", "phone": None, "email": "info@jakartarunningfestival.id"}
         })
     },
     {
@@ -522,7 +522,7 @@ VERIFIED_2027_EVENTS = [
         "verification_status": "verified",
         "social_json": json.dumps({"instagram": "https://www.instagram.com/bakerychina"}),
         "department_contacts_json": json.dumps({
-            "panitia": {"nama": "Bakery ASEAN Desk", "phone": "+62 21 634 5861", "email": "info@kristaexhibitions.com"}
+            "panitia": {"nama": "Bakery ASEAN Desk", "phone": None, "email": "info@kristaexhibitions.com"}
         })
     },
     {
@@ -545,7 +545,7 @@ VERIFIED_2027_EVENTS = [
         "verification_status": "verified",
         "social_json": json.dumps({"instagram": "https://www.instagram.com/dxi.indonesia"}),
         "department_contacts_json": json.dumps({
-            "panitia": {"nama": "DXI Secretariate", "phone": "+62 21 5790 1070", "email": "info@deepextremeindonesia.com"}
+            "panitia": {"nama": "DXI Secretariate", "phone": None, "email": "info@deepextremeindonesia.com"}
         })
     }
 ]

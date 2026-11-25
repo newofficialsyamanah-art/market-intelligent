@@ -10,16 +10,32 @@ def utc_now():
     return datetime.now(timezone.utc).replace(tzinfo=None)
 
 
+class CustomRole(db.Model):
+    __tablename__ = "custom_roles"
+    id = db.Column(db.Integer, primary_key=True)
+    key = db.Column(db.String(100), unique=True, nullable=False, index=True)
+    name = db.Column(db.String(150), nullable=False)
+    permissions_json = db.Column(db.Text, nullable=False, default="[]")
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=utc_now)
+
+    @property
+    def permissions(self):
+        try:
+            import json
+            value = json.loads(self.permissions_json or "[]")
+            return value if isinstance(value, list) else []
+        except (TypeError, ValueError, json.JSONDecodeError):
+            return []
+
+
 class User(UserMixin, db.Model):
     __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(150), nullable=False)
     email = db.Column(db.String(150), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
-    role = db.Column(
-        db.Enum("admin", "business_analyst", "marketing", "management", "procurement", "supplier", name="role_enum"),
-        default="business_analyst",
-    )
+    role = db.Column(db.String(100), default="business_analyst", nullable=False, index=True)
     is_active_flag = db.Column("is_active", db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=utc_now)
 

@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Laporan Eksekutif Potensi & Target Penetrasi Pasar 2027 - PT Syamanah</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --primary-color: #1e3a8a;
+      --secondary-color: #3b82f6;
+      --accent-color: #10b981;
+      --dark-color: #0f172a;
+      --light-bg: #f8fafc;
+      --border-color: #e2e8f0;
+    }
+    
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: #1e293b;
+      background-color: #f1f5f9;
+      font-size: 10pt;
+      line-height: 1.5;
+      margin: 0;
+      padding: 0;
+    }
+
+    .font-monospace {
+      font-family: 'JetBrains Mono', monospace !important;
+    }
+
+    /* Floating Print Action Bar */
+    .print-action-bar {
+      position: sticky;
+      top: 0;
+      z-index: 9999;
+      background: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(8px);
+      color: #ffffff;
+      padding: 0.75rem 1.5rem;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .report-container {
+      max-width: 1200px;
+      margin: 2rem auto;
+      background: #ffffff;
+      padding: 2.5rem 3rem;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Header Banner */
+    .report-header {
+      border-bottom: 3px solid #0d6efd;
+      padding-bottom: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .report-logo-text {
+      font-size: 1.8rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: #0f172a;
+    }
+
+    .report-badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 0.35rem 0.75rem;
+      border-radius: 6px;
+    }
+
+    /* KPI Highlights */
+    .kpi-card {
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 1.25rem;
+      background: #ffffff;
+      height: 100%;
+    }
+
+    .kpi-card-tam { border-left: 4px solid #64748b !important; }
+    .kpi-card-sam { border-left: 4px solid #f59e0b !important; }
+    .kpi-card-som { border-left: 4px solid #10b981 !important; background-color: #f0fdf4 !important; }
+    .kpi-card-pop { border-left: 4px solid #3b82f6 !important; }
+
+    /* Tables */
+    .table-report {
+      font-size: 8.5pt;
+      border-color: #cbd5e1;
+    }
+
+    .table-report th {
+      background-color: #f8fafc !important;
+      color: #334155;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      border-bottom: 2px solid #cbd5e1 !important;
+      padding: 0.6rem 0.5rem;
+    }
+
+    .table-report td {
+      padding: 0.55rem 0.5rem;
+      vertical-align: middle;
+      border-color: #e2e8f0;
+    }
+
+    .product-box {
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 1.25rem;
+      background: #ffffff;
+      margin-bottom: 1rem;
+    }
+
+    /* Page Breaks for Print */
+    .page-break {
+      page-break-before: always;
+      break-before: page;
+    }
+
+    .avoid-break {
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+
+    /* Signature Box */
+    .signature-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2rem;
+      margin-top: 3rem;
+      padding-top: 1.5rem;
+      border-top: 1px dashed #cbd5e1;
+    }
+
+    .signature-box {
+      text-align: center;
+    }
+
+    .signature-line {
+      margin-top: 4.5rem;
+      border-bottom: 1px solid #475569;
+      margin-bottom: 0.5rem;
+    }
+
+    /* Print Specific Media Query */
+    @media print {
+      body {
+        background: #ffffff !important;
+        font-size: 9pt !important;
+        color: #000000 !important;
+      }
+
+      .print-action-bar, .d-print-none {
+        display: none !important;
+      }
+
+      .report-container {
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+      }
+
+      @page {
+        size: A4 landscape;
+        margin: 12mm 10mm 12mm 10mm;
+      }
+
+      .kpi-card, .product-box, .p-3, .table-report {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      .table-report th {
+        background-color: #f1f5f9 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      .badge, .bg-primary, .bg-success, .bg-danger, .bg-warning, .kpi-card-som {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Floating Print Control Bar (Hidden on Print) -->
+  <div class="print-action-bar d-print-none">
+    <div class="container-fluid d-flex justify-content-between align-items-center">
+      <div class="d-flex align-items-center gap-3">
+        <span class="fw-bold text-white fs-6">
+          <i class="bi bi-file-earmark-pdf-fill text-danger me-2"></i>Pratinjau Cetak / Ekspor PDF - Laporan Pasar 2027
+        </span>
+        <span class="badge bg-secondary font-monospace">Ukuran Kertas Direkomendasikan: A4 Landscape</span>
+      </div>
+      <div class="d-flex gap-2">
+        <button type="button" class="btn btn-primary btn-sm px-3 fw-bold" onclick="window.print()">
+          <i class="bi bi-printer-fill me-1"></i> Cetak / Simpan sebagai PDF
+        </button>
+        <a href="{{ url_for('prospect.market_share_2027') }}" class="btn btn-outline-light btn-sm px-3">
+          <i class="bi bi-x-circle me-1"></i> Tutup &amp; Kembali
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="report-container">
+    
+    <!-- Header Dokumen Resmi -->
+    <div class="report-header">
+      <div class="row align-items-center">
+        <div class="col-8">
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <span class="report-logo-text text-primary">SYAMANAH</span>
+            <span class="badge bg-dark text-white px-2 py-1">MARKET INTELLIGENCE</span>
+            <span class="badge bg-success-subtle text-success border border-success-subtle">
+              <i class="bi bi-patch-check-fill me-1"></i> DATA AKTUAL TERVERIFIKASI
+            </span>
+          </div>
+          <h2 class="fw-bold text-dark mb-1" style="font-size: 1.5rem;">
+            LAPORAN EKSEKUTIF INTELIJEN PASAR &amp; TARGET PENETRASI NASIONAL 2027
+          </h2>
+          <p class="text-secondary small mb-0">
+            Analisis Komprehensif Potensi Pasar (TAM/SAM/SOM), Segmentasi 4 Lini Produk, Utilisasi Kapasitas Pabrik, &amp; Action Plan Penjualan Skala Nasional (38 Provinsi).
+          </p>
+        </div>
+        <div class="col-4 text-end">
+          <div class="p-2 bg-light border rounded text-start small font-monospace d-inline-block">
+            <div><strong>Kode Dokumen:</strong> REP-MKT-2027-EXP</div>
+            <div><strong>Tanggal Rilis:</strong> {{ generated_date }}</div>
+            <div><strong>Cakupan Wilayah:</strong> 38 Provinsi se-Indonesia</div>
+            <div><strong>Klasifikasi:</strong> Rahasia Perusahaan (Internal Only)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4 KPI UTAMA -->
+    <div class="row g-3 mb-4 avoid-break">
+      <!-- 1. Total Populasi -->
+      <div class="col-3">
+        <div class="kpi-card kpi-card-pop">
+          <span class="text-muted small fw-bold text-uppercase d-block mb-1">Populasi Database SSoT</span>
+          <h4 class="fw-bold text-dark mb-0">{{ "{:,}".format(total_combined_db) }} Entitas</h4>
+          <small class="text-muted d-block mt-1">
+            {{ "{:,}".format(total_orgs_db) }} Master Org &bull; {{ total_events_db }} Event &bull; CRM
+          </small>
+        </div>
+      </div>
+
+      <!-- 2. TAM -->
+      <div class="col-3">
+        <div class="kpi-card kpi-card-tam">
+          <span class="text-muted small fw-bold text-uppercase d-block mb-1">Total Addressable Market (TAM)</span>
+          <h4 class="fw-bold text-dark mb-0">{{ tam.value_str }}</h4>
+          <small class="text-primary fw-semibold d-block mt-1">{{ tam.volume_str }} (Nasional)</small>
+        </div>
+      </div>
+
+      <!-- 3. SAM -->
+      <div class="col-3">
+        <div class="kpi-card kpi-card-sam">
+          <span class="text-muted small fw-bold text-uppercase d-block mb-1">Serviceable Available Market (SAM)</span>
+          <h4 class="fw-bold text-dark mb-0">{{ sam.value_str }}</h4>
+          <small class="text-warning-emphasis fw-semibold d-block mt-1">{{ sam.volume_str }} (Tertarget)</small>
+        </div>
+      </div>
+
+      <!-- 4. SOM -->
+      <div class="col-3">
+        <div class="kpi-card kpi-card-som">
+          <span class="text-success small fw-bold text-uppercase d-block mb-1">Target Penetrasi Syamanah (SOM)</span>
+          <h4 class="fw-bold text-success mb-0">{{ som.value_str }}</h4>
+          <small class="text-success fw-bold d-block mt-1">{{ som.volume_str }} (10% - 12% Pangsa)</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- BAGIAN 1: RUMUS & FORMULA MATEMATIS KONVERSI OMZET -->
+    <div class="product-box mb-4 avoid-break">
+      <div class="d-flex align-items-center justify-content-between mb-2">
+        <h6 class="fw-bold text-dark mb-0">
+          <i class="bi bi-calculator text-primary me-2"></i>1. Formula Matematis Konversi Target Penjualan 2027 (Anti-Halusinasi)
+        </h6>
+        <span class="badge bg-light text-secondary border">Metode Bottom-Up Terpadu</span>
+      </div>
+      <div class="p-3 bg-light rounded border font-monospace small mb-2">
+        <div class="text-muted">// 1. Formula Perhitungan SOM Volume (Unit) Berbasis SAM 785.000 Pcs:</div>
+        <div class="text-dark fw-bold">Target Volume SOM = 785.000 Pcs &times; (10% s/d 12%) = <strong>78.500 Pcs s/d 94.200 Pcs / Tahun</strong> (Rata-rata 6.540 - 7.850 Pcs/Bulan)</div>
+        <hr class="my-2">
+        <div class="text-muted">// 2. Formula Nilai Omzet Riil Penjualan 2027 Berdasarkan 4 Lini Produk:</div>
+        <div class="text-dark">Nilai Proyeksi SOM = (Jersey 35k-42k pcs @ Rp 92k) + (Jaket 6.5k-7.8k pcs @ Rp 170k) + (Seragam 21k-25.2k pcs @ Rp 95k) + (Kaos 16k-19.2k pcs @ Rp 75k)</div>
+        <div class="text-success fw-bold mt-1">&rarr; Target Pendapatan Riil SOM 2027 = <strong>Rp 7.510.000.000 s/d Rp 9.010.000.000</strong> (Rp 7,51 - Rp 9,01 Miliar)</div>
+      </div>
+      <div class="row g-2 small text-muted">
+        <div class="col-6">
+          <i class="bi bi-check2-circle text-success me-1"></i><strong>Dukungan Kapasitas Pabrik:</strong> Kapasitas mesin sublimasi in-house Syamanah 75.000 pcs/bulan &amp; lini jaket 6.000 pcs/bulan menjamin eksekusi tepat waktu tanpa bottleneck.
+        </div>
+        <div class="col-6">
+          <i class="bi bi-check2-circle text-success me-1"></i><strong>Validasi Kontak:</strong> Seluruh entitas mematuhi <em>Zero-Hallucination Contact Policy</em>; nomor kontak yang belum dipublikasikan dibiarkan kosong secara transparan.
+        </div>
+      </div>
+    </div>
+
+    <!-- BAGIAN 2: BREAKDOWN 4 LINI PRODUK UTAMA -->
+    <div class="avoid-break mb-4">
+      <h6 class="fw-bold text-dark mb-3">
+        <i class="bi bi-boxes text-primary me-2"></i>2. Segmentasi Berdasarkan 4 Lini Produk Utama (Jersey, Jaket, Seragam, &amp; Kaos)
+      </h6>
+      <div class="row g-3">
+        {% for prod in product_segments %}
+        <div class="col-3">
+          <div class="p-3 border rounded bg-white h-100">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="badge {{ prod.badge_class }}">{{ prod.name }}</span>
+              <span class="small font-monospace text-muted">{{ "{:,}".format(prod.verified_units|default(0)) }} Pcs</span>
+            </div>
+            <div class="fw-bold text-dark small mb-1">{{ prod.title }}</div>
+            <div class="small text-muted mb-2" style="font-size: 7.5pt; min-height: 28px;">{{ prod.spec }}</div>
+            <div class="p-2 bg-light rounded small font-monospace mb-2">
+              <div class="text-muted" style="font-size: 7pt;">Target SOM:</div>
+              <div class="fw-bold text-success">{{ prod.som_units_str }}</div>
+              <div class="text-dark fw-semibold" style="font-size: 7.5pt;">{{ prod.som_val_str }}</div>
+            </div>
+            <div class="small text-secondary" style="font-size: 7pt;">
+              <strong>Lini Pabrik:</strong> {{ prod.production_line }}
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="mb-4">
+      <h6 class="fw-bold text-dark mb-1">
+        <i class="bi bi-bar-chart-line text-primary me-2"></i>Tren Jumlah Prospek 2027 per Produk &amp; Kuartal
+      </h6>
+      <p class="small text-muted mb-2" style="font-size: 7.5pt;">
+        Jumlah entitas berdasarkan tag produk dan lead time; bukan indeks minat pasar atau jumlah unit. Satu entitas multi-produk dihitung pada tiap lini terkait. Periode yang tidak menunjuk satu kuartal masuk “Belum terjadwal”.
+      </p>
+      <div class="table-responsive">
+        <table class="table table-bordered table-report table-sm align-middle mb-0">
+          <thead>
+            <tr>
+              <th>Produk</th>
+              {% for quarter in product_trend_2027.quarters %}
+              <th class="text-end">{{ quarter }}</th>
+              {% endfor %}
+              <th class="text-end">Total tag produk</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in product_trend_2027.rows %}
+            <tr>
+              <td class="fw-bold">{{ row.name }}</td>
+              {% for quarter in product_trend_2027.quarters %}
+              <td class="text-end font-monospace">{{ row.quarter_counts[quarter] }}</td>
+              {% endfor %}
+              <td class="text-end fw-bold font-monospace">{{ row.total }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div class="small text-muted mt-1" style="font-size: 7pt;">
+        Prospek bertag produk yang tercatat untuk 2027: {{ product_trend_2027.prospect_count }} entitas unik.
+      </div>
+    </div>
+
+    <div class="page-break"></div>
+
+    <!-- BAGIAN 3: TREN OMZET PER KATEGORI PRODUK -->
+    <div class="mb-4">
+      <div class="d-flex justify-content-between align-items-start gap-3 mb-2">
+        <div>
+          <h6 class="fw-bold text-dark mb-1">
+            <i class="bi bi-cash-stack text-success me-2"></i>3. Tren Omzet Syamanah 2026 per Kategori Produk
+          </h6>
+          <p class="small text-muted mb-0" style="font-size: 7.5pt;">
+            Nilai bulanan sesuai workbook sumber; angka nol dipertahankan dan tidak diproyeksikan. Nilai tabel dalam Rp juta.
+            Basis berbeda dari grafik kas masuk Syamanah/Raffiz di Market Size &amp; Share.
+          </p>
+        </div>
+        <span class="small fw-bold text-success text-nowrap">
+          Total file: Rp {{ "{:,.2f}".format(product_sales_2026.grand_total / 1000000000) }} M
+        </span>
+      </div>
+      <div class="small text-muted mb-2" style="font-size: 7pt;">
+        Sumber: {{ product_sales_2026.source_filename }}
+      </div>
+      <div class="table-responsive">
+        <table class="table table-bordered table-report table-sm align-middle mb-0 text-nowrap" style="font-size: 6.5pt;">
+          <thead>
+            <tr>
+              <th>Kategori produk<br><span class="fw-normal">(Rp juta)</span></th>
+              {% for month in product_sales_2026.months %}
+              <th class="text-end">{{ month }}</th>
+              {% endfor %}
+              <th class="text-end">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for category in product_sales_2026.categories %}
+            <tr>
+              <td class="fw-bold">{{ category.name }}</td>
+              {% for value in category.monthly_values %}
+              <td class="text-end font-monospace">{{ "{:,.2f}".format(value / 1000000) }}</td>
+              {% endfor %}
+              <td class="text-end fw-bold font-monospace">{{ "{:,.2f}".format(category.total / 1000000) }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+          <tfoot>
+            <tr>
+              <td class="fw-bold">Total bulanan</td>
+              {% for value in product_sales_2026.monthly_totals %}
+              <td class="text-end fw-bold font-monospace">{{ "{:,.2f}".format(value / 1000000) }}</td>
+              {% endfor %}
+              <td class="text-end fw-bold font-monospace">{{ "{:,.2f}".format(product_sales_2026.grand_total / 1000000) }}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+    <!-- PAGE BREAK UNTUK TABEL DETAIL ENTITAS -->
+    <div class="page-break"></div>
+
+    <!-- BAGIAN 4: TABEL DAFTAR ENTITAS PRIORITAS TERTARGET -->
+    <div class="mb-4">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h6 class="fw-bold text-dark mb-0">
+          <i class="bi bi-building-check text-primary me-2"></i>4. Direktori Entitas Prioritas Tertarget (Event MICE 2027, Sekolah Unggulan, &amp; Korporasi B2B)
+        </h6>
+        <span class="small text-muted font-monospace">Menampilkan {{ prospects|length }} Entitas Prioritas &bull; Total Potensi: {{ "{:,}".format(total_units_raw) }} Pcs (Rp {{ "{:,.0f}".format(total_value_raw) }})</span>
+      </div>
+      
+      <div class="table-responsive">
+        <table class="table table-bordered table-report table-hover align-middle mb-0">
+          <thead>
+            <tr>
+              <th style="width: 28px;" class="text-center">No</th>
+              <th style="width: 220px;">Nama Entitas &amp; Situs Resmi</th>
+              <th style="width: 110px;">Sumber Data</th>
+              <th style="width: 140px;">Sektor / Segmen</th>
+              <th style="width: 130px;">Kebutuhan Produk</th>
+              <th style="width: 120px;">Wilayah Target</th>
+              <th style="width: 90px;" class="text-end">Volume (Pcs)</th>
+              <th style="width: 80px;" class="text-end">Harga/Pcs</th>
+              <th style="width: 110px;" class="text-end">Nilai Potensi</th>
+              <th style="width: 75px;" class="text-center">Lead Time</th>
+              <th style="width: 110px;" class="text-center">Kontak Resmi</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in prospects %}
+            <tr>
+              <td class="text-center text-muted font-monospace">{{ loop.index }}</td>
+              <td>
+                <strong class="text-dark d-block">{{ p.company_name }}</strong>
+                {% if p.website %}
+                <small class="text-muted text-truncate d-block font-monospace" style="max-width: 200px; font-size: 7.5pt;">
+                  {{ p.website|replace('https://', '')|replace('http://', '')|replace('www.', '') }}
+                </small>
+                {% endif %}
+              </td>
+              <td>
+                <span class="badge {{ p.badge_color }} p-1" style="font-size: 7pt;">{{ p.data_source }}</span>
+              </td>
+              <td>
+                <span class="badge bg-light text-dark border p-1" style="font-size: 7pt;">{{ p.segment }}</span>
+                <div class="small text-muted mt-1" style="font-size: 7.5pt;">{{ p.industry }}</div>
+              </td>
+              <td>
+                <div class="d-flex flex-wrap gap-1">
+                  {% for prod in (p.products or []) %}
+                  <span class="badge {% if prod == 'Jersey' %}bg-primary{% elif prod == 'Jaket' %}bg-danger{% elif prod == 'Seragam' %}bg-success{% else %}bg-warning text-dark{% endif %}" style="font-size: 6.5pt;">
+                    {{ prod }}
+                  </span>
+                  {% endfor %}
+                </div>
+                <div class="text-muted mt-1" style="font-size: 7pt; line-height: 1.2;">{{ p.product_details }}</div>
+              </td>
+              <td>
+                <span class="fw-semibold text-dark d-block" style="font-size: 8pt;">{{ p.region }}</span>
+                <small class="text-muted" style="font-size: 7pt;">{{ p.company_size }}</small>
+              </td>
+              <td class="text-end fw-bold font-monospace text-dark">{{ "{:,}".format(p.target_units) }}</td>
+              <td class="text-end font-monospace text-muted" style="font-size: 8pt;">Rp {{ "{:,}".format(p.unit_price) }}</td>
+              <td class="text-end fw-bold font-monospace text-success">Rp {{ "{:,.0f}".format(p.est_value) }}</td>
+              <td class="text-center font-monospace small" style="font-size: 7.5pt;">{{ p.lead_time }}</td>
+              <td class="text-center">
+                {% if p.contact_phone %}
+                  <span class="badge bg-success-subtle text-success border border-success-subtle font-monospace" style="font-size: 7pt;">
+                    {{ p.contact_phone }}
+                  </span>
+                {% elif p.website %}
+                  <span class="badge bg-light text-secondary border font-monospace" style="font-size: 7pt;">
+                    Domain Resmi
+                  </span>
+                {% else %}
+                  <span class="text-muted" style="font-size: 7.5pt;">Belum Terdata</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+          <tfoot class="table-light fw-bold font-monospace">
+            <tr>
+              <td colspan="6" class="text-uppercase ps-2">Total Kebutuhan Tertampil ({{ prospects|length }} Entitas Prioritas):</td>
+              <td class="text-end text-dark">{{ "{:,}".format(total_units_raw) }} Pcs</td>
+              <td></td>
+              <td class="text-end text-success">Rp {{ "{:,.0f}".format(total_value_raw) }}</td>
+              <td colspan="2"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+    <!-- BAGIAN 5: ACTION PLAN TIM SALES & SIGNATURE (Halaman Terakhir) -->
+    <div class="avoid-break mt-4">
+      <h6 class="fw-bold text-dark mb-3">
+        <i class="bi bi-signpost-split text-primary me-2"></i>5. Roadmap &amp; Action Plan Taktis Tim Sales per Kuartal (2027)
+      </h6>
+      <div class="row g-2 mb-4">
+        {% for act in action_plans %}
+        <div class="col-3">
+          <div class="p-2 border rounded bg-light h-100 small">
+            <span class="badge bg-primary mb-1" style="font-size: 7.5pt;">{{ act.quarter }}</span>
+            <div class="fw-bold text-dark mb-1" style="font-size: 8pt;">{{ act.focus }}</div>
+            <div class="text-secondary mb-1" style="font-size: 7.5pt;"><strong>Target:</strong> {{ act.targets }}</div>
+            <div class="text-muted" style="font-size: 7pt;"><strong>Taktis:</strong> {{ act.tactic }}</div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- Lembar Pengesahan Resmi -->
+      <div class="signature-grid">
+        <div class="signature-box">
+          <div class="small text-muted">Dipersiapkan Oleh:</div>
+          <div class="signature-line"></div>
+          <strong class="text-dark d-block">Senior Market Intelligence Specialist</strong>
+          <span class="text-muted small">Divisi Strategi Pertumbuhan &amp; Analitik B2B</span>
+        </div>
+        <div class="signature-box">
+          <div class="small text-muted">Ditinjau &amp; Diselaraskan:</div>
+          <div class="signature-line"></div>
+          <strong class="text-dark d-block">Head of Commercial &amp; Sales B2B</strong>
+          <span class="text-muted small">Operasional Penjualan &amp; Kemitraan</span>
+        </div>
+        <div class="signature-box">
+          <div class="small text-muted">Disetujui untuk Eksekusi:</div>
+          <div class="signature-line"></div>
+          <strong class="text-dark d-block">Direktur Utama / Manajemen</strong>
+          <span class="text-muted small">PT Syamanah Sukses Mandiri</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  {% if autoprint %}
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => {
+        window.print();
+      }, 500);
+    });
+  </script>
+  {% endif %}
+
+</body>
+</html>

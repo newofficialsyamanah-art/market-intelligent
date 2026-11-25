@@ -84,6 +84,101 @@ VERIFIED_COMMUNITY_SEEDS = [
 ]
 
 
+def _search_discovery_candidates_with_mcp(
+    query: str,
+    entity_label: str,
+    limit: int,
+) -> Tuple[List[Dict[str, Any]], int]:
+    """Extract candidates only from public MCP search results with exact source URLs."""
+    from app.ai_agent import _chat_json
+    from app.services.mcp_service import mcp_search_duckduckgo
+
+    raw_results = mcp_search_duckduckgo(
+        query=query,
+        max_results=min(max(limit * 2, 6), 30),
+        region="id-id",
+    )
+    evidence_by_url = {}
+    for result in raw_results:
+        if not isinstance(result, dict):
+            continue
+        url = str(result.get("url") or "").strip()
+        parsed_url = urlparse(url)
+        if parsed_url.scheme not in ("http", "https") or not parsed_url.netloc:
+            continue
+        evidence_by_url[url] = {
+            "title": str(result.get("title") or "").strip(),
+            "url": url,
+            "snippet": str(result.get("snippet") or "").strip()[:600],
+        }
+
+    if not evidence_by_url:
+        return [], 0
+
+    prompt = f"""Ekstrak maksimal {limit} {entity_label} yang didukung oleh hasil pencarian berikut.
+Jangan mengarang entitas, lokasi, website, atau URL. Jika bukti tidak cukup, abaikan hasil.
+Untuk source_url, salin persis salah satu URL dari hasil pencarian.
+
+HASIL PENCARIAN:
+{json.dumps(list(evidence_by_url.values()), ensure_ascii=False)}
+
+Kembalikan hanya JSON array dengan field:
+name, subtype, organization_type, sport, city, province, website,
+description, product_fit, opportunity_score, source_url.
+"""
+    raw_candidates = _chat_json(
+        system_prompt=(
+            "Kamu adalah ekstraktor data Discovery. Gunakan hanya bukti yang diberikan; "
+            "jangan menyimpulkan bahwa entitas nyata jika hasil pencarian tidak mendukungnya."
+        ),
+        user_prompt=prompt,
+        temperature=0.1,
+    )
+    if isinstance(raw_candidates, list):
+        candidates = raw_candidates
+    elif isinstance(raw_candidates, dict):
+        candidates = (
+            raw_candidates.get("items")
+            or raw_candidates.get("organizations")
+            or raw_candidates.get("institutions")
+            or raw_candidates.get("communities")
+            or []
+        )
+    else:
+        candidates = []
+
+    verified_candidates = []
+    for candidate in candidates:
+        if not isinstance(candidate, dict):
+            continue
+        name = candidate.get("name")
+        source_url = str(candidate.get("source_url") or "").strip()
+        evidence = evidence_by_url.get(source_url)
+        if not isinstance(name, str) or not name.strip() or not evidence:
+            continue
+
+        verified = dict(candidate)
+        verified["name"] = name.strip()
+        verified["source_url"] = source_url
+        verified["_mcp_evidence"] = evidence
+        verified_candidates.append(verified)
+        if len(verified_candidates) >= limit:
+            break
+
+    return verified_candidates, len(evidence_by_url)
+
+
+def _discovery_score(value: Any, default: int = 70) -> int:
+    try:
+        return max(0, min(100, int(value)))
+    except (TypeError, ValueError):
+        return default
+
+
+def _discovery_text(value: Any, default: Optional[str] = None) -> Optional[str]:
+    return value.strip() if isinstance(value, str) and value.strip() else default
+
+
 class DiscoveryPipelineService:
     """Service terpadu untuk Ingestion & Discovery Multi-Universe dengan deduplikasi dan integritas Master Organization."""
 
@@ -274,11 +369,99 @@ class DiscoveryPipelineService:
                 created_count += 1
             else:
                 updated_count += 1
-            processed_candidates.append({"org_id": org.id, "name": org.name, "is_new": is_new, "note": note})
+            processed_candidates.append({
+                "org_id": org.id, "name": org.name, "is_new": is_new,
+                "note": note, "source_type": "education_directory",
+            })
 
-        # 2. DYNAMIC AI DISCOVERY UNTUK SELURUH INDONESIA (Kalimantan, Sumatera, Sulawesi, Papua, Jawa, dll)
+        mcp_search_results = 0
+        mcp_ingested = 0
+        mcp_error = None
+        mcp_attempted = False
         remaining_needed = max_limit - len(processed_candidates)
         if remaining_needed > 0:
+            mcp_attempted = True
+            target_loc = " ".join(part for part in (city, province) if part)
+            search_query = " ".join(part for part in (
+                level or "sekolah universitas kampus politeknik",
+                query,
+                target_loc,
+            ) if part).strip()
+            try:
+                mcp_candidates, mcp_search_results = _search_discovery_candidates_with_mcp(
+                    search_query,
+                    "institusi pendidikan Indonesia",
+                    remaining_needed,
+                )
+                for item in mcp_candidates:
+                    cand_name = item["name"]
+                    if any(
+                        candidate["name"].casefold() == cand_name.casefold()
+                        for candidate in processed_candidates
+                    ):
+                        continue
+
+                    raw_sub = str(item.get("subtype") or "university").lower()
+                    if any(term in raw_sub for term in ("universitas", "institut", "politeknik", "polytechnic", "university")):
+                        norm_subtype = "university"
+                    elif any(term in raw_sub for term in ("smk", "vocational")):
+                        norm_subtype = "vocational_school"
+                    elif "sma" in raw_sub or "high" in raw_sub:
+                        norm_subtype = "high_school"
+                    elif "smp" in raw_sub or "junior" in raw_sub:
+                        norm_subtype = "junior_high"
+                    else:
+                        norm_subtype = raw_sub
+
+                    source_url = item["source_url"]
+                    website = item.get("website")
+                    if website != source_url or not str(website).startswith(("http://", "https://")):
+                        website = None
+                    evidence = item["_mcp_evidence"]
+                    candidate = {
+                        "name": cand_name,
+                        "organization_type": "education",
+                        "organization_subtype": norm_subtype,
+                        "industry": "Pendidikan",
+                        "province": _discovery_text(item.get("province"), province or None),
+                        "city": _discovery_text(item.get("city"), city or None),
+                        "website": website,
+                        "domain": extract_domain(website) if website else None,
+                        "source_type": "education_mcp_discovery",
+                        "source_url": source_url,
+                        "description": _discovery_text(item.get("description"), evidence["snippet"][:400]),
+                        "product_fit": _discovery_text(
+                            item.get("product_fit"),
+                            "Jas Almamater, Kaos Angkatan, Seragam Olahraga",
+                        ),
+                        "opportunity_score": _discovery_score(item.get("opportunity_score"), 70),
+                        "priority_tier": "B - WARM",
+                        "provenance": {
+                            "source": "DuckDuckGo MCP",
+                            "source_type": "education_mcp_discovery",
+                            "source_url": source_url,
+                            "confidence": "medium",
+                            "raw_reference": json.dumps(evidence, ensure_ascii=False),
+                            "discovered_at": utc_now().isoformat(),
+                        }
+                    }
+                    org, is_new, note = cls.ingest_candidate_to_master(
+                        candidate, engine=engine, user_id=user_id
+                    )
+                    created_count += int(is_new)
+                    updated_count += int(not is_new)
+                    mcp_ingested += 1
+                    processed_candidates.append({
+                        "org_id": org.id, "name": org.name, "is_new": is_new,
+                        "note": note, "source_type": "education_mcp_discovery",
+                    })
+            except Exception as error:
+                mcp_error = str(error)[:200]
+                logger.exception("MCP education discovery failed")
+
+        # 2. AI fallback lama dipakai hanya jika pencarian MCP tidak menghasilkan kandidat.
+        remaining_needed = max_limit - len(processed_candidates)
+        if remaining_needed > 0 and mcp_ingested == 0 and not mcp_error:
             from app.ai_agent import _chat_json
 
             target_loc = []
@@ -375,7 +558,10 @@ Format output HANYA list JSON valid:
                         created_count += 1
                     else:
                         updated_count += 1
-                    processed_candidates.append({"org_id": org.id, "name": org.name, "is_new": is_new, "note": note})
+                    processed_candidates.append({
+                        "org_id": org.id, "name": org.name, "is_new": is_new,
+                        "note": note, "source_type": "education_dynamic_discovery",
+                    })
 
             except Exception as e:
                 logger.error(f"Error in dynamic education discovery: {e}")
@@ -388,6 +574,14 @@ Format output HANYA list JSON valid:
             "new_organizations": created_count,
             "updated": updated_count,
             "matched_organizations": updated_count,
+            "mcp_attempted": mcp_attempted,
+            "mcp_search_results": mcp_search_results,
+            "mcp_ingested": mcp_ingested,
+            "ai_fallback_ingested": sum(
+                item.get("source_type") == "education_dynamic_discovery"
+                for item in processed_candidates
+            ),
+            "mcp_error": mcp_error,
             "items": processed_candidates
         }
 
@@ -465,11 +659,119 @@ Format output HANYA list JSON valid:
                 created_count += 1
             else:
                 updated_count += 1
-            processed_candidates.append({"org_id": org.id, "name": org.name, "is_new": is_new, "note": note})
+            processed_candidates.append({
+                "org_id": org.id, "name": org.name, "is_new": is_new,
+                "note": note, "source_type": item.get("source", "community_directory"),
+            })
 
-        # 2. DYNAMIC DISCOVERY UNTUK SELURUH INDONESIA (Kalimantan, Sumatera, Sulawesi, Papua, Jawa, dll)
+        mcp_search_results = 0
+        mcp_ingested = 0
+        mcp_error = None
+        mcp_attempted = False
         remaining_needed = limit - len(processed_candidates)
         if remaining_needed > 0:
+            mcp_attempted = True
+            target_location = " ".join(part for part in (city, province) if part)
+            search_query = " ".join(part for part in (
+                category or sport or "komunitas olahraga organisasi mahasiswa",
+                target_location,
+                "Indonesia",
+            ) if part).strip()
+            try:
+                mcp_candidates, mcp_search_results = _search_discovery_candidates_with_mcp(
+                    search_query,
+                    "komunitas olahraga atau organisasi mahasiswa Indonesia",
+                    remaining_needed,
+                )
+                for item in mcp_candidates:
+                    candidate_name = item["name"]
+                    if any(
+                        candidate["name"].casefold() == candidate_name.casefold()
+                        for candidate in processed_candidates
+                    ):
+                        continue
+
+                    raw_sport = (_discovery_text(item.get("sport"), sport) or "").lower() or None
+                    raw_type = str(item.get("organization_type") or "").lower()
+                    is_student_org = (
+                        cat_low == "student_org"
+                        or "student" in raw_type
+                        or any(token in candidate_name.casefold() for token in ("bem", "ukm", "hima"))
+                    )
+                    org_type = "student_org" if is_student_org else "community"
+                    org_subtype = _discovery_text(item.get("subtype")) or _discovery_text(
+                        item.get("organization_subtype")
+                    )
+                    if not org_subtype:
+                        org_subtype = "student_organization" if is_student_org else (
+                            f"{raw_sport.replace(' ', '_')}_club" if raw_sport else "community_club"
+                        )
+
+                    source_url = item["source_url"]
+                    parsed_source = urlparse(source_url)
+                    source_host = (parsed_source.hostname or "").lower()
+                    social_platform = next(
+                        (
+                            platform for domain, platform in (
+                                ("instagram.com", "instagram"),
+                                ("tiktok.com", "tiktok"),
+                                ("facebook.com", "facebook"),
+                                ("linkedin.com", "linkedin"),
+                            )
+                            if source_host == domain or source_host.endswith("." + domain)
+                        ),
+                        None,
+                    )
+                    social_json = json.dumps({social_platform: source_url}) if social_platform else None
+                    evidence = item["_mcp_evidence"]
+                    website = item.get("website")
+                    if website != source_url or not str(website).startswith(("http://", "https://")):
+                        website = None
+                    candidate = {
+                        "name": candidate_name,
+                        "organization_type": org_type,
+                        "organization_subtype": org_subtype,
+                        "industry": "Organisasi Pendidikan / Mahasiswa" if is_student_org else "Komunitas & Olahraga",
+                        "sport": raw_sport,
+                        "province": _discovery_text(item.get("province"), province or None),
+                        "city": _discovery_text(item.get("city"), city or None),
+                        "website": website,
+                        "domain": extract_domain(website) if website else None,
+                        "social_json": social_json,
+                        "source_type": "community_mcp_discovery",
+                        "source_url": source_url,
+                        "description": _discovery_text(item.get("description"), evidence["snippet"][:400]),
+                        "product_fit": _discovery_text(
+                            item.get("product_fit"),
+                            "Jersey Custom, Kaos Tim, Jaket Kontingen",
+                        ),
+                        "opportunity_score": _discovery_score(item.get("opportunity_score"), 70),
+                        "priority_tier": "A - HOT" if raw_sport in ("futsal", "sepak bola", "basket", "running") else "B - WARM",
+                        "provenance": {
+                            "source": "DuckDuckGo MCP",
+                            "source_type": "community_mcp_discovery",
+                            "source_url": source_url,
+                            "confidence": "medium",
+                            "raw_reference": json.dumps(evidence, ensure_ascii=False),
+                            "discovered_at": utc_now().isoformat(),
+                        }
+                    }
+                    org, is_new, note = cls.ingest_candidate_to_master(
+                        candidate, engine=engine, user_id=user_id
+                    )
+                    created_count += int(is_new)
+                    updated_count += int(not is_new)
+                    mcp_ingested += 1
+                    processed_candidates.append({
+                        "org_id": org.id, "name": org.name, "is_new": is_new,
+                        "note": note, "source_type": "community_mcp_discovery",
+                    })
+            except Exception as error:
+                mcp_error = str(error)[:200]
+                logger.exception("MCP community discovery failed")
+
+        remaining_needed = limit - len(processed_candidates)
+        if remaining_needed > 0 and mcp_ingested == 0 and not mcp_error:
             from app.ai_agent import _chat_json
 
             target_loc = []
@@ -564,7 +866,10 @@ Format output HANYA list JSON valid:
                         created_count += 1
                     else:
                         updated_count += 1
-                    processed_candidates.append({"org_id": org.id, "name": org.name, "is_new": is_new, "note": note})
+                    processed_candidates.append({
+                        "org_id": org.id, "name": org.name, "is_new": is_new,
+                        "note": note, "source_type": "dynamic_ai_discovery",
+                    })
 
             except Exception as e:
                 logger.error(f"Error in dynamic community discovery: {e}")
@@ -577,6 +882,14 @@ Format output HANYA list JSON valid:
             "new_organizations": created_count,
             "updated": updated_count,
             "matched_organizations": updated_count,
+            "mcp_attempted": mcp_attempted,
+            "mcp_search_results": mcp_search_results,
+            "mcp_ingested": mcp_ingested,
+            "ai_fallback_ingested": sum(
+                item.get("source_type") == "dynamic_ai_discovery"
+                for item in processed_candidates
+            ),
+            "mcp_error": mcp_error,
             "items": processed_candidates
         }
 
@@ -603,6 +916,10 @@ Format output HANYA list JSON valid:
             region=region,
             limit=limit
         )
+        search_details = social_conn.last_search_details
+        is_custom_platform = platform.lower().startswith("custom:")
+        platform_label = platform.split(":", 1)[1] if is_custom_platform else platform
+        social_key = "custom_platform" if is_custom_platform else platform_label.lower()
 
         engine = IdentityResolutionEngine(existing_orgs=Organization.query.all())
         created_count = 0
@@ -611,7 +928,7 @@ Format output HANYA list JSON valid:
 
         for cand in candidates:
             sport_detected = cand["signals"]["sport_signals"][0] if cand["signals"]["sport_signals"] else None
-            social_dict = {platform: cand["profile_url"]}
+            social_dict = {social_key: cand["profile_url"]}
 
             org_payload = {
                 "name": cand["profile_name"] or f"@{cand['username']}",
@@ -629,7 +946,7 @@ Format output HANYA list JSON valid:
                 "provenance": {
                     "source": cand["source"],
                     "source_url": cand["source_url"],
-                    "confidence": "high",
+                    "confidence": "medium" if is_custom_platform else "high",
                     "signals": cand["signals"],
                     "discovered_at": utc_now().isoformat(),
                 }
@@ -641,15 +958,36 @@ Format output HANYA list JSON valid:
                     created_count += 1
                 else:
                     updated_count += 1
-                processed.append({"org_id": org.id, "name": org.name, "platform": platform, "is_new": is_new, "note": note})
+                processed.append({
+                    "org_id": org.id,
+                    "name": org.name,
+                    "platform": platform_label,
+                    "is_new": is_new,
+                    "note": note,
+                })
             except Exception as e:
                 logger.error(f"Error ingesting social candidate {cand['username']}: {e}")
 
+        mcp_candidate_count = sum(
+            candidate.get("source", "").endswith("_mcp")
+            for candidate in candidates
+        )
+        ai_fallback_count = sum(
+            candidate.get("source", "").endswith("_ai_fallback")
+            for candidate in candidates
+        )
         return {
-            "platform": platform,
+            "platform": platform_label,
             "query": query,
             "total_processed": len(processed),
+            "total_ingested": len(processed),
             "created": created_count,
+            "new_organizations": created_count,
             "updated": updated_count,
+            "mcp_candidates": mcp_candidate_count,
+            "ai_fallback_ingested": ai_fallback_count,
+            "mcp_attempted": search_details["mcp_attempted"],
+            "mcp_search_results": search_details["mcp_search_results"],
+            "search_provider": search_details["search_provider"],
             "items": processed
         }

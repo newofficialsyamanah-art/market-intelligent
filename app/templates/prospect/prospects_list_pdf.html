@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daftar Prospek Bisnis & CRM - PT Syamanah</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: #1e293b;
+      background-color: #f8fafc;
+      font-size: 9pt;
+      line-height: 1.45;
+      margin: 0;
+      padding: 0;
+    }
+
+    .font-monospace {
+      font-family: 'JetBrains Mono', monospace !important;
+    }
+
+    .print-action-bar {
+      position: sticky;
+      top: 0;
+      z-index: 9999;
+      background: #0f172a;
+      color: #ffffff;
+      padding: 0.75rem 1.5rem;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .report-container {
+      max-width: 1050px;
+      margin: 1.5rem auto;
+      background: #ffffff;
+      padding: 2rem 2.5rem;
+      border-radius: 10px;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+    }
+
+    .report-header {
+      border-bottom: 2px solid #0d6efd;
+      padding-bottom: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .table-report {
+      font-size: 8pt;
+      border-color: #cbd5e1;
+    }
+
+    .table-report th {
+      background-color: #f1f5f9 !important;
+      color: #334155;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      border-bottom: 2px solid #cbd5e1 !important;
+      padding: 0.5rem 0.4rem;
+    }
+
+    .table-report td {
+      padding: 0.45rem 0.4rem;
+      vertical-align: middle;
+      border-color: #e2e8f0;
+    }
+
+    @media print {
+      body {
+        background: #ffffff !important;
+        font-size: 8pt !important;
+        color: #000000 !important;
+      }
+
+      .print-action-bar, .d-print-none {
+        display: none !important;
+      }
+
+      .report-container {
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+      }
+
+      @page {
+        size: A4 portrait;
+        margin: 12mm 10mm 12mm 10mm;
+      }
+
+      .table-report th {
+        background-color: #f1f5f9 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      .badge, .p-2 {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Floating Print Control Bar (Hidden on Print) -->
+  <div class="print-action-bar d-print-none">
+    <div class="container-fluid d-flex justify-content-between align-items-center">
+      <div class="d-flex align-items-center gap-3">
+        <span class="fw-bold text-white fs-6">
+          <i class="bi bi-file-earmark-pdf-fill text-danger me-2"></i>Pratinjau PDF - Direktori Database Prospek CRM
+        </span>
+        <span class="badge bg-secondary font-monospace">A4 Portrait</span>
+      </div>
+      <div class="d-flex gap-2">
+        <button type="button" class="btn btn-primary btn-sm px-3 fw-bold" onclick="window.print()">
+          <i class="bi bi-printer-fill me-1"></i> Cetak / Simpan sebagai PDF
+        </button>
+        <a href="{{ url_for('prospect.list_prospects') }}" class="btn btn-outline-light btn-sm px-3">
+          <i class="bi bi-x-circle me-1"></i> Tutup &amp; Kembali
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="report-container">
+    
+    <!-- Header -->
+    <div class="report-header">
+      <div class="row align-items-center">
+        <div class="col-8">
+          <div class="d-flex align-items-center gap-2 mb-1">
+            <span class="fs-4 fw-bold text-primary">SYAMANAH</span>
+            <span class="badge bg-dark text-white">COMMERCIAL CRM</span>
+            <span class="badge bg-success-subtle text-success border border-success-subtle">
+              <i class="bi bi-shield-check me-1"></i> Zero-Hallucination Contact
+            </span>
+          </div>
+          <h4 class="fw-bold text-dark mb-0">DIREKTORI PROSPEK BISNIS &amp; TARGET PENJUALAN B2B</h4>
+          <small class="text-secondary">Daftar target prospek terverifikasi untuk tindak lanjut tim sales dan commercial outreach.</small>
+        </div>
+        <div class="col-4 text-end">
+          <div class="p-2 bg-light border rounded text-start small font-monospace d-inline-block" style="font-size: 7.5pt;">
+            <div><strong>Kode Dokumen:</strong> REP-CRM-PROSPECTS</div>
+            <div><strong>Tanggal Rilis:</strong> {{ generated_date }}</div>
+            <div><strong>Total Data:</strong> {{ total_count }} Akun Terfilter</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Active Filters & Summary Bar -->
+    <div class="p-3 bg-light rounded border mb-3">
+      <div class="row g-2 align-items-center">
+        <div class="col-8">
+          <span class="small fw-bold text-dark d-block mb-1"><i class="bi bi-funnel text-primary me-1"></i>Parameter Filter Aktif:</span>
+          <div class="d-flex flex-wrap gap-1 small">
+            <span class="badge bg-white text-dark border">Pencarian: {{ filters.q or 'Semua' }}</span>
+            <span class="badge bg-white text-dark border">Industri: {{ filters.industry or 'Semua' }}</span>
+            <span class="badge bg-white text-dark border">Wilayah: {{ filters.region or 'Semua' }}</span>
+            <span class="badge bg-white text-dark border">Segmen: {{ filters.segment or 'Semua' }}</span>
+            <span class="badge bg-white text-dark border">Status: {{ filters.status or 'Semua Status' }}</span>
+          </div>
+        </div>
+        <div class="col-4 text-end">
+          <div class="d-flex justify-content-end gap-2">
+            <div class="p-1 px-2 bg-white rounded border text-center">
+              <small class="text-muted d-block" style="font-size: 7pt;">Total Akun</small>
+              <strong class="text-dark">{{ total_count }}</strong>
+            </div>
+            <div class="p-1 px-2 bg-white rounded border text-center">
+              <small class="text-muted d-block" style="font-size: 7pt;">Rata-rata Skor</small>
+              <strong class="text-primary">{{ avg_score }}</strong>
+            </div>
+            <div class="p-1 px-2 bg-white rounded border text-center">
+              <small class="text-muted d-block" style="font-size: 7pt;">Akun HOT (&ge;90)</small>
+              <strong class="text-danger">{{ hot_count }}</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-responsive">
+      <table class="table table-bordered table-report table-hover align-middle mb-0">
+        <thead>
+          <tr>
+            <th style="width: 28px;" class="text-center">No</th>
+            <th style="width: 220px;">Nama Perusahaan / Organisasi</th>
+            <th>Industri</th>
+            <th>Wilayah</th>
+            <th>Segmen Pasar</th>
+            <th style="width: 50px;" class="text-center">Skor</th>
+            <th style="width: 75px;" class="text-center">Status</th>
+            <th style="width: 140px;">Kontak Resmi Terverifikasi</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in prospects %}
+          <tr>
+            <td class="text-center text-muted font-monospace">{{ loop.index }}</td>
+            <td>
+              <strong class="text-dark d-block">{{ p.company_name }}</strong>
+              {% if p.website %}
+              <small class="text-muted text-truncate d-block font-monospace" style="max-width: 210px; font-size: 7pt;">
+                {{ p.website|replace('https://', '')|replace('http://', '')|replace('www.', '') }}
+              </small>
+              {% endif %}
+            </td>
+            <td>{{ p.industry or '-' }}</td>
+            <td>{{ p.region or '-' }}</td>
+            <td>
+              <span class="badge bg-light text-dark border" style="font-size: 7pt;">{{ p.segment or 'Umum' }}</span>
+            </td>
+            <td class="text-center">
+              <span class="badge {% if (p.score or 0) >= 90 %}bg-danger-subtle text-danger border border-danger-subtle{% elif (p.score or 0) >= 70 %}bg-warning-subtle text-dark border border-warning-subtle{% else %}bg-light text-secondary border{% endif %} font-monospace">
+                {{ p.score or 0 }}
+              </span>
+            </td>
+            <td class="text-center">
+              <span class="badge {% if p.status == 'converted' %}bg-success text-white{% elif p.status == 'contacted' %}bg-primary text-white{% else %}bg-secondary text-white{% endif %} text-uppercase" style="font-size: 6.5pt;">
+                {{ p.status }}
+              </span>
+            </td>
+            <td>
+              {% if p.contact_phone %}
+                <span class="d-block font-monospace text-dark fw-semibold" style="font-size: 7.5pt;">
+                  <i class="bi bi-telephone text-success me-1"></i>{{ p.contact_phone }}
+                </span>
+              {% endif %}
+              {% if p.contact_email %}
+                <span class="d-block text-muted text-truncate" style="font-size: 7pt; max-width: 135px;">
+                  <i class="bi bi-envelope text-info me-1"></i>{{ p.contact_email }}
+                </span>
+              {% endif %}
+              {% if not p.contact_phone and not p.contact_email %}
+                <span class="text-muted" style="font-size: 7pt;">-</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Footer Note -->
+    <div class="mt-4 pt-3 border-top d-flex justify-content-between align-items-center text-muted small" style="font-size: 7.5pt;">
+      <div>
+        <strong>Kebijakan Kepatuhan Data:</strong> Seluruh nomor kontak divalidasi anti-halusinasi. Entitas tanpa nomor kontak dari sumber resmi dibiarkan kosong secara transparan.
+      </div>
+      <div>
+        PT Syamanah Sukses Mandiri &bull; Dokumen Intelijen Internal
+      </div>
+    </div>
+
+  </div>
+
+  {% if autoprint %}
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => {
+        window.print();
+      }, 500);
+    });
+  </script>
+  {% endif %}
+
+</body>
+</html>

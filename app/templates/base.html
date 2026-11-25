@@ -19,7 +19,7 @@
     <a class="navbar-brand app-brand" href="{{ url_for('dashboard') }}">
       <img src="{{ url_for('static', filename='img/logo-syamanah.png') }}" alt="Syamanah" class="app-logo-img">
       <div class="brand-text-container">
-        {% if current_user.role == 'supplier' %}
+        {% if has_role_access(current_user.role, ['supplier']) %}
           <div class="d-flex align-items-center gap-1">
             <!-- <span class="brand-title">SYAMANAH</span> -->
             <span class="badge badge-brand-tender">TENDER</span>
@@ -40,7 +40,7 @@
     <div class="collapse navbar-collapse" id="nav">
       <ul class="navbar-nav me-auto app-nav-links">
         <!-- 1. Company Intelligence -->
-        {% if current_user.role in ['admin', 'business_analyst', 'marketing', 'management'] %}
+        {% if has_role_access(current_user.role, ['admin', 'business_analyst', 'marketing', 'management']) %}
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
             <i class="bi bi-buildings text-primary"></i> Company Intel
@@ -48,21 +48,23 @@
           <ul class="dropdown-menu">
             <li><a class="dropdown-item" href="{{ url_for('market_analysis.explorer') }}"><i class="bi bi-search me-2 text-primary"></i> Master Organizations</a></li>
             <li><a class="dropdown-item" href="{{ url_for('prospect.list_prospects') }}"><i class="bi bi-person-lines-fill me-2 text-primary"></i> Prospek</a></li>
-            {% if current_user.role in ['admin', 'business_analyst', 'management'] %}
+            {% if has_role_access(current_user.role, ['admin', 'business_analyst', 'management']) %}
             <li><a class="dropdown-item" href="{{ url_for('market_analysis.index') }}"><i class="bi bi-graph-up me-2 text-primary"></i> Market Analytics</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('market_analysis.google_trends') }}"><i class="bi bi-google me-2 text-danger"></i> Google Trends Intel <span class="badge bg-danger ms-1" style="font-size: 0.65rem;">Live</span></a></li>
             {% endif %}
-            {% if current_user.role in ['admin', 'business_analyst'] %}
+            {% if has_role_access(current_user.role, ['admin', 'business_analyst']) %}
             <li><hr class="dropdown-divider"></li>
             <li><a class="dropdown-item" href="{{ url_for('admin.discovery') }}"><i class="bi bi-binoculars me-2 text-muted"></i> Data Discovery</a></li>
             <li><a class="dropdown-item" href="{{ url_for('data_collection.index') }}"><i class="bi bi-cloud-arrow-down me-2 text-muted"></i> Ingestion Sources</a></li>
             <li><a class="dropdown-item" href="{{ url_for('data_processing.index') }}"><i class="bi bi-cpu me-2 text-muted"></i> Processing & AI</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('data_processing.validation') }}"><i class="bi bi-clipboard-check me-2 text-success"></i> Data Validation Workflow</a></li>
             {% endif %}
           </ul>
         </li>
         {% endif %}
 
         <!-- 2. Event Intelligence -->
-        {% if current_user.role in ['admin', 'business_analyst', 'marketing', 'management'] %}
+        {% if has_role_access(current_user.role, ['admin', 'business_analyst', 'marketing', 'management']) %}
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
             <i class="bi bi-calendar-event text-primary"></i> Event Intel
@@ -70,7 +72,7 @@
           <ul class="dropdown-menu">
             <li><a class="dropdown-item" href="{{ url_for('events.index') }}"><i class="bi bi-list-stars me-2 text-primary"></i> Event Directory</a></li>
             <li><a class="dropdown-item" href="{{ url_for('events.calendar') }}"><i class="bi bi-calendar3 me-2 text-primary"></i> Event Calendar</a></li>
-            {% if current_user.role in ['admin', 'business_analyst', 'marketing'] %}
+            {% if has_role_access(current_user.role, ['admin', 'business_analyst', 'marketing']) %}
             <li><a class="dropdown-item" href="{{ url_for('events.create_event') }}"><i class="bi bi-plus-circle me-2 text-success"></i> Tambah Event</a></li>
             <li><hr class="dropdown-divider"></li>
             <li><a class="dropdown-item" href="{{ url_for('events.export') }}"><i class="bi bi-file-earmark-spreadsheet me-2 text-muted"></i> Export Participants (CSV)</a></li>
@@ -80,7 +82,7 @@
         {% endif %}
 
         <!-- 3. Marketing Intelligence -->
-        {% if current_user.role in ['admin', 'marketing', 'business_analyst', 'management'] %}
+        {% if has_role_access(current_user.role, ['admin', 'marketing', 'business_analyst', 'management']) %}
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
             <i class="bi bi-bullseye text-primary"></i> Marketing Intel
@@ -97,12 +99,12 @@
         {% endif %}
 
         <!-- 4. Reporting (Management & Admin) -->
-        {% if current_user.role in ['admin', 'management'] %}
+        {% if has_role_access(current_user.role, ['admin', 'management']) %}
         <li class="nav-item"><a class="nav-link" href="{{ url_for('reporting.index') }}"><i class="bi bi-journal-text text-primary"></i> Reporting</a></li>
         {% endif %}
 
         <!-- 5. Procurement Intelligence (Internal Only) -->
-        {% if current_user.role in ['admin', 'business_analyst', 'marketing', 'management', 'procurement'] %}
+        {% if has_role_access(current_user.role, ['admin', 'business_analyst', 'marketing', 'management', 'procurement']) %}
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
             <i class="bi bi-box-seam text-primary"></i> Procurement
@@ -118,7 +120,7 @@
         {% endif %}
 
         <!-- 6. Portal Rekanan Supplier (Syamanah Tender) -->
-        {% if current_user.role == 'supplier' %}
+        {% if has_role_access(current_user.role, ['supplier']) %}
         <li class="nav-item"><a class="nav-link" href="{{ url_for('dashboard') }}"><i class="bi bi-speedometer2 text-primary"></i> Dashboard</a></li>
         <li class="nav-item"><a class="nav-link" href="{{ url_for('supplier.catalog') }}"><i class="bi bi-boxes" style="color: #D9730D;"></i> Katalog Produk</a></li>
         <li class="nav-item"><a class="nav-link" href="{{ url_for('supplier.rfq_list') }}"><i class="bi bi-receipt-cutoff" style="color: #D9730D;"></i> Permintaan Quotation (RFQ)</a></li>
@@ -147,7 +149,7 @@
           <span class="account-icon"><i class="bi bi-person-fill"></i></span>
           <div class="account-copy">
             <strong>{{ current_user.name }}</strong>
-            {% if current_user.role == 'supplier' %}
+            {% if has_role_access(current_user.role, ['supplier']) %}
               <span class="badge badge-role-supplier"><i class="bi bi-patch-check-fill me-1"></i>Supplier</span>
             {% elif current_user.role == 'admin' %}
               <span class="badge badge-role-admin">Admin</span>

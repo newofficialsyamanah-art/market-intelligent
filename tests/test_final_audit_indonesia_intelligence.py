@@ -14,6 +14,7 @@ Tests covering:
 import json
 import unittest
 from datetime import datetime, timezone
+from unittest.mock import patch
 
 from app import create_app
 from app.config import TestConfig
@@ -33,7 +34,10 @@ from app.models import (
     utc_now,
 )
 from app.scheduler import TASK_TYPES, execute_job, is_scheduler_running
-from app.services.discovery_service import DiscoveryPipelineService
+from app.services.discovery_service import (
+    DiscoveryPipelineService,
+    _search_discovery_candidates_with_mcp,
+)
 from app.services.marketing_intelligence import MarketingIntelligenceService
 from app.services.product_fit_service import ProductFitService
 from app.services.social_connector import SocialConnectorService
@@ -108,6 +112,115 @@ class TestFinalAuditIndonesiaIntelligence(unittest.TestCase):
         self.assertEqual(count_before, count_after, "Rerun tidak boleh menambah record duplikat")
         self.assertEqual(rerun_res["new_organizations"], 0, "Semua data harus ter-match secara idempotent")
 
+    @patch("app.services.mcp_service.mcp_search_duckduckgo")
+    @patch("app.ai_agent._chat_json")
+    def test_mcp_discovery_requires_a_search_result_url(self, chat_json, mcp_search):
+        source_url = "https://kampus.example.ac.id/profil"
+        mcp_search.return_value = [
+            {"title": "Kampus Nusantara", "url": source_url, "snippet": "Kampus di Bandung"},
+            {"title": "Invalid", "url": "javascript:alert(1)", "snippet": "Invalid URL"},
+        ]
+        chat_json.return_value = [
+            {"name": "Kampus Nusantara", "source_url": source_url},
+            {"name": "Kampus Tanpa Bukti", "source_url": "https://unverified.example"},
+        ]
+
+        candidates, result_count = _search_discovery_candidates_with_mcp(
+            "kampus Bandung",
+            "institusi pendidikan",
+            2,
+        )
+
+        self.assertEqual(result_count, 1)
+        self.assertEqual(len(candidates), 1)
+        self.assertEqual(candidates[0]["name"], "Kampus Nusantara")
+        self.assertEqual(candidates[0]["source_url"], source_url)
+        self.assertEqual(candidates[0]["_mcp_evidence"]["snippet"], "Kampus di Bandung")
+        mcp_search.assert_called_once()
+
+    def test_discovery_page_exposes_custom_category_and_platform_fields(self):
+        self._login(self.ba)
+        response = self.client.get("/admin/discovery")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b"Ketik kategori sendiri", response.data)
+        self.assertIn(b"Ketik nama platform", response.data)
+        self.assertIn(b"customCategoryInput", response.data)
+        self.assertIn(b"customPlatformInput", response.data)
+
+    @patch("app.blueprints.admin.routes.DiscoveryPipelineService.discover_communities")
+    def test_custom_community_category_is_passed_to_discovery(self, discover_communities):
+        self._login(self.ba)
+        discover_communities.return_value = {
+            "total_ingested": 0,
+            "new_organizations": 0,
+            "matched_organizations": 0,
+            "mcp_attempted": False,
+        }
+
+        response = self.client.post("/admin/discovery/community/trigger", data={
+            "category": "__custom__",
+            "custom_category": "SSB",
+            "city": "Bandung",
+            "province": "Jawa Barat",
+            "limit": "3",
+        })
+
+        self.assertEqual(response.status_code, 302)
+        discover_communities.assert_called_once_with(
+            category="SSB",
+            city="Bandung",
+            province="Jawa Barat",
+            limit=3,
+        )
+
+    @patch("app.blueprints.admin.routes.DiscoveryPipelineService.discover_social_media")
+    def test_custom_social_platform_is_passed_to_discovery(self, discover_social):
+        self._login(self.ba)
+        discover_social.return_value = {
+            "total_ingested": 0,
+            "new_organizations": 0,
+            "mcp_attempted": True,
+            "mcp_search_results": 0,
+            "mcp_candidates": 0,
+            "search_provider": "fallback public search",
+        }
+
+        response = self.client.post("/admin/discovery/social/trigger", data={
+            "platform": "__custom__",
+            "custom_platform": "Threads",
+            "keyword": "komunitas futsal",
+            "limit": "2",
+        })
+
+        self.assertEqual(response.status_code, 302)
+        discover_social.assert_called_once_with(
+            platform="custom:Threads",
+            query="komunitas futsal",
+            limit=2,
+        )
+
+    @patch("app.services.mcp_service.mcp_search_duckduckgo")
+    def test_custom_social_platform_is_a_search_keyword(self, mcp_search):
+        mcp_search.return_value = [{
+            "title": "Threads - Garuda Futsal Community",
+            "url": "https://threads.net/@garuda_futsal",
+            "snippet": "Komunitas futsal dengan jersey tim.",
+        }]
+
+        connector = SocialConnectorService()
+        candidates = connector.discover_social_candidates(
+            platform="custom:Threads",
+            query="komunitas futsal",
+            region="Bandung",
+            limit=1,
+        )
+
+        self.assertEqual(len(candidates), 1)
+        self.assertEqual(candidates[0]["source_platform"], "Threads")
+        self.assertEqual(candidates[0]["profile_url"], "https://threads.net/@garuda_futsal")
+        self.assertIn("Threads", mcp_search.call_args.kwargs["query"])
+
     # =========================================================================
     # 2. Community & Student Organization Discovery
     # =========================================================================
@@ -138,8 +251,14 @@ class TestFinalAuditIndonesiaIntelligence(unittest.TestCase):
     # =========================================================================
     # 3. Social Discovery, Enrichment & Signal Extraction
     # =========================================================================
-    def test_03_social_discovery_and_signal_extraction(self):
+    @patch("app.services.mcp_service.mcp_search_duckduckgo")
+    def test_03_social_discovery_and_signal_extraction(self, mcp_search):
         """Memverifikasi ekstraksi sinyal produk, olahraga, aktivitas serta social discovery."""
+        mcp_search.return_value = [{
+            "title": "Futsal Garuda FC - Instagram",
+            "url": "https://www.instagram.com/futsal_garuda_fc/",
+            "snippet": "Klub futsal Bandung. Custom jersey dan seragam tim.",
+        }]
         # 1. Ekstraksi Sinyal dari Bio / Post
         sample_bio = (
             "Official UKM Futsal Universitas Nusantara. Juara 1 Turnamen Futsal Cup 2026. "
@@ -170,6 +289,8 @@ class TestFinalAuditIndonesiaIntelligence(unittest.TestCase):
         self.assertGreater(len(social_candidates), 0)
         self.assertEqual(social_candidates[0]["source_platform"], "instagram")
         self.assertIn("instagram.com", social_candidates[0]["source_url"])
+        self.assertTrue(social_candidates[0]["source"].endswith("_mcp"))
+        self.assertEqual(connector.last_search_details["search_provider"], "DuckDuckGo MCP")
 
     # =========================================================================
     # 4. Explainable AI Product Fit Scoring

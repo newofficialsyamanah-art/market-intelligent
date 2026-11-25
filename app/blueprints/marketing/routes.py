@@ -9,13 +9,17 @@ import io
 import csv
 import json
 from datetime import datetime
-from flask import Blueprint, render_template, request, redirect, url_for, flash, Response
+from flask import Blueprint, render_template, request, redirect, url_for, flash, Response, send_file
 from flask_login import login_required, current_user
 
 from app.extensions import db
 from app.models import Organization, Event, EventParticipant, Campaign, CampaignTarget, Prospect, utc_now
 from app.utils import log_activity, roles_required
 from app.services.marketing_intelligence import MarketingIntelligenceService, SEGMENT_PRESETS
+from app.services.marketing_field_report import (
+    create_marketing_field_intelligence_workbook,
+    get_marketing_field_intelligence,
+)
 from app.services.product_fit_service import ProductFitService, SUPPORTED_PRODUCTS
 
 marketing_bp = Blueprint("marketing", __name__)
@@ -172,6 +176,41 @@ def targets():
         all_provinces=all_provinces,
         all_events=all_events,
         active_campaigns=active_campaigns,
+    )
+
+
+@marketing_bp.route("/field-intelligence")
+@login_required
+@roles_required("admin", "marketing", "business_analyst", "management")
+def field_intelligence():
+    """Laporan akun olahraga, EO/aktivasi, tren produk, dan event 2027."""
+    area = request.args.get("area", "target_areas").strip().lower()
+    report = get_marketing_field_intelligence(area=area)
+    print_mode = request.args.get("print") == "1"
+    return render_template(
+        "marketing/field_intelligence.html",
+        report=report,
+        print_mode=print_mode,
+    )
+
+
+@marketing_bp.route("/field-intelligence/export.xlsx")
+@login_required
+@roles_required("admin", "marketing", "business_analyst", "management")
+def export_field_intelligence_excel():
+    area = request.args.get("area", "target_areas").strip().lower()
+    report = get_marketing_field_intelligence(area=area)
+    stream = create_marketing_field_intelligence_workbook(report)
+    filename = f"Marketing_Intelligence_{report['area']}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+    log_activity(
+        "export_marketing_field_intelligence",
+        f"Exported field intelligence report for {report['area_label']}",
+    )
+    return send_file(
+        stream,
+        as_attachment=True,
+        download_name=filename,
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     )
 
 

@@ -7,17 +7,20 @@
   <div>
     <div class="d-flex align-items-center gap-2 mb-1">
       <span class="badge" style="background-color: #3A7D8A; color: #FFFFFF;">
-        <i class="bi bi-cpu me-1"></i> MCP Model Context Protocol
+        <i class="bi bi-database me-1"></i> Dataset Gabungan
       </span>
-      <span class="badge bg-success-subtle text-success border border-success-subtle">
-        <i class="bi bi-patch-check-fill me-1"></i> Data Aktual Riil (Anti-Halusinasi)
+      <span class="badge bg-warning-subtle text-dark border border-warning-subtle">
+        <i class="bi bi-info-circle me-1"></i> Ada klasifikasi &amp; asumsi aplikasi
       </span>
       <span class="text-muted small">&bull; Prospek &amp; Growth Strategy 2027</span>
     </div>
     <h3 class="fw-bold mb-1 text-dark">Laporan Analisis Potensi &amp; Target Penetrasi Pasar Syamanah 2027</h3>
-    <p class="text-muted small mb-0">Analisis strategis penyerapan pasar apparel kustom, seragam, jersey olahraga, dan merchandise B2B berbasis data populasi riil yang ditarik via MCP.</p>
+    <p class="text-muted small mb-0">Analisis prospek apparel kustom, seragam, jersey olahraga, dan merchandise B2B dari database internal serta dataset riset 2027 yang tersimpan di aplikasi.</p>
   </div>
   <div class="d-flex gap-2">
+    <a href="{{ url_for('prospect.export_market_share_2027_pdf', sales_category=selected_sales_category) }}" target="_blank" class="btn btn-danger btn-sm shadow-sm">
+      <i class="bi bi-file-earmark-pdf me-1"></i> Export Laporan PDF
+    </a>
     <a href="{{ url_for('prospect.list_prospects') }}" class="btn btn-outline-secondary btn-sm">
       <i class="bi bi-arrow-left me-1"></i> Kembali ke Database Prospek
     </a>
@@ -34,6 +37,11 @@
   <li class="nav-item">
     <a class="nav-link active fw-semibold py-2 px-3" style="background-color: #3A7D8A;" href="{{ url_for('prospect.market_share_2027') }}">
       <i class="bi bi-graph-up-arrow me-1"></i> Target Penetrasi &amp; Pangsa Pasar 2027 <span class="badge bg-danger ms-1">MCP Live</span>
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link text-secondary fw-semibold py-2 px-3" href="{{ url_for('market_analysis.google_trends') }}">
+      <i class="bi bi-google me-1 text-danger"></i> Google Trends Intel <span class="badge bg-danger ms-1">Live</span>
     </a>
   </li>
 </ul>
@@ -98,6 +106,9 @@
       <small class="text-muted">Agregasi menyeluruh dari {{ "{:,}".format(total_orgs_db) }} Master Organisasi database internal, direktori Event Intel, CRM, serta riset pasar eksternal MCP untuk proyeksi 2027.</small>
     </div>
     <div class="d-flex align-items-center gap-2">
+      <a href="{{ url_for('prospect.export_market_share_2027_pdf', sales_category=selected_sales_category) }}" target="_blank" class="btn btn-sm btn-outline-danger shadow-sm">
+        <i class="bi bi-file-earmark-pdf me-1"></i> Cetak / Simpan PDF
+      </a>
       <span class="badge bg-success-subtle text-success border border-success-subtle">
         <i class="bi bi-check-circle-fill me-1"></i> {{ prospects|length }} Akun Prioritas Terpetakan
       </span>
@@ -251,11 +262,18 @@
 
           <td class="text-center pe-3">
             {% if p.contact_phone %}
-              {% set clean_wa = p.contact_phone|replace('+', '')|replace(' ', '')|replace('-', '') %}
-              {% if clean_wa.startswith('0') %}{% set clean_wa = '62' ~ clean_wa[1:] %}{% endif %}
-              <a href="https://wa.me/{{ clean_wa }}" target="_blank" class="btn btn-sm btn-outline-success py-0 px-2" title="Chat WhatsApp {{ p.contact_name }}">
-                <i class="bi bi-whatsapp me-1"></i>Hubungi
-              </a>
+              {% set wa = p.contact_phone|parse_wa(p.company_name) %}
+              {% if wa.is_valid_wa %}
+                <a href="{{ wa.wa_url }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-success py-0 px-2" title="Chat WhatsApp Resmi {{ p.contact_name or p.company_name }}">
+                  <i class="bi bi-whatsapp me-1"></i>WhatsApp
+                </a>
+              {% elif wa.type == 'landline' %}
+                <a href="tel:{{ wa.clean }}" class="btn btn-sm btn-outline-primary py-0 px-2" title="Telepon Kantor Resmi: {{ wa.formatted_display }}">
+                  <i class="bi bi-telephone me-1"></i>Telp Kantor
+                </a>
+              {% else %}
+                <span class="text-muted small" title="Kontak belum terverifikasi">-</span>
+              {% endif %}
             {% elif p.website %}
               <a href="{{ p.website }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-secondary py-0 px-2 small" title="Kunjungi Situs Resmi">
                 <i class="bi bi-box-arrow-up-right me-1"></i>Web Resmi
@@ -289,7 +307,7 @@
       <span class="badge bg-primary text-white" style="font-size: 0.8rem;">BAGIAN 2</span>
       Analisis Potensi Pasar &amp; Perhitungan Matematis TAM / SAM / SOM (2027)
     </h5>
-    <small class="text-muted">Metodologi kalkulasi berbasis populasi riil tanpa asumsi tebakan makro.</small>
+    <small class="text-muted">Volume berdasarkan target pasar; nilai omzet memakai harga jual acuan dan ditandai sebagai minimum bila data campuran belum tersedia.</small>
   </div>
   <div class="card-body p-4">
     <div class="row g-4 mb-4">
@@ -318,7 +336,7 @@
           <h4 class="fw-bold text-dark mb-1">{{ sam.value_str }}</h4>
           <div class="text-warning-emphasis fw-semibold small mb-2">{{ sam.volume_str }}</div>
           <p class="small text-muted mb-0">
-            Fokus pada segmen yang sesuai spesifikasi 4 lini produk Syamanah (Jersey Sublimasi, Katun Combed Premium, Jaket Varsity, dan Kemeja/Polo Bordir): Event Terakreditasi 2027, SMA/SMK Unggulan, dan Korporasi Tier A, B, C di 38 Provinsi se-Indonesia.
+          Nilai minimum memakai harga dasar produk. Nilai akhir lini seragam belum dapat dipastikan karena campuran kemeja/polo belum diketahui dan harga maksimum kemeja belum ditentukan.
           </p>
         </div>
       </div>
@@ -356,7 +374,8 @@
             </div>
             <div class="p-2 bg-light rounded border mb-2">
               <div class="small text-muted">Target Penetrasi Syamanah:</div>
-              <div class="fw-bold text-success">{{ "{:,}".format(b.share_som_units) }} Pcs &bull; {{ b.share_som_val }}</div>
+              <div class="fw-bold text-success">{{ "{:,}".format(b.share_som_units) }} Pcs</div>
+              <div class="small text-muted">Nilai omzet mengikuti campuran produk dan harga tiap lini.</div>
             </div>
             <div class="small text-muted">
               <strong>Key Driver:</strong> {{ b.key_driver }}
@@ -389,9 +408,9 @@
           <div class="text-dark fw-bold">SOM Volume = SAM Nasional (785.000 Pcs) &times; Target Penetrasi Realistis (10% - 12%)</div>
           <div class="text-primary fw-bold">&rarr; SOM Volume = 78.500 Pcs s/d 94.200 Pcs / Tahun (6.540 - 7.850 Pcs / Bulan)</div>
           <hr class="my-2">
-          <div class="text-muted">// Rumus Nilai Omzet Riil Penjualan 2027 (4 Lini Produk):</div>
-          <div class="text-dark fw-bold">Nilai SOM = (Jersey 35k-42k pcs @ Rp 92k) + (Jaket 6.5k-7.8k pcs @ Rp 170k) + (Seragam 21k-25.2k pcs @ Rp 95k) + (Kaos 16k-19.2k pcs @ Rp 75k)</div>
-          <div class="text-success fw-bold fs-6">&rarr; Target Pendapatan Penjualan SOM = Rp 7.510.000.000 s/d Rp 9.010.000.000</div>
+          <div class="text-muted">// Harga jual acuan untuk perhitungan nilai SOM:</div>
+          <div class="text-dark fw-bold">Jersey Rp 50.000-150.000; Jaket Rp 285.000-500.000; Polo Rp 120.000; Kemeja mulai Rp 170.000; Kaos tetap memakai asumsi sebelumnya Rp 70.000-85.000.</div>
+          <div class="text-success fw-bold fs-6">&rarr; Nilai SOM minimum = Rp 7,24 Miliar; batas atas belum dapat dihitung karena harga maksimum kemeja dan campuran kemeja/polo belum tersedia.</div>
         </div>
 
         <ul class="list-unstyled small text-muted d-flex flex-column gap-2 mb-0">
@@ -401,7 +420,7 @@
           </li>
           <li class="d-flex align-items-start gap-2">
             <i class="bi bi-check2-circle text-success fs-6 mt-1"></i>
-            <div><strong>Margin Laba Bersih Proyeksi:</strong> Dengan estimasi COGS bahan kain dan maklon Rp 45.000 - Rp 65.000/potong, potensi laba kotor yang dihasilkan berkisar <strong>Rp 2,8 Miliar - Rp 3,5 Miliar</strong>.</div>
+            <div><strong>Margin Laba:</strong> Belum dihitung; perlu data COGS per lini produk dan komposisi pesanan kemeja/polo.</div>
           </li>
         </ul>
       </div>
@@ -416,14 +435,14 @@
               <div class="p-2 bg-light rounded">
                 <small class="text-muted d-block">Target Min:</small>
                 <span class="fw-bold text-dark">78.500 Pcs</span>
-                <div class="small text-success font-monospace">Rp 7,51 M</div>
+                <div class="small text-success font-monospace">{{ som.value_min_str }}</div>
               </div>
             </div>
             <div class="col-6">
               <div class="p-2 bg-light rounded">
-                <small class="text-muted d-block">Target Maks:</small>
+                <small class="text-muted d-block">Batas Atas:</small>
                 <span class="fw-bold text-dark">94.200 Pcs</span>
-                <div class="small text-success font-monospace">Rp 9,01 M</div>
+                <div class="small text-muted font-monospace">Belum dapat dihitung</div>
               </div>
             </div>
           </div>
@@ -451,6 +470,121 @@
   </div>
 
   <div class="card-body p-4">
+    <div class="mb-4 p-3 border rounded-3 bg-white">
+      <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-2">
+        <div>
+          <h6 class="fw-bold text-dark mb-1"><i class="bi bi-cash-stack text-success me-1"></i>Tren Omzet Syamanah 2026 per Kategori Produk</h6>
+          <p class="small text-muted mb-0">
+            Rincian bulanan persis dari workbook sumber; angka nol dipertahankan seperti tercatat, bukan diisi atau diproyeksikan.
+          </p>
+        </div>
+        <span class="badge bg-success-subtle text-success border">
+          {% if selected_sales_category %}Total {{ selected_sales_category }}{% else %}Total semua kategori{% endif %}:
+          Rp {{ "{:,.2f}".format(product_sales_2026.grand_total / 1000000000) }} M
+        </span>
+      </div>
+      <div class="small text-muted mb-3">
+        Sumber: {{ product_sales_2026.source_filename }} &bull; Nilai dalam Rp juta; total kategori adalah penjumlahan Jan–Des 2026.
+        Basis file kategori ini berbeda dari grafik kas masuk Syamanah/Raffiz di Market Size &amp; Share; jangan dijumlahkan langsung.
+      </div>
+      <form method="get" action="{{ url_for('prospect.market_share_2027') }}" class="d-flex flex-wrap align-items-end gap-2 mb-3">
+        <div>
+          <label for="salesCategoryFilter" class="form-label small fw-semibold mb-1">Filter per produk</label>
+          <select id="salesCategoryFilter" name="sales_category" class="form-select form-select-sm">
+            <option value="">Semua produk</option>
+            {% for category_name in product_sales_categories %}
+            <option value="{{ category_name }}" {% if category_name == selected_sales_category %}selected{% endif %}>{{ category_name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-funnel me-1"></i>Terapkan</button>
+        <a href="{{ url_for('prospect.export_product_sales_2026_excel', sales_category=selected_sales_category) }}" class="btn btn-success btn-sm">
+          <i class="bi bi-file-earmark-excel me-1"></i>Export Excel
+        </a>
+      </form>
+      <div style="height: 340px; max-width: 100%;">
+        <canvas id="syamanahProductSales2026Chart" role="img" aria-label="Grafik omzet bulanan Syamanah per kategori produk selama 2026"></canvas>
+      </div>
+      <div class="table-responsive mt-3">
+        <table class="table table-sm table-bordered bg-white align-middle mb-0 text-nowrap">
+          <thead class="table-light">
+            <tr>
+              <th>Kategori produk <span class="fw-normal text-muted">(Rp juta)</span></th>
+              {% for month in product_sales_2026.months %}
+              <th class="text-end">{{ month }}</th>
+              {% endfor %}
+              <th class="text-end">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for category in product_sales_2026.categories %}
+            <tr>
+              <td class="fw-semibold">{{ category.name }}</td>
+              {% for value in category.monthly_values %}
+              <td class="text-end font-monospace">{{ "{:,.2f}".format(value / 1000000) }}</td>
+              {% endfor %}
+              <td class="text-end fw-bold font-monospace">{{ "{:,.2f}".format(category.total / 1000000) }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+          <tfoot class="table-light fw-bold">
+            <tr>
+              <td>Total bulanan</td>
+              {% for value in product_sales_2026.monthly_totals %}
+              <td class="text-end font-monospace">{{ "{:,.2f}".format(value / 1000000) }}</td>
+              {% endfor %}
+              <td class="text-end font-monospace">{{ "{:,.2f}".format(product_sales_2026.grand_total / 1000000) }}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+    <div class="mb-4 p-3 border rounded-3 bg-light-subtle">
+      <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-2">
+        <div>
+          <h6 class="fw-bold text-dark mb-1"><i class="bi bi-bar-chart-line text-primary me-1"></i>Tren Jumlah Prospek 2027 per Produk &amp; Kuartal</h6>
+          <p class="small text-muted mb-0">
+            Berdasarkan tag produk dan lead time pada prospek yang tercatat untuk 2027. Periode yang belum menunjuk satu kuartal masuk “Belum terjadwal”.
+          </p>
+        </div>
+        <span class="badge bg-secondary-subtle text-secondary border">{{ product_trend_2027.prospect_count }} prospek bertag produk</span>
+      </div>
+      <div class="small text-muted mb-3">
+        Ini menghitung entitas prospek, bukan indeks minat pasar atau jumlah unit. Satu prospek multi-produk dihitung pada tiap lini yang ditandai, sehingga total antarproduk tidak menunjukkan prospek unik.
+      </div>
+      <div class="small text-muted mb-3">
+        <strong>Sumber &amp; batas data:</strong> grafik menggabungkan 15 record riset 2027 yang tersimpan di kode aplikasi (berlabel MCP, bukan tarikan live), hingga 80 event, 120 organisasi, dan 60 prospek CRM. Produk dan lead time pada sebagian record database ditetapkan dengan aturan/default aplikasi, bukan konfirmasi kebutuhan pembelian. Grafik hanya menghitung record bertag produk dengan lead time 2027; karena itu jumlahnya terbatas dan bukan tren permintaan pasar terverifikasi.
+      </div>
+      <div style="height: 300px; max-width: 100%;">
+        <canvas id="prospectProductTrend2027" role="img" aria-label="Grafik jumlah prospek terdaftar per produk dan kuartal 2027"></canvas>
+      </div>
+      <div class="table-responsive mt-3">
+        <table class="table table-sm table-bordered bg-white align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Produk</th>
+              {% for quarter in product_trend_2027.quarters %}
+              <th class="text-end">{{ quarter }}</th>
+              {% endfor %}
+              <th class="text-end">Total tag produk</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in product_trend_2027.rows %}
+            <tr>
+              <td class="fw-semibold"><span class="badge me-1" style="background-color: {{ row.color }};">&nbsp;</span>{{ row.name }}</td>
+              {% for quarter in product_trend_2027.quarters %}
+              <td class="text-end font-monospace">{{ row.quarter_counts[quarter] }}</td>
+              {% endfor %}
+              <td class="text-end fw-bold font-monospace">{{ row.total }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
     <!-- 4 KARTU METRIK LINI PRODUK UTAMA -->
     <div class="row g-4 mb-4">
       {% for ps in product_segments %}
@@ -494,7 +628,7 @@
 
               <!-- Harga & Spesifikasi Teknis -->
               <div class="mb-2">
-                <div class="small text-muted fw-semibold mb-1">Acuan Harga Rata-Rata:</div>
+                <div class="small text-muted fw-semibold mb-1">Acuan Harga Jual:</div>
                 <div class="badge bg-light text-dark border font-monospace">{{ ps.avg_price_str }} / pcs</div>
               </div>
 
@@ -579,10 +713,10 @@
             <tr>
               <td>TOTAL 4 LINI PRODUK (SELURUH INDONESIA):</td>
               <td class="text-end text-dark font-monospace">785.000 Pcs</td>
-              <td class="text-end text-primary font-monospace">Rp 75,20 Miliar</td>
+              <td class="text-end text-primary font-monospace">Mulai Rp 72,43 Miliar*</td>
               <td class="text-end text-success font-monospace">78.500 - 94.200 Pcs</td>
-              <td class="text-end text-success font-monospace">Rp 7,51 - 9,01 Miliar</td>
-              <td colspan="2" class="small text-muted text-center">Rata-rata 6.540 - 7.850 pcs/bulan (proporsional didukung mesin in-house &amp; kemitraan vendor maklon)</td>
+              <td class="text-end text-success font-monospace">Mulai Rp 7,24 Miliar*</td>
+              <td colspan="2" class="small text-muted text-center">*Nilai minimum; batas atas seragam belum dihitung. **Harga Kaos masih asumsi sebelumnya. Rata-rata 6.540 - 7.850 pcs/bulan.</td>
             </tr>
           </tfoot>
         </table>
@@ -724,5 +858,74 @@ document.addEventListener("DOMContentLoaded", function() {
   });
 });
 </script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const salesCanvas = document.getElementById("syamanahProductSales2026Chart");
+  if (salesCanvas) {
+    new Chart(salesCanvas, {
+      type: "bar",
+      data: {
+        labels: {{ product_sales_2026.months|tojson }},
+        datasets: {{ product_sales_2026.datasets|tojson }}
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: "index", intersect: false },
+        plugins: {
+          legend: { position: "bottom", labels: { boxWidth: 10 } },
+          tooltip: { callbacks: { label: function(context) {
+            return context.dataset.label + ": Rp " + Number(context.raw).toLocaleString("id-ID", {maximumFractionDigits: 2}) + " juta";
+          } } }
+        },
+        scales: {
+          x: { stacked: true },
+          y: {
+            stacked: true,
+            beginAtZero: true,
+            title: { display: true, text: "Omzet (Rp juta)" },
+            ticks: { callback: function(value) { return "Rp " + Number(value).toLocaleString("id-ID") + " jt"; } }
+          },
+          yTotal: {
+            type: "linear",
+            position: "right",
+            beginAtZero: true,
+            grid: { drawOnChartArea: false },
+            ticks: { display: false }
+          }
+        }
+      }
+    });
+  }
 
+  const canvas = document.getElementById("prospectProductTrend2027");
+  if (!canvas) return;
+
+  new Chart(canvas, {
+    type: "bar",
+    data: {
+      labels: {{ product_trend_2027.quarters|tojson }},
+      datasets: {{ product_trend_2027.datasets|tojson }}
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: "index", intersect: false },
+      plugins: {
+        legend: { position: "bottom" },
+        tooltip: { callbacks: { label: function(context) {
+          return context.dataset.label + ": " + context.parsed.y + " prospek";
+        } } }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: { precision: 0 },
+          title: { display: true, text: "Jumlah prospek" }
+        }
+      }
+    }
+  });
+});
+</script>
 {% endblock %}
